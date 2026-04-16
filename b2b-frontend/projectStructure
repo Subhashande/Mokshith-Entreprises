@@ -1,0 +1,220 @@
+b2b-frontend/
+│
+├── public/
+│   ├── favicon.ico
+│   ├── index.html
+│   ├── manifest.json
+│   └── robots.txt
+│
+├── src/
+│
+│   ├── app/
+│   │   ├── store.js
+│   │   ├── rootReducer.js
+│   │   ├── AppProvider.jsx
+│   │   ├── persistConfig.js
+│   │   └── storeHooks.js
+│
+│   ├── assets/
+│   │   ├── images/
+│   │   ├── icons/
+│   │   ├── fonts/
+│   │   └── styles/
+│   │       ├── global.css
+│   │       ├── variables.css
+│   │       └── theme.css
+│
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── Loader.jsx
+│   │   │   ├── ErrorBoundary.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   └── RoleBasedRoute.jsx
+│   │   │
+│   │   ├── ui/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Select.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── Table.jsx
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Tabs.jsx
+│   │   │   ├── Dropdown.jsx
+│   │   │   ├── Pagination.jsx
+│   │   │   └── Tooltip.jsx
+│   │   │
+│   │   ├── feedback/
+│   │   │   ├── Toast.jsx
+│   │   │   ├── Alert.jsx
+│   │   │   ├── EmptyState.jsx
+│   │   │   └── Skeleton.jsx
+│   │   │
+│   │   └── charts/
+│   │       ├── LineChart.jsx
+│   │       ├── BarChart.jsx
+│   │       ├── PieChart.jsx
+│   │       └── AreaChart.jsx
+│
+│   ├── layouts/
+│   │   ├── MainLayout.jsx
+│   │   ├── AuthLayout.jsx
+│   │   ├── AdminLayout.jsx
+│   │   ├── SuperAdminLayout.jsx
+│   │   ├── DeliveryLayout.jsx
+│   │   └── CustomerLayout.jsx
+│
+│   ├── modules/
+│
+│   │   ├── auth/
+│   │   │   ├── pages/
+│   │   │   │   ├── Login.jsx
+│   │   │   │   ├── Register.jsx
+│   │   │   │   ├── VerifyOTP.jsx
+│   │   │   │   └── ForgotPassword.jsx
+│   │   │   ├── components/
+│   │   │   │   ├── LoginForm.jsx
+│   │   │   │   └── RegisterForm.jsx
+│   │   │   ├── authSlice.js
+│   │   │   ├── authService.js
+│   │   │   └── authApi.js
+│
+│   │   ├── user/
+│   │   │   ├── pages/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── Profile.jsx
+│   │   │   │   ├── Addresses.jsx
+│   │   │   │   └── Settings.jsx
+│   │   │   ├── userSlice.js
+│   │   │   └── userService.js
+│
+│   │   ├── product/
+│   │   │   ├── pages/
+│   │   │   │   ├── Home.jsx
+│   │   │   │   ├── ProductList.jsx
+│   │   │   │   ├── ProductDetails.jsx
+│   │   │   │   └── Category.jsx
+│   │   │   ├── components/
+│   │   │   │   ├── ProductCard.jsx
+│   │   │   │   ├── ProductForm.jsx
+│   │   │   │   └── ProductFilters.jsx
+│   │   │   ├── productSlice.js
+│   │   │   └── productService.js
+│
+│   │   ├── order/
+│   │   │   ├── pages/
+│   │   │   │   ├── Orders.jsx
+│   │   │   │   ├── OrderDetails.jsx
+│   │   │   │   ├── Cart.jsx
+│   │   │   │   └── Checkout.jsx
+│   │   │   ├── orderSlice.js
+│   │   │   └── orderService.js
+│
+│   │   ├── delivery/
+│   │   │   ├── pages/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── Deliveries.jsx
+│   │   │   │   └── DeliveryDetails.jsx
+│   │   │   ├── deliverySlice.js
+│   │   │   └── deliveryService.js
+│
+│   │   ├── payment/
+│   │   │   ├── pages/
+│   │   │   │   └── Payments.jsx
+│   │   │   ├── paymentSlice.js
+│   │   │   └── paymentService.js
+│
+│   │   ├── invoice/
+│   │   │   ├── pages/
+│   │   │   │   └── InvoicePage.jsx
+│   │   │   ├── invoiceSlice.js
+│   │   │   └── invoiceService.js
+│
+│   │   ├── analytics/
+│   │   │   ├── pages/
+│   │   │   │   └── Dashboard.jsx
+│   │   │   ├── analyticsSlice.js
+│   │   │   └── analyticsService.js
+│
+│   │   ├── notification/
+│   │   │   ├── pages/
+│   │   │   │   └── Notifications.jsx
+│   │   │   ├── notificationSlice.js
+│   │   │   └── notificationService.js
+│
+│   │   ├── credit/
+│   │   │   ├── pages/
+│   │   │   │   └── CreditDashboard.jsx
+│   │   │   ├── creditSlice.js
+│   │   │   └── creditService.js
+│
+│   │   ├── review/
+│   │   │   ├── pages/
+│   │   │   │   └── Reviews.jsx
+│   │   │   ├── reviewSlice.js
+│   │   │   └── reviewService.js
+│
+│   │   ├── admin/
+│   │   │   ├── pages/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── Users.jsx
+│   │   │   │   ├── Products.jsx
+│   │   │   │   ├── Orders.jsx
+│   │   │   │   ├── Vendors.jsx
+│   │   │   │   └── Approvals.jsx
+│   │   │   ├── adminSlice.js
+│   │   │   └── adminService.js
+│
+│   │   ├── superAdmin/
+│   │   │   ├── pages/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── AdminManagement.jsx
+│   │   │   │   ├── SystemSettings.jsx
+│   │   │   │   ├── Categories.jsx
+│   │   │   │   └── AuditLogs.jsx
+│   │   │   ├── superAdminSlice.js
+│   │   │   └── superAdminService.js
+│
+│   ├── routes/
+│   │   ├── AppRoutes.jsx
+│   │   ├── routeConfig.js
+│   │   └── PrivateRoutes.jsx
+│
+│   ├── services/
+│   │   ├── apiClient.js
+│   │   ├── interceptors.js
+│   │   └── endpoints.js
+│
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useDebounce.js
+│   │   ├── usePagination.js
+│   │   └── usePermissions.js
+│
+│   ├── context/
+│   │   └── ThemeContext.jsx
+│
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── formatters.js
+│   │   ├── validators.js
+│   │   ├── token.js
+│   │   └── permissions.js
+│
+│   ├── config/
+│   │   └── env.js
+│
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+│
+├── .env
+├── .env.example
+├── .gitignore
+├── eslint.config.js
+├── package.json
+├── vite.config.js
+└── README.md

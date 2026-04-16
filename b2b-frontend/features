@@ -1,0 +1,130 @@
+🔐 Authentication & Access
+OTP Login (Mobile + Email)
+JWT + Refresh Tokens
+Role-Based Access Control (RBAC)
+Super Admin Approval (mandatory)
+Account Status: Pending / Approved / Rejected / Suspended
+Session Management
+Device Tracking
+
+👥 User Roles
+Super Admin
+Admin
+B2B Customer (includes Vendors)
+B2C Customer
+Delivery Partner
+
+🧾 User & Profile Management
+Business Profile (GST, Company Details)
+Address Management (Multiple)
+KYC Document Upload
+Profile Edit & Verification Status
+
+📦 Product Management
+Category & Subcategory
+Vendor-wise Product Mapping
+Product Variants (size, weight, etc.)
+Bulk Pricing (tier-based)
+Time-based Availability (same-day cutoff)
+Inventory Management
+Low Stock Alerts
+Product Approval System
+
+🛒 Order Management
+Cart System
+Order Placement (approval-based for B2B)
+Order Lifecycle:
+Pending
+Accepted
+Packed
+Out for Delivery
+Delivered
+Cancelled
+Returned
+Order History
+Reorder System
+Scheduled Orders
+
+🚚 Delivery & Logistics
+Delivery Partner Login
+Order Assignment (Manual/Auto)
+Delivery Status Tracking
+Delivery OTP Verification
+Route Optimization (future-ready)
+
+💳 Payment System
+UPI / Cards / Net Banking
+Razorpay/Stripe Integration
+COD (optional)
+Payment Status Tracking
+Payment Retry
+Wallet System
+
+💰 Credit System (B2B Core)
+Credit Limit Assignment
+Pay Later Option
+Due Tracking
+Ledger Management
+Credit Approval Workflow
+
+🧾 Invoice & Billing
+Auto Invoice Generation (PDF)
+GST Support
+Invoice Download
+Email Invoice
+
+📊 Analytics & Reports
+Sales Dashboard
+Order Analytics
+Vendor Performance
+Revenue Tracking
+Top Products
+Export Reports (Excel/CSV)
+
+🔔 Notifications
+Email Notifications
+SMS Notifications
+Push Notifications
+Order Updates
+Approval Alerts
+Payment Reminders
+
+⭐ Reviews & Ratings
+Product Reviews
+Vendor Ratings
+Admin Moderation
+
+🏬 Vendor (B2B Customer) Features
+Product Upload
+Inventory Management
+Order Fulfillment
+Earnings Tracking
+🛍 B2C Features
+Direct Purchase (no approval)
+Retail Pricing
+Quick Checkout
+
+🧠 Advanced Features
+Smart Search & Filters
+Reorder / Repeat Orders
+Offers & Discounts
+Dynamic Pricing
+Wishlist
+Recently Viewed
+
+🧑‍💼 Admin Panel
+User Approval Management
+Product Management
+Order Control
+Vendor Management
+Payment Monitoring
+Credit Control
+Analytics Dashboard
+z
+🏆 Super Admin Panel
+Full System Control
+Admin Management
+Global Settings
+Category Control
+Commission Management
+Audit Logs
