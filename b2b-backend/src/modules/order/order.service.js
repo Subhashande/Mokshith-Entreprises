@@ -7,6 +7,10 @@ import { validateTransition } from './order.workflow.js';
 import { generateInvoice } from '../invoice/invoice.service.js';
 import { sendNotification } from '../notification/notification.service.js';
 
+// 🔥 NEW: EVENTS IMPORT
+import { onOrderCreated } from './order.events.js';
+import { trackOrder } from '../analytics/analytics.events.js';
+
 export const createOrder = async (userId) => {
   const cart = await cartRepo.findCartByUser(userId);
 
@@ -49,15 +53,23 @@ export const createOrder = async (userId) => {
   cart.items = [];
   await cart.save();
 
-  // 🔥 Generate invoice
+  // 🔥 EXISTING LOGIC (UNCHANGED)
   await generateInvoice(order);
 
-  // 🔔 Send notification
   await sendNotification({
     userId,
     title: 'Order Created',
     message: `Your order ${order._id} has been placed`,
   });
+
+  // 🔥 NEW: EVENTS (ADDED ONLY, NO CHANGES TO EXISTING FLOW)
+  try {
+    await onOrderCreated(order);
+    trackOrder(order);
+  } catch (err) {
+    // Do not break main flow if event fails
+    console.error('Order event failed:', err.message);
+  }
 
   return order;
 };
