@@ -3,7 +3,7 @@ import AppError from '../errors/AppError.js';
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      throw new AppError('Forbidden', 403);
+      return next(new AppError('Forbidden', 403));
     }
     next();
   };

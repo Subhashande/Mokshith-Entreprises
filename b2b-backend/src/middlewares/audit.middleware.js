@@ -1,4 +1,4 @@
-import { logAction } from '../modules/audit/audit.service.js';
+import { logAction } from '../services/audit.service.js';
 
 export const auditMiddleware = (action, entity) => {
   return (req, res, next) => {
@@ -11,9 +11,8 @@ export const auditMiddleware = (action, entity) => {
           entityId: req.params?.id || null,
           data: req.body || {},
         });
-      } catch (error) {
-        // 🔥 Never break response because of audit failure
-        console.error('Audit log failed:', error.message);
+      } catch (err) {
+        console.error('Audit failed:', err.message);
       }
     });
 

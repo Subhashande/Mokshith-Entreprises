@@ -1,4 +1,4 @@
-export const runJob = async (jobFn, interval) => {
+export const runScheduler = (jobFn, interval) => {
   setInterval(async () => {
     try {
       await jobFn();

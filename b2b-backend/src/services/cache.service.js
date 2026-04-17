@@ -1,4 +1,4 @@
-let cache = new Map(); // fallback (replace with Redis later)
+const cache = new Map();
 
 export const setCache = async (key, value, ttl = 60) => {
   cache.set(key, value);
