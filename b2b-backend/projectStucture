@@ -8,279 +8,154 @@ b2b-backend/
 │   │   ├── logger.js
 │   │   ├── redis.js
 │   │   ├── rateLimiter.js
-│   │   └── cors.js
+│   │   ├── cors.js
+│   │   ├── 🔥 security.js              # NEW (helmet, cors policies)
+│   │   ├── 🔥 featureFlags.js          # NEW
+│   │   └── 🔥 queue.js                 # NEW (bullmq setup)
 │
 │   ├── constants/
-│   │   ├── roles.js
-│   │   ├── permissions.js
-│   │   ├── orderStatus.js
-│   │   ├── paymentStatus.js
-│   │   ├── userStatus.js
-│   │   ├── vendorStatus.js
-│   │   ├── creditStatus.js
-│   │   ├── notificationTypes.js
-│   │   ├── deliveryStatus.js
-│   │   ├── httpStatus.js
-│   │   └── errorMessages.js
+│   │   ├── 🔥 featureFlags.js          # NEW
+│   │   ├── 🔥 cacheKeys.js             # NEW
+│   │   ├── 🔥 queueNames.js            # NEW
+│   │   └── 🔥 fileTypes.js             # NEW
 │
-│   ├── modules/   (DDD ARCHITECTURE)
-│
-│   │   ├── auth/
-│   │   │   ├── auth.controller.js
-│   │   │   ├── auth.service.js
-│   │   │   ├── auth.repository.js
-│   │   │   ├── auth.routes.js
-│   │   │   ├── auth.validation.js
-│   │   │   └── auth.token.js
-│
-│   │   ├── user/
-│   │   │   ├── user.controller.js
-│   │   │   ├── user.service.js
-│   │   │   ├── user.repository.js
-│   │   │   ├── user.routes.js
-│   │   │   ├── user.validation.js
-│   │   │   └── user.model.js
-│
-│   │   ├── company/
-│   │   │   ├── company.controller.js
-│   │   │   ├── company.service.js
-│   │   │   ├── company.repository.js
-│   │   │   ├── company.routes.js
-│   │   │   ├── company.validation.js
-│   │   │   └── company.model.js
-│
-│   │   ├── category/
-│   │   │   ├── category.controller.js
-│   │   │   ├── category.service.js
-│   │   │   ├── category.repository.js
-│   │   │   ├── category.routes.js
-│   │   │   ├── category.validation.js
-│   │   │   └── category.model.js
+│   ├── modules/
 │
 │   │   ├── product/
-│   │   │   ├── product.controller.js
-│   │   │   ├── product.service.js
-│   │   │   ├── product.repository.js
-│   │   │   ├── product.routes.js
-│   │   │   ├── product.validation.js
-│   │   │   ├── product.model.js
-│   │   │   └── product.utils.js
+│   │   │   ├── 🔥 product.events.js        # NEW (event triggers)
 │
 │   │   ├── order/
-│   │   │   ├── order.controller.js
-│   │   │   ├── order.service.js
-│   │   │   ├── order.repository.js
-│   │   │   ├── order.routes.js
-│   │   │   ├── order.validation.js
-│   │   │   ├── order.model.js
-│   │   │   └── order.workflow.js
+│   │   │   ├── 🔥 order.events.js          # NEW
+│   │   │   └── 🔥 order.scheduler.js       # NEW
 │
 │   │   ├── payment/
-│   │   │   ├── payment.controller.js
-│   │   │   ├── payment.service.js
-│   │   │   ├── payment.repository.js
-│   │   │   ├── payment.routes.js
-│   │   │   ├── payment.validation.js
-│   │   │   ├── payment.model.js
-│   │   │   └── payment.gateway.js
-│
-│   │   ├── vendor/
-│   │   │   ├── vendor.controller.js
-│   │   │   ├── vendor.service.js
-│   │   │   ├── vendor.repository.js
-│   │   │   ├── vendor.routes.js
-│   │   │   ├── vendor.validation.js
-│   │   │   └── vendor.model.js
-│
-│   │   ├── logistics/
-│   │   │   ├── logistics.controller.js
-│   │   │   ├── logistics.service.js
-│   │   │   ├── logistics.repository.js
-│   │   │   ├── logistics.routes.js
-│   │   │   ├── logistics.validation.js
-│   │   │   ├── logistics.model.js
-│   │   │   └── routeOptimization.js
-│
-│   │   ├── review/
-│   │   │   ├── review.controller.js
-│   │   │   ├── review.service.js
-│   │   │   ├── review.repository.js
-│   │   │   ├── review.routes.js
-│   │   │   ├── review.validation.js
-│   │   │   └── review.model.js
+│   │   │   ├── 🔥 payment.webhook.js       # NEW
 │
 │   │   ├── notification/
-│   │   │   ├── notification.controller.js
-│   │   │   ├── notification.service.js
-│   │   │   ├── notification.repository.js
-│   │   │   ├── notification.routes.js
-│   │   │   ├── notification.validation.js
-│   │   │   ├── notification.model.js
-│   │   │   └── notification.queue.js
+│   │   │   ├── 🔥 notification.templates.js  # NEW
 │
 │   │   ├── analytics/
-│   │   │   ├── analytics.controller.js
-│   │   │   ├── analytics.service.js
-│   │   │   ├── analytics.repository.js
-│   │   │   ├── analytics.routes.js
-│   │   │   └── analytics.aggregations.js
-│
-│   │   ├── invoice/
-│   │   │   ├── invoice.controller.js
-│   │   │   ├── invoice.service.js
-│   │   │   ├── invoice.repository.js
-│   │   │   ├── invoice.routes.js
-│   │   │   ├── invoice.validation.js
-│   │   │   ├── invoice.model.js
-│   │   │   └── invoice.generator.js
+│   │   │   ├── 🔥 analytics.events.js      # NEW
 │
 │   │   ├── credit/
-│   │   │   ├── credit.controller.js
-│   │   │   ├── credit.service.js
-│   │   │   ├── credit.repository.js
-│   │   │   ├── credit.routes.js
-│   │   │   ├── credit.validation.js
-│   │   │   ├── credit.model.js
-│   │   │   └── credit.ledger.js
+│   │   │   ├── 🔥 credit.scheduler.js      # NEW
 │
-│   │   ├── cart/
-│   │   │   ├── cart.controller.js
-│   │   │   ├── cart.service.js
-│   │   │   ├── cart.repository.js
-│   │   │   ├── cart.routes.js
-│   │   │   ├── cart.validation.js
-│   │   │   └── cart.model.js
+│   │   ├── 🔥 shipment/                    # NEW MODULE
+│   │   │   ├── shipment.controller.js
+│   │   │   ├── shipment.service.js
+│   │   │   ├── shipment.repository.js
+│   │   │   ├── shipment.routes.js
+│   │   │   ├── shipment.validation.js
+│   │   │   └── shipment.model.js
 │
-│   │   ├── wishlist/
-│   │   │   ├── wishlist.controller.js
-│   │   │   ├── wishlist.service.js
-│   │   │   ├── wishlist.repository.js
-│   │   │   ├── wishlist.routes.js
-│   │   │   ├── wishlist.validation.js
-│   │   │   └── wishlist.model.js
+│   │   ├── 🔥 warehouse/                  # NEW MODULE
+│   │   │   ├── warehouse.controller.js
+│   │   │   ├── warehouse.service.js
+│   │   │   ├── warehouse.repository.js
+│   │   │   ├── warehouse.routes.js
+│   │   │   ├── warehouse.validation.js
+│   │   │   └── warehouse.model.js
 │
-│   │   ├── search/
-│   │   │   ├── search.controller.js
-│   │   │   ├── search.service.js
-│   │   │   ├── search.routes.js
-│   │   │   └── search.index.js
+│   │   ├── 🔥 inventory/                  # NEW MODULE
+│   │   │   ├── inventory.controller.js
+│   │   │   ├── inventory.service.js
+│   │   │   ├── inventory.repository.js
+│   │   │   ├── inventory.routes.js
+│   │   │   ├── inventory.validation.js
+│   │   │   └── inventory.model.js
 │
-│   │   ├── admin/
-│   │   │   ├── admin.controller.js
-│   │   │   ├── admin.service.js
-│   │   │   ├── admin.repository.js
-│   │   │   ├── admin.routes.js
-│   │   │   └── admin.validation.js
+│   │   ├── 🔥 pricing/                    # NEW MODULE
+│   │   │   ├── pricing.controller.js
+│   │   │   ├── pricing.service.js
+│   │   │   ├── pricing.repository.js
+│   │   │   ├── pricing.routes.js
+│   │   │   └── pricing.engine.js
 │
-│   │   ├── superAdmin/
-│   │   │   ├── superAdmin.controller.js
-│   │   │   ├── superAdmin.service.js
-│   │   │   ├── superAdmin.repository.js
-│   │   │   ├── superAdmin.routes.js
-│   │   │   └── superAdmin.validation.js
+│   │   ├── 🔥 promotion/                 # NEW MODULE
+│   │   │   ├── promotion.controller.js
+│   │   │   ├── promotion.service.js
+│   │   │   ├── promotion.repository.js
+│   │   │   ├── promotion.routes.js
+│   │   │   ├── promotion.validation.js
+│   │   │   └── promotion.model.js
+│
+│   │   ├── 🔥 audit/                     # NEW MODULE
+│   │   │   ├── audit.controller.js
+│   │   │   ├── audit.service.js
+│   │   │   ├── audit.repository.js
+│   │   │   ├── audit.routes.js
+│   │   │   └── audit.model.js
+│
+│   │   ├── 🔥 settings/                  # NEW MODULE
+│   │   │   ├── settings.controller.js
+│   │   │   ├── settings.service.js
+│   │   │   ├── settings.repository.js
+│   │   │   ├── settings.routes.js
+│   │   │   └── settings.model.js
 │
 │
 │   ├── services/
-│   │   ├── email.service.js
-│   │   ├── sms.service.js
-│   │   ├── payment.service.js
-│   │   ├── vendorAssignment.service.js
-│   │   ├── search.service.js
-│   │   ├── redis.service.js
-│   │   ├── fileUpload.service.js
-│   │   ├── pdf.service.js
-│   │   └── notification.service.js
-│
+│   │   ├── 🔥 cache.service.js           # NEW
+│   │   ├── 🔥 webhook.service.js         # NEW
+│   │   ├── 🔥 audit.service.js           # NEW
+│   │   ├── 🔥 featureFlag.service.js     # NEW
+│   │   ├── 🔥 encryption.service.js      # NEW
+│   │   └── 🔥 scheduler.service.js       # NEW
 │
 │   ├── middlewares/
-│   │   ├── auth.middleware.js
-│   │   ├── role.middleware.js
-│   │   ├── permission.middleware.js
-│   │   ├── validate.middleware.js
-│   │   ├── error.middleware.js
-│   │   ├── notFound.middleware.js
-│   │   ├── upload.middleware.js
-│   │   ├── rateLimiter.middleware.js
-│   │   └── sanitize.middleware.js
+│   │   ├── 🔥 audit.middleware.js        # NEW
+│   │   ├── 🔥 idempotency.middleware.js  # NEW
+│   │   ├── 🔥 requestLogger.middleware.js # NEW
+│   │   └── 🔥 timeout.middleware.js      # NEW
 │
 │   ├── utils/
-│   │   ├── generateToken.js
-│   │   ├── hashPassword.js
-│   │   ├── comparePassword.js
-│   │   ├── otpGenerator.js
-│   │   ├── date.utils.js
-│   │   ├── number.utils.js
-│   │   ├── responseHandler.js
-│   │   ├── asyncHandler.js
-│   │   ├── apiFeatures.js
-│   │   └── pagination.js
+│   │   ├── 🔥 currency.utils.js          # NEW
+│   │   ├── 🔥 file.utils.js              # NEW
+│   │   ├── 🔥 encryption.utils.js        # NEW
+│   │   └── 🔥 retry.utils.js             # NEW
 │
 │   ├── validations/
-│   │   ├── common.validation.js
-│   │   ├── objectId.validation.js
-│   │   └── pagination.validation.js
+│   │   ├── 🔥 file.validation.js         # NEW
+│   │   └── 🔥 query.validation.js        # NEW
 │
 │   ├── errors/
-│   │   ├── AppError.js
-│   │   ├── ValidationError.js
-│   │   ├── AuthError.js
-│   │   └── NotFoundError.js
+│   │   ├── 🔥 PaymentError.js            # NEW
+│   │   ├── 🔥 PermissionError.js         # NEW
+│   │   └── 🔥 RateLimitError.js          # NEW
 │
 │   ├── routes/
-│   │   ├── index.js
-│   │   ├── v1.routes.js
-│   │   └── health.routes.js
+│   │   ├── 🔥 v2.routes.js               # NEW (versioning ready)
 │
 │   ├── jobs/
-│   │   ├── cron.js
-│   │   ├── orderCleanup.job.js
-│   │   ├── creditReminder.job.js
-│   │   ├── notification.job.js
-│   │   └── analytics.job.js
+│   │   ├── 🔥 inventorySync.job.js       # NEW
+│   │   ├── 🔥 paymentReconcile.job.js    # NEW
+│   │   └── 🔥 cleanup.job.js             # NEW
 │
 │   ├── queues/
-│   │   ├── email.queue.js
-│   │   ├── notification.queue.js
-│   │   └── payment.queue.js
+│   │   ├── 🔥 audit.queue.js             # NEW
+│   │   ├── 🔥 inventory.queue.js         # NEW
+│   │   └── 🔥 webhook.queue.js           # NEW
 │
 │   ├── docs/
-│   │   ├── swagger.js
-│   │   └── openapi.yaml
+│   │   ├── 🔥 postman.json               # NEW
+│   │   └── 🔥 api-guidelines.md          # NEW
 │
 │   ├── uploads/
-│   │   ├── products/
-│   │   ├── users/
-│   │   └── invoices/
+│   │   ├── 🔥 temp/                     # NEW
+│   │   └── 🔥 logs/                     # NEW
 │
 │   └── app.js
 │
 ├── logs/
 │   ├── combined.log
 │   ├── error.log
-│   └── exceptions.log
+│   ├── exceptions.log
+│   └── 🔥 access.log                    # NEW
 │
 ├── tests/
-│   ├── unit/
-│   │   ├── auth.test.js
-│   │   ├── user.test.js
-│   │   └── product.test.js
-│   │
-│   ├── integration/
-│   │   ├── order.test.js
-│   │   └── payment.test.js
-│   │
-│   └── setup.js
+│   ├── 🔥 e2e/                          # NEW
+│   │   └── checkout.test.js
 │
 ├── scripts/
-│   ├── seed.js
-│   └── migrate.js
-│
-├── .env
-├── .env.example
-├── .gitignore
-├── nodemon.json
-├── eslint.config.js
-├── prettier.config.js
-├── package.json
-├── server.js
-└── README.md
+│   ├── 🔥 backup.js                     # NEW
+│   └── 🔥 cleanup.js                    # NEW
