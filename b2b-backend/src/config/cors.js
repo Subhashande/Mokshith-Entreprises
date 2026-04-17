@@ -1,6 +1,6 @@
 import cors from 'cors';
 
 export const corsConfig = cors({
-  origin: '*',
+  origin: '*', // change in production
   credentials: true,
 });

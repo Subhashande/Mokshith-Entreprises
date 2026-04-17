@@ -1,4 +1,5 @@
 export const FILE_TYPES = {
-  IMAGE: ['jpg', 'png', 'jpeg'],
+  IMAGE: ['jpg', 'jpeg', 'png'],
   PDF: ['pdf'],
+  DOCUMENT: ['doc', 'docx'],
 };

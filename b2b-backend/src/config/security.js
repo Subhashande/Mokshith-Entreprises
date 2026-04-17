@@ -1,13 +1,9 @@
 import helmet from 'helmet';
-import cors from 'cors';
+import { corsConfig } from './cors.js';
+import { apiLimiter } from './rateLimiter.js';
 
 export const securityMiddleware = (app) => {
   app.use(helmet());
-
-  app.use(
-    cors({
-      origin: '*', // change in production
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    })
-  );
+  app.use(corsConfig);
+  app.use('/api', apiLimiter);
 };

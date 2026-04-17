@@ -1,5 +1,9 @@
 export const CACHE_KEYS = {
-  PRODUCTS: 'products',
   USERS: 'users',
+  PRODUCTS: 'products',
   ORDERS: 'orders',
+  INVENTORY: 'inventory',
+
+  // 🔥 future usage
+  ANALYTICS: 'analytics',
 };

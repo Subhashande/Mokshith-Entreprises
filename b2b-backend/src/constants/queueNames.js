@@ -2,7 +2,7 @@ export const QUEUE_NAMES = {
   EMAIL: 'emailQueue',
   NOTIFICATION: 'notificationQueue',
 
-  // 🔥 Add these (used in your structure)
+  // 🔥 already aligned with your structure
   AUDIT: 'auditQueue',
   INVENTORY: 'inventoryQueue',
   WEBHOOK: 'webhookQueue',
