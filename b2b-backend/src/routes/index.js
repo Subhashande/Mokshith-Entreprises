@@ -1,5 +1,4 @@
 import express from 'express';
-
 import authRoutes from '../modules/auth/auth.routes.js';
 import userRoutes from '../modules/user/user.routes.js';
 import companyRoutes from '../modules/company/company.routes.js';
@@ -15,34 +14,29 @@ import analyticsRoutes from '../modules/analytics/analytics.routes.js';
 import warehouseRoutes from '../modules/warehouse/warehouse.routes.js';
 import inventoryRoutes from '../modules/inventory/inventory.routes.js';
 import shipmentRoutes from '../modules/shipment/shipment.routes.js';
+import pricingRoutes from '../modules/pricing/pricing.routes.js';
+import promotionRoutes from '../modules/promotion/promotion.routes.js';
+import settingsRoutes from '../modules/settings/settings.routes.js';
 
 const router = express.Router();
 
-// 🔐 Auth & Users
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-
-// 🏢 Business
 router.use('/companies', companyRoutes);
 router.use('/vendors', vendorRoutes);
-
-// 📦 Catalog
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
-
-// 🛒 Commerce
 router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
 router.use('/payments', paymentRoutes);
-
-// 🧾 Support Systems
 router.use('/invoices', invoiceRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
-
-// 🚚 Logistics
 router.use('/warehouses', warehouseRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/shipments', shipmentRoutes);
+router.use('/pricing', pricingRoutes);
+router.use('/promotions', promotionRoutes);
+router.use('/settings', settingsRoutes);
 
 export default router;
