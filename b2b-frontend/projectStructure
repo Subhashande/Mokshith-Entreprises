@@ -1,220 +1,148 @@
 b2b-frontend/
 │
-├── public/
-│   ├── favicon.ico
-│   ├── index.html
-│   ├── manifest.json
-│   └── robots.txt
-│
 ├── src/
 │
-│   ├── app/
-│   │   ├── store.js
-│   │   ├── rootReducer.js
-│   │   ├── AppProvider.jsx
-│   │   ├── persistConfig.js
-│   │   └── storeHooks.js
+│ ├── app/
+│ │ ├── store.js
+│ │ ├── rootReducer.js
+│ │ ├── AppProvider.jsx
+│ │ ├── persistConfig.js
+│ │ ├── storeHooks.js
+│ │ └── storeMiddleware.js # NEW (redux middleware)
 │
-│   ├── assets/
-│   │   ├── images/
-│   │   ├── icons/
-│   │   ├── fonts/
-│   │   └── styles/
-│   │       ├── global.css
-│   │       ├── variables.css
-│   │       └── theme.css
+│ ├── assets/
+│ │ ├── images/
+│ │ ├── icons/
+│ │ ├── fonts/
+│ │ └── styles/
+│ │ ├── global.css
+│ │ ├── variables.css
+│ │ ├── theme.css
+│ │ └── responsive.css # NEW
 │
-│   ├── components/
-│   │   ├── common/
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Loader.jsx
-│   │   │   ├── ErrorBoundary.jsx
-│   │   │   ├── ProtectedRoute.jsx
-│   │   │   └── RoleBasedRoute.jsx
-│   │   │
-│   │   ├── ui/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Select.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Table.jsx
-│   │   │   ├── Badge.jsx
-│   │   │   ├── Tabs.jsx
-│   │   │   ├── Dropdown.jsx
-│   │   │   ├── Pagination.jsx
-│   │   │   └── Tooltip.jsx
-│   │   │
-│   │   ├── feedback/
-│   │   │   ├── Toast.jsx
-│   │   │   ├── Alert.jsx
-│   │   │   ├── EmptyState.jsx
-│   │   │   └── Skeleton.jsx
-│   │   │
-│   │   └── charts/
-│   │       ├── LineChart.jsx
-│   │       ├── BarChart.jsx
-│   │       ├── PieChart.jsx
-│   │       └── AreaChart.jsx
+│ ├── components/
+│ │
+│ │ ├── common/
+│ │ │ ├── Breadcrumb.jsx # NEW
+│ │ │ ├── PageHeader.jsx # NEW
+│ │ │ └── SearchBar.jsx # NEW
+│ │
+│ │ ├── ui/
+│ │ │ ├── Drawer.jsx # NEW
+│ │ │ ├── Stepper.jsx # NEW
+│ │ │ ├── Avatar.jsx # NEW
+│ │ │ └── Switch.jsx # NEW
+│ │
+│ │ ├── feedback/
+│ │ │ └── ConfirmDialog.jsx # NEW
+│ │
+│ │ └── charts/
+│ │ ├── HeatmapChart.jsx # NEW
+│ │ └── FunnelChart.jsx # NEW
 │
-│   ├── layouts/
-│   │   ├── MainLayout.jsx
-│   │   ├── AuthLayout.jsx
-│   │   ├── AdminLayout.jsx
-│   │   ├── SuperAdminLayout.jsx
-│   │   ├── DeliveryLayout.jsx
-│   │   └── CustomerLayout.jsx
+│ ├── layouts/
+│ │ ├── VendorLayout.jsx # NEW
+│ │ └── MinimalLayout.jsx # NEW
 │
-│   ├── modules/
+│ ├── modules/
 │
-│   │   ├── auth/
-│   │   │   ├── pages/
-│   │   │   │   ├── Login.jsx
-│   │   │   │   ├── Register.jsx
-│   │   │   │   ├── VerifyOTP.jsx
-│   │   │   │   └── ForgotPassword.jsx
-│   │   │   ├── components/
-│   │   │   │   ├── LoginForm.jsx
-│   │   │   │   └── RegisterForm.jsx
-│   │   │   ├── authSlice.js
-│   │   │   ├── authService.js
-│   │   │   └── authApi.js
+│ │ ├── auth/
+│ │ │ ├── components/
+│ │ │ │ └── OTPInput.jsx # NEW
 │
-│   │   ├── user/
-│   │   │   ├── pages/
-│   │   │   │   ├── Dashboard.jsx
-│   │   │   │   ├── Profile.jsx
-│   │   │   │   ├── Addresses.jsx
-│   │   │   │   └── Settings.jsx
-│   │   │   ├── userSlice.js
-│   │   │   └── userService.js
+│ │ ├── user/
+│ │ │ ├── pages/
+│ │ │ │ └── ActivityLogs.jsx # NEW
 │
-│   │   ├── product/
-│   │   │   ├── pages/
-│   │   │   │   ├── Home.jsx
-│   │   │   │   ├── ProductList.jsx
-│   │   │   │   ├── ProductDetails.jsx
-│   │   │   │   └── Category.jsx
-│   │   │   ├── components/
-│   │   │   │   ├── ProductCard.jsx
-│   │   │   │   ├── ProductForm.jsx
-│   │   │   │   └── ProductFilters.jsx
-│   │   │   ├── productSlice.js
-│   │   │   └── productService.js
+│ │ ├── product/
+│ │ │ ├── components/
+│ │ │ │ ├── VariantSelector.jsx # NEW
+│ │ │ │ ├── BulkPricingTable.jsx # NEW
+│ │ │ │ └── InventoryStatus.jsx # NEW
 │
-│   │   ├── order/
-│   │   │   ├── pages/
-│   │   │   │   ├── Orders.jsx
-│   │   │   │   ├── OrderDetails.jsx
-│   │   │   │   ├── Cart.jsx
-│   │   │   │   └── Checkout.jsx
-│   │   │   ├── orderSlice.js
-│   │   │   └── orderService.js
+│ │ ├── order/
+│ │ │ ├── components/
+│ │ │ │ ├── OrderTimeline.jsx # NEW
+│ │ │ │ └── OrderStatusBadge.jsx # NEW
 │
-│   │   ├── delivery/
-│   │   │   ├── pages/
-│   │   │   │   ├── Dashboard.jsx
-│   │   │   │   ├── Deliveries.jsx
-│   │   │   │   └── DeliveryDetails.jsx
-│   │   │   ├── deliverySlice.js
-│   │   │   └── deliveryService.js
+│ │ ├── delivery/
+│ │ │ ├── components/
+│ │ │ │ └── RouteMap.jsx # NEW
 │
-│   │   ├── payment/
-│   │   │   ├── pages/
-│   │   │   │   └── Payments.jsx
-│   │   │   ├── paymentSlice.js
-│   │   │   └── paymentService.js
+│ │ ├── payment/
+│ │ │ ├── components/
+│ │ │ │ └── PaymentStatus.jsx # NEW
 │
-│   │   ├── invoice/
-│   │   │   ├── pages/
-│   │   │   │   └── InvoicePage.jsx
-│   │   │   ├── invoiceSlice.js
-│   │   │   └── invoiceService.js
+│ │ ├── invoice/
+│ │ │ ├── components/
+│ │ │ │ └── InvoicePreview.jsx # NEW
 │
-│   │   ├── analytics/
-│   │   │   ├── pages/
-│   │   │   │   └── Dashboard.jsx
-│   │   │   ├── analyticsSlice.js
-│   │   │   └── analyticsService.js
+│ │ ├── analytics/
+│ │ │ ├── components/
+│ │ │ │ ├── KPIWidget.jsx # NEW
+│ │ │ │ └── Filters.jsx # NEW
 │
-│   │   ├── notification/
-│   │   │   ├── pages/
-│   │   │   │   └── Notifications.jsx
-│   │   │   ├── notificationSlice.js
-│   │   │   └── notificationService.js
+│ │ ├── notification/
+│ │ │ ├── components/
+│ │ │ │ └── NotificationItem.jsx # NEW
 │
-│   │   ├── credit/
-│   │   │   ├── pages/
-│   │   │   │   └── CreditDashboard.jsx
-│   │   │   ├── creditSlice.js
-│   │   │   └── creditService.js
+│ │ ├── credit/
+│ │ │ ├── components/
+│ │ │ │ ├── CreditLimitCard.jsx # NEW
+│ │ │ │ └── LedgerTable.jsx # NEW
 │
-│   │   ├── review/
-│   │   │   ├── pages/
-│   │   │   │   └── Reviews.jsx
-│   │   │   ├── reviewSlice.js
-│   │   │   └── reviewService.js
+│ │ ├── review/
+│ │ │ ├── components/
+│ │ │ │ └── RatingStars.jsx # NEW
 │
-│   │   ├── admin/
-│   │   │   ├── pages/
-│   │   │   │   ├── Dashboard.jsx
-│   │   │   │   ├── Users.jsx
-│   │   │   │   ├── Products.jsx
-│   │   │   │   ├── Orders.jsx
-│   │   │   │   ├── Vendors.jsx
-│   │   │   │   └── Approvals.jsx
-│   │   │   ├── adminSlice.js
-│   │   │   └── adminService.js
+│ │ ├── admin/
+│ │ │ ├── components/
+│ │ │ │ ├── ApprovalCard.jsx # NEW
+│ │ │ │ └── AdminStats.jsx # NEW
 │
-│   │   ├── superAdmin/
-│   │   │   ├── pages/
-│   │   │   │   ├── Dashboard.jsx
-│   │   │   │   ├── AdminManagement.jsx
-│   │   │   │   ├── SystemSettings.jsx
-│   │   │   │   ├── Categories.jsx
-│   │   │   │   └── AuditLogs.jsx
-│   │   │   ├── superAdminSlice.js
-│   │   │   └── superAdminService.js
+│ │ ├── superAdmin/
+│ │ │ ├── components/
+│ │ │ │ ├── AuditTable.jsx # NEW
+│ │ │ │ └── SystemConfigForm.jsx # NEW
 │
-│   ├── routes/
-│   │   ├── AppRoutes.jsx
-│   │   ├── routeConfig.js
-│   │   └── PrivateRoutes.jsx
+│ │ ├── 🔥 search/ # NEW MODULE
+│ │ │ ├── SearchPage.jsx
+│ │ │ └── searchService.js
 │
-│   ├── services/
-│   │   ├── apiClient.js
-│   │   ├── interceptors.js
-│   │   └── endpoints.js
+│ │ ├── 🔥 wishlist/ # NEW MODULE
+│ │ │ ├── Wishlist.jsx
+│ │ │ └── wishlistService.js
 │
-│   ├── hooks/
-│   │   ├── useAuth.js
-│   │   ├── useDebounce.js
-│   │   ├── usePagination.js
-│   │   └── usePermissions.js
+│ │ ├── 🔥 offers/ # NEW MODULE
+│ │ │ ├── OffersPage.jsx
+│ │ │ └── offerService.js
 │
-│   ├── context/
-│   │   └── ThemeContext.jsx
+│ │ ├── 🔥 settings/ # NEW MODULE
+│ │ │ ├── SettingsPage.jsx
+│ │ │ └── settingsService.js
 │
-│   ├── utils/
-│   │   ├── constants.js
-│   │   ├── formatters.js
-│   │   ├── validators.js
-│   │   ├── token.js
-│   │   └── permissions.js
+│ ├── routes/
+│ │ ├── routeGuards.js # NEW
 │
-│   ├── config/
-│   │   └── env.js
+│ ├── services/
+│ │ ├── websocket.js # NEW
+│ │ ├── storage.js # NEW
+│ │ └── logger.js # NEW
 │
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
+│ ├── hooks/
+│ │ ├── useSocket.js # NEW
+│ │ ├── useLocalStorage.js # NEW
+│ │ └── useFetch.js # NEW
 │
-├── .env
-├── .env.example
-├── .gitignore
-├── eslint.config.js
-├── package.json
-├── vite.config.js
-└── README.md
+│ ├── context/
+│ │ ├── AuthContext.jsx # NEW
+│ │ └── SocketContext.jsx # NEW
+│
+│ ├── utils/
+│ │ ├── currencyFormatter.js # NEW
+│ │ ├── dateFormatter.js # NEW
+│ │ └── debounce.js # NEW
+│
+│ ├── config/
+│ │ ├── routes.config.js # NEW
+│ │ └── permissions.config.js # NEW
