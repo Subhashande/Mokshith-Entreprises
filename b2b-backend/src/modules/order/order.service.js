@@ -4,6 +4,8 @@ import Product from '../product/product.model.js';
 import Order from './order.model.js';
 import AppError from '../../errors/AppError.js';
 import { validateTransition } from './order.workflow.js';
+import { generateInvoice } from '../invoice/invoice.service.js';
+import { sendNotification } from '../notification/notification.service.js';
 
 export const createOrder = async (userId) => {
   const cart = await cartRepo.findCartByUser(userId);
@@ -44,9 +46,18 @@ export const createOrder = async (userId) => {
     totalAmount,
   });
 
-  // Clear cart
   cart.items = [];
   await cart.save();
+
+  // 🔥 Generate invoice
+  await generateInvoice(order);
+
+  // 🔔 Send notification
+  await sendNotification({
+    userId,
+    title: 'Order Created',
+    message: `Your order ${order._id} has been placed`,
+  });
 
   return order;
 };
