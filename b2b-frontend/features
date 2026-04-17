@@ -1,130 +1,130 @@
-🔐 Authentication & Access
-OTP Login (Mobile + Email)
-JWT + Refresh Tokens
-Role-Based Access Control (RBAC)
-Super Admin Approval (mandatory)
-Account Status: Pending / Approved / Rejected / Suspended
-Session Management
-Device Tracking
+🔐 Auth & Security
+OTP Login (Email + Mobile)
+Social Login (Google optional)
+JWT + Refresh Token
+Role-Based Access (RBAC + Permissions Matrix)
+Admin Approval Flow
+Multi-device session management
+Login history & activity logs
+Account lock / suspicious activity detection
 
-👥 User Roles
+👥 User System
+Multi-role system:
 Super Admin
 Admin
-B2B Customer (includes Vendors)
+B2B Customer (Vendor included)
 B2C Customer
 Delivery Partner
+Business profile with GST verification
+Multiple addresses + warehouse addresses
+KYC verification system
+Account tiering (Gold / Silver buyers)
 
-🧾 User & Profile Management
-Business Profile (GST, Company Details)
-Address Management (Multiple)
-KYC Document Upload
-Profile Edit & Verification Status
+📦 Product System (Advanced)
+Category → Subcategory → Nested categories
+Vendor-specific product control
+Multi-variant system (size, weight, packaging)
+Bulk pricing tiers (dynamic pricing)
+MOQ (Minimum Order Quantity)
+Time-slot ordering (same-day cutoff)
+Inventory tracking (real-time)
+Product approval workflow
+Draft / Published / Archived states
+Image optimization & CDN support
 
-📦 Product Management
-Category & Subcategory
-Vendor-wise Product Mapping
-Product Variants (size, weight, etc.)
-Bulk Pricing (tier-based)
-Time-based Availability (same-day cutoff)
-Inventory Management
-Low Stock Alerts
-Product Approval System
+🛒 Order System (Enterprise Level)
+Cart + Bulk cart upload (CSV)
+Smart reorder system
+Scheduled orders
+Order splitting (multi-vendor)
+Partial fulfillment
+Return / refund management
+Order priority tagging
+Invoice + shipment sync
 
-🛒 Order Management
-Cart System
-Order Placement (approval-based for B2B)
-Order Lifecycle:
-Pending
-Accepted
-Packed
-Out for Delivery
-Delivered
-Cancelled
-Returned
-Order History
-Reorder System
-Scheduled Orders
+🚚 Logistics & Delivery
+Delivery partner dashboard
+Order assignment engine (auto/manual)
+Real-time tracking (future-ready)
+Delivery slot management
+Route optimization hooks
+Delivery OTP confirmation
+Failed delivery handling
 
-🚚 Delivery & Logistics
-Delivery Partner Login
-Order Assignment (Manual/Auto)
-Delivery Status Tracking
-Delivery OTP Verification
-Route Optimization (future-ready)
+💳 Payments
+Razorpay / Stripe
+COD
+Wallet system
+Payment retry
+Refund system
+Payment reconciliation
 
-💳 Payment System
-UPI / Cards / Net Banking
-Razorpay/Stripe Integration
-COD (optional)
-Payment Status Tracking
-Payment Retry
-Wallet System
+💰 Credit System (Core B2B)
+Credit limit assignment
+Pay later (Net 7 / 15 / 30)
+Ledger tracking
+Credit score system
+Overdue penalties
+Admin approval flow
 
-💰 Credit System (B2B Core)
-Credit Limit Assignment
-Pay Later Option
-Due Tracking
-Ledger Management
-Credit Approval Workflow
+🧾 Invoice & Tax
+GST-compliant invoices
+Auto PDF generation
+Bulk invoice export
+Credit note / debit note
 
-🧾 Invoice & Billing
-Auto Invoice Generation (PDF)
-GST Support
-Invoice Download
-Email Invoice
-
-📊 Analytics & Reports
-Sales Dashboard
-Order Analytics
-Vendor Performance
-Revenue Tracking
-Top Products
-Export Reports (Excel/CSV)
+📊 Analytics & BI
+Sales dashboard
+Vendor performance
+Customer analytics
+Demand trends
+Revenue reports
+Export (CSV/Excel)
+Funnel analytics
 
 🔔 Notifications
-Email Notifications
-SMS Notifications
-Push Notifications
-Order Updates
-Approval Alerts
-Payment Reminders
+Email / SMS / Push
+Real-time alerts (WebSocket ready)
+Event-based triggers
+Notification center
 
 ⭐ Reviews & Ratings
-Product Reviews
-Vendor Ratings
-Admin Moderation
+Product reviews
+Vendor ratings
+Moderation system
+Spam detection
 
-🏬 Vendor (B2B Customer) Features
-Product Upload
-Inventory Management
-Order Fulfillment
-Earnings Tracking
-🛍 B2C Features
-Direct Purchase (no approval)
-Retail Pricing
-Quick Checkout
+🏬 Vendor (B2B Customer)
+Product upload & management
+Order fulfillment dashboard
+Earnings & settlements
+Inventory dashboard
 
-🧠 Advanced Features
-Smart Search & Filters
-Reorder / Repeat Orders
-Offers & Discounts
-Dynamic Pricing
+🛍 B2C Layer
+Retail pricing
+Quick checkout
 Wishlist
-Recently Viewed
+Offers & coupons
+
+🧠 Smart Features
+AI-based recommendations (future)
+Smart search (Elasticsearch ready)
+Recently viewed
+Wishlist
+Offers engine
+Dynamic pricing rules
 
 🧑‍💼 Admin Panel
-User Approval Management
-Product Management
-Order Control
-Vendor Management
-Payment Monitoring
-Credit Control
-Analytics Dashboard
-z
-🏆 Super Admin Panel
-Full System Control
-Admin Management
-Global Settings
-Category Control
-Commission Management
-Audit Logs
+User approvals
+Product approvals
+Order control
+Credit management
+Vendor management
+Reports & analytics
+
+🏆 Super Admin
+Admin management
+Global configs
+Commission control
+Category hierarchy control
+Audit logs
