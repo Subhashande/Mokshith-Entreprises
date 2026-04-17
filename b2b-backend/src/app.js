@@ -11,18 +11,16 @@ import { idempotencyMiddleware } from './middlewares/idempotency.middleware.js';
 
 const app = express();
 
-// 🔐 Security
+// Security
 securityMiddleware(app);
 
-// 🔧 Core middlewares
+// Core
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(requestLogger);
-
-// 🔁 Idempotency (important for POST APIs)
 app.use(idempotencyMiddleware);
 
-// Routes
+// Versioned Routes
 app.use('/api', routes);
 
 // Not Found
