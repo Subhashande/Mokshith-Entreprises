@@ -29,6 +29,17 @@ const userSchema = new mongoose.Schema(
       default: 'USER',
     },
 
+    status: {
+      type: String,
+      enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'],
+      default: 'ACTIVE',
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
     isVerified: {
       type: Boolean,
       default: false,
@@ -45,5 +56,11 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// 🔥 Hide deleted users automatically
+userSchema.pre(/^find/, function (next) {
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
 
 export default mongoose.model('User', userSchema);
