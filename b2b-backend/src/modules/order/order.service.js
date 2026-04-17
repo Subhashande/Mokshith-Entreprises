@@ -1,7 +1,9 @@
 import * as cartRepo from '../cart/cart.repository.js';
 import * as orderRepo from './order.repository.js';
 import Product from '../product/product.model.js';
+import Order from './order.model.js';
 import AppError from '../../errors/AppError.js';
+import { validateTransition } from './order.workflow.js';
 
 export const createOrder = async (userId) => {
   const cart = await cartRepo.findCartByUser(userId);
@@ -11,7 +13,6 @@ export const createOrder = async (userId) => {
   }
 
   let totalAmount = 0;
-
   const items = [];
 
   for (const item of cart.items) {
@@ -27,7 +28,6 @@ export const createOrder = async (userId) => {
     await product.save();
 
     const itemTotal = product.price * item.quantity;
-
     totalAmount += itemTotal;
 
     items.push({
@@ -44,7 +44,7 @@ export const createOrder = async (userId) => {
     totalAmount,
   });
 
-  // clear cart
+  // Clear cart
   cart.items = [];
   await cart.save();
 
@@ -65,4 +65,16 @@ export const getOrderById = async (id) => {
   if (!order) throw new AppError('Order not found', 404);
 
   return order;
+};
+
+export const updateOrderStatus = async (orderId, newStatus) => {
+  const order = await Order.findById(orderId);
+
+  if (!order) throw new AppError('Order not found', 404);
+
+  validateTransition(order.status, newStatus);
+
+  order.status = newStatus;
+
+  return order.save();
 };
