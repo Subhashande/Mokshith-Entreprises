@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
@@ -31,6 +29,11 @@ const userSchema = new mongoose.Schema(
       default: 'USER',
     },
 
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+    },
+
     status: {
       type: String,
       enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'],
@@ -59,11 +62,9 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Hide deleted users automatically
 userSchema.pre(/^find/, function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
 });
 
 export default mongoose.model('User', userSchema);
->>>>>>> e210b5f (added User Management System)
