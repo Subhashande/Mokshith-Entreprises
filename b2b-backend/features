@@ -1,0 +1,92 @@
+🔐 Security & Auth
+JWT + Refresh Tokens
+OTP (Email/SMS)
+RBAC + Permission Matrix
+API Rate Limiting (IP + User-based)
+Request sanitization (XSS, NoSQL injection)
+Audit logs (login, actions)
+Device/session tracking
+API key support (for integrations)
+
+👥 User & Organization
+Multi-role system (Super Admin / Admin / B2B / B2C / Delivery)
+Company ↔ User mapping
+Multi-branch / warehouse support
+KYC verification workflow
+User activity logs
+Role-based permission engine
+
+📦 Product System
+Multi-level categories
+Vendor product ownership
+Product approval workflow
+Variant engine (SKU-based)
+Bulk pricing engine
+MOQ support
+Inventory tracking (real-time + reserved stock)
+Product versioning (audit)
+
+🛒 Order System
+Multi-vendor order splitting
+Partial fulfillment
+Order workflow engine
+Return / refund system
+Scheduled orders
+Bulk order upload (CSV)
+Order tagging & priority
+
+🚚 Logistics
+Delivery partner assignment engine
+Shipment tracking hooks
+Delivery slot system
+Route optimization (queue-based)
+Failed delivery retry logic
+
+💳 Payments
+Multi-gateway support
+Webhook handling (Razorpay/Stripe)
+Payment reconciliation
+Refund workflows
+Wallet system
+
+💰 Credit System (Core)
+Credit limits per company
+Ledger system (debit/credit entries)
+Payment terms (Net 7/15/30)
+Overdue automation (jobs)
+Credit scoring (future-ready)
+
+🧾 Invoice System
+GST invoice generation
+Credit/Debit notes
+Bulk invoice export
+PDF service integration
+
+📊 Analytics & BI
+Aggregation pipelines (Mongo)
+Scheduled reports
+KPI engine
+Event tracking
+Data warehouse ready (future)
+
+🔔 Notifications
+Email / SMS / Push
+Queue-based async notifications
+Event-driven triggers
+Notification preferences
+
+🧠 Smart / Infra Features
+Redis caching layer
+Search indexing (Elastic-ready)
+Queue system (BullMQ)
+Cron jobs (auto tasks)
+File storage abstraction (S3-ready)
+API versioning
+Feature flags
+
+🧑‍💼 Admin / Super Admin
+Approval workflows
+System configs
+Commission engine
+Audit logs
+Role management
