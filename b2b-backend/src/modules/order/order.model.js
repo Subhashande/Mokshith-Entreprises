@@ -5,7 +5,6 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
     },
 
     items: [
@@ -17,9 +16,11 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    totalAmount: {
-      type: Number,
-      required: true,
+    totalAmount: Number,
+
+    shipmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Shipment',
     },
 
     paymentStatus: {
