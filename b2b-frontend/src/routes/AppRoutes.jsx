@@ -13,6 +13,8 @@ import AdminPage from "../modules/admin/pages/AdminPage";
 import SuperAdminPage from "../modules/superAdmin/pages/SuperAdminPage";
 import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
 import CreditPage from "../modules/credit/pages/CreditPage";
+import CheckoutPage from "../modules/order/pages/Checkout";
+import OrdersPage from "../modules/order/pages/OrdersPage";
 
 const AppRoutes = () => {
   return (
@@ -83,12 +85,12 @@ const AppRoutes = () => {
         {/* COMMON PRIVATE ROUTES */}
         <Route path={routes.ORDERS} element={
           <ProtectedRoute>
-            <div>Order History Page</div>
+            <OrdersPage />
           </ProtectedRoute>
         } />
         <Route path={routes.CHECKOUT} element={
           <ProtectedRoute>
-            <div>Checkout Page</div>
+            <CheckoutPage />
           </ProtectedRoute>
         } />
 

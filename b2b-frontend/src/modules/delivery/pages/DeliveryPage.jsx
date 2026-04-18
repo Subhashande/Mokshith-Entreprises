@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDelivery } from "../hooks/useDelivery";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Card from "../../../components/ui/Card";
@@ -6,12 +7,17 @@ import Button from "../../../components/ui/Button";
 const DeliveryPage = () => {
   const { deliveries, loading, error, updateDeliveryStatus } = useDelivery();
   const { logout } = useAuth();
+  const [activeTab, setActiveCollection] = useState("ASSIGNED");
 
   const handleUpdateStatus = (id, currentStatus) => {
     const statuses = ['PENDING', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'];
     const currentIndex = statuses.indexOf(currentStatus);
     const nextStatus = statuses[(currentIndex + 1) % statuses.length];
     updateDeliveryStatus(id, nextStatus);
+  };
+
+  const handleSimulateNav = (address) => {
+    alert(`Simulating GPS Navigation to:\n${address}\n\nEstimated arrival: 15 minutes.`);
   };
 
   if (loading) return (
@@ -81,7 +87,14 @@ const DeliveryPage = () => {
                 >
                   Update Status
                 </Button>
-                <Button variant="secondary" size="small" style={{ flex: 1 }}>View Navigation</Button>
+                <Button 
+                  variant="secondary" 
+                  size="small" 
+                  style={{ flex: 1 }}
+                  onClick={() => handleSimulateNav(delivery.address)}
+                >
+                  View Navigation
+                </Button>
               </div>
             </Card>
           ))}
