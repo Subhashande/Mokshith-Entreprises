@@ -1,18 +1,26 @@
 import express from 'express';
-import cors from 'cors';
 import morgan from 'morgan';
 
 import routes from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { notFound } from './middlewares/notFound.middleware.js';
 
+import { securityMiddleware } from './config/security.js';
+import { requestLogger } from './middlewares/requestLogger.middleware.js';
+import { idempotencyMiddleware } from './middlewares/idempotency.middleware.js';
+
 const app = express();
 
-app.use(express.json());
-app.use(cors());
-app.use(morgan('dev'));
+// Security
+securityMiddleware(app);
 
-// Routes
+// Core
+app.use(express.json());
+app.use(morgan('dev'));
+app.use(requestLogger);
+app.use(idempotencyMiddleware);
+
+// Versioned Routes
 app.use('/api', routes);
 
 // Not Found

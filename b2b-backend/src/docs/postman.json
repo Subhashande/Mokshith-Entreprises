@@ -1,0 +1,16 @@
+{
+  "info": {
+    "name": "B2B API",
+    "_postman_id": "12345",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/auth/register"
+      }
+    }
+  ]
+}
