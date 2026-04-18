@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { searchService } from "../searchService";
-import debounce from "../../utils/debounce";
+import debounce from "../../../utils/debounce";
 
 export const useSearch = () => {
   const [results, setResults] = useState([]);

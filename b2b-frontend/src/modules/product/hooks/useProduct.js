@@ -1,22 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { productService } from "../services/productService";
+import { fetchStart, fetchProductsSuccess, fetchFailure } from "../productSlice";
 
 export const useProduct = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { products, loading, error } = useSelector((state) => state.product);
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true);
+    dispatch(fetchStart());
     try {
       const data = await productService.getProducts();
-      setProducts(data);
+      dispatch(fetchProductsSuccess(data));
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      dispatch(fetchFailure(err.message));
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchProducts();

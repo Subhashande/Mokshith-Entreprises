@@ -1,34 +1,64 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { authService } from "../services/authService";
-import storage from "../../services/storage";
+import { loginStart, loginSuccess, loginFailure, logout as logoutAction } from "../authSlice";
+import { fetchConfigSuccess } from "../../superAdmin/superAdminSlice";
 
 export const useAuth = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { user, loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
   const login = useCallback(async (data) => {
-    setLoading(true);
-    setError(null);
+    dispatch(loginStart());
 
     try {
       const res = await authService.login(data);
 
-      // Secure storage (token should ideally be HttpOnly cookie)
-      storage.set("user", res.user);
+      dispatch(loginSuccess({ user: res.user, token: res.token }));
+      
+      // Update global config in store if available
+      if (res.config) {
+        dispatch(fetchConfigSuccess(res.config));
+      }
+      
+      // Redirect based on role
+      switch (res.user.role) {
+        case "SUPER_ADMIN":
+          window.location.href = "/super-admin/dashboard";
+          break;
+        case "ADMIN":
+          window.location.href = "/admin/dashboard";
+          break;
+        case "DELIVERY":
+          window.location.href = "/delivery/dashboard";
+          break;
+        case "VENDOR":
+          window.location.href = "/dashboard";
+          break;
+        case "USER":
+          window.location.href = "/home";
+          break;
+        default:
+          window.location.href = "/products";
+      }
 
       return res;
     } catch (err) {
-      setError(err.message);
+      dispatch(loginFailure(err.message));
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
-  const logout = async () => {
-    await authService.logout();
-    storage.clear();
-  };
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      dispatch(logoutAction());
+      window.location.href = "/login";
+    }
+  }, [dispatch]);
 
-  return { login, logout, loading, error };
+  return { login, logout, loading, error, user, isAuthenticated };
 };

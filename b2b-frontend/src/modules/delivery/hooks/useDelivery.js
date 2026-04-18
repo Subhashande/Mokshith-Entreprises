@@ -18,9 +18,20 @@ export const useDelivery = () => {
     }
   }, []);
 
+  const updateDeliveryStatus = async (id, status) => {
+    try {
+      await deliveryService.updateStatus(id, status);
+      setDeliveries((prev) =>
+        prev.map((d) => (d.id === id ? { ...d, status } : d))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchDeliveries();
   }, [fetchDeliveries]);
 
-  return { deliveries, loading, error };
+  return { deliveries, loading, error, updateDeliveryStatus };
 };

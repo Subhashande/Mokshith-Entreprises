@@ -1,24 +1,44 @@
+import Card from "../../../components/ui/Card";
+
 const LedgerTable = ({ ledger }) => {
   return (
-    <table border="1" width="100%" cellPadding="5">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {ledger.map((entry) => (
-          <tr key={entry.id}>
-            <td>{new Date(entry.date).toLocaleDateString()}</td>
-            <td>{entry.type}</td>
-            <td>₹{entry.amount}</td>
+    <Card style={{ padding: 0, overflow: 'hidden' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
+            <th style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '700' }}>DATE</th>
+            <th style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '700' }}>DESCRIPTION</th>
+            <th style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '700' }}>TYPE</th>
+            <th style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '700', textAlign: 'right' }}>AMOUNT</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {ledger.map((entry) => (
+            <tr key={entry.id} style={{ borderBottom: '1px solid var(--border)' }}>
+              <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
+                {new Date(entry.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </td>
+              <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '500' }}>{entry.description}</td>
+              <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
+                <span style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: '700', 
+                  padding: '0.2rem 0.5rem', 
+                  borderRadius: '4px',
+                  backgroundColor: entry.type === 'CREDIT' ? 'var(--primary-light)' : '#fff1f2',
+                  color: entry.type === 'CREDIT' ? 'var(--primary)' : '#e11d48'
+                }}>
+                  {entry.type}
+                </span>
+              </td>
+              <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '700', textAlign: 'right' }}>
+                ₹{entry.amount.toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
   );
 };
 

@@ -1,41 +1,64 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { superAdminService } from "../services/superAdminService";
+import { 
+  fetchStart, 
+  fetchConfigSuccess, 
+  updateConfigSuccess,
+  fetchMetricsSuccess,
+  fetchAdminsSuccess,
+  fetchCategoriesSuccess,
+  fetchAuditLogsSuccess,
+  fetchFailure,
+  toggleMaintenance
+} from "../superAdminSlice";
 
 export const useSuperAdmin = () => {
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [config, setConfig] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { config, metrics, admins, categories, auditLogs, loading, error } = useSelector((state) => state.superAdmin);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchSuperAdminData = useCallback(async () => {
+    dispatch(fetchStart());
     try {
-      const [logs, cfg] = await Promise.all([
-        superAdminService.getAuditLogs(),
+      const [configData, metricsData, auditLogsData, adminsData, categoriesData] = await Promise.all([
         superAdminService.getConfig(),
+        superAdminService.getMetrics(),
+        superAdminService.getAuditLogs(),
+        superAdminService.getAdmins(),
+        superAdminService.getCategories(),
       ]);
 
-      setAuditLogs(logs);
-      setConfig(cfg);
+      dispatch(fetchConfigSuccess(configData));
+      dispatch(fetchMetricsSuccess(metricsData));
+      dispatch(fetchAuditLogsSuccess(auditLogsData));
+      dispatch(fetchAdminsSuccess(adminsData));
+      dispatch(fetchCategoriesSuccess(categoriesData));
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      dispatch(fetchFailure(err.message));
     }
-  }, []);
+  }, [dispatch]);
 
-  const updateConfig = async (newConfig) => {
+  const updateConfig = async (payload) => {
     try {
-      const updated = await superAdminService.updateConfig(newConfig);
-      setConfig(updated);
+      const updatedConfig = await superAdminService.updateConfig(payload);
+      dispatch(updateConfigSuccess(updatedConfig.data));
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+    }
+  };
+
+  const fetchDbCollection = async (name) => {
+    try {
+      return await superAdminService.getDbCollection(name);
+    } catch (err) {
+      console.error(err);
+      return [];
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchSuperAdminData();
+  }, [fetchSuperAdminData]);
 
-  return { auditLogs, config, loading, error, updateConfig };
+  return { config, metrics, admins, categories, auditLogs, loading, error, updateConfig, fetchDbCollection };
 };

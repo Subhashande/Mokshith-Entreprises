@@ -1,4 +1,4 @@
-import apiClient from "../../services/apiClient";
+import apiClient from "../../../services/apiClient";
 
 export const orderService = {
   async getOrders() {
@@ -9,11 +9,11 @@ export const orderService = {
     }
   },
 
-  async createOrder(payload) {
+  async placeOrder(payload) {
     try {
       return await apiClient.post("/orders", payload);
     } catch {
-      throw new Error("Order creation failed");
+      throw new Error("Order placement failed");
     }
   },
 };

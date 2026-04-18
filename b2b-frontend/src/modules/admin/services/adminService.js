@@ -1,4 +1,4 @@
-import apiClient from "../../services/apiClient";
+import apiClient from "../../../services/apiClient";
 
 export const adminService = {
   async getApprovals() {
@@ -14,6 +14,22 @@ export const adminService = {
       return await apiClient.post(`/admin/approve/${id}`);
     } catch {
       throw new Error("Approval failed");
+    }
+  },
+
+  async reject(id) {
+    try {
+      return await apiClient.post(`/admin/reject/${id}`);
+    } catch {
+      throw new Error("Rejection failed");
+    }
+  },
+
+  async getLogs() {
+    try {
+      return await apiClient.get("/admin/logs");
+    } catch {
+      throw new Error("Failed to fetch logs");
     }
   },
 
