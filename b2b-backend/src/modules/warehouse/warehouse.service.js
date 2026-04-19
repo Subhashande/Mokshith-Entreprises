@@ -2,6 +2,10 @@ import * as repo from './warehouse.repository.js';
 import AppError from '../../errors/AppError.js';
 
 export const createWarehouse = async (data) => {
+  if (!data.name) {
+    throw new AppError('Warehouse name is required', 400);
+  }
+
   return repo.createWarehouse(data);
 };
 
