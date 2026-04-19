@@ -2,16 +2,23 @@ import * as cartRepo from '../cart/cart.repository.js';
 import * as orderRepo from './order.repository.js';
 import Product from '../product/product.model.js';
 import Order from './order.model.js';
+
 import AppError from '../../errors/AppError.js';
 import { validateTransition } from './order.workflow.js';
+
 import { generateInvoice } from '../invoice/invoice.service.js';
 import { sendNotification } from '../notification/notification.service.js';
 
-// 🔥 NEW: EVENTS IMPORT
 import { onOrderCreated } from './order.events.js';
 import { trackOrder } from '../analytics/analytics.events.js';
 
-export const createOrder = async (userId) => {
+// 🔥 NEW INTEGRATIONS
+import { checkStock, reduceStock } from '../inventory/inventory.service.js';
+import { useCredit } from '../credit/credit.service.js';
+import { createShipment } from '../logistics/logistics.service.js';
+import Warehouse from '../warehouse/warehouse.model.js';
+
+export const createOrder = async (userId, paymentMethod = 'COD') => {
   const cart = await cartRepo.findCartByUser(userId);
 
   if (!cart || cart.items.length === 0) {
@@ -21,17 +28,13 @@ export const createOrder = async (userId) => {
   let totalAmount = 0;
   const items = [];
 
+  // 🔥 1. Validate + Prepare Items
   for (const item of cart.items) {
     const product = await Product.findById(item.productId);
 
     if (!product) throw new AppError('Product not found', 404);
 
-    if (product.stock < item.quantity) {
-      throw new AppError(`Insufficient stock for ${product.name}`, 400);
-    }
-
-    product.stock -= item.quantity;
-    await product.save();
+    await checkStock(product._id, item.quantity);
 
     const itemTotal = product.price * item.quantity;
     totalAmount += itemTotal;
@@ -44,14 +47,35 @@ export const createOrder = async (userId) => {
     });
   }
 
+  // 🔥 2. Credit Handling
+  if (paymentMethod === 'CREDIT') {
+    await useCredit(userId, totalAmount);
+  }
+
+  // 🔥 3. Create Order
   const order = await orderRepo.createOrder({
     userId,
     items,
     totalAmount,
+    paymentMethod,
+    status: 'PENDING',
   });
 
+  // 🔥 4. Reduce Inventory (NEW)
+  for (const item of items) {
+    await reduceStock(item.productId, item.quantity);
+  }
+
+  // 🔥 5. Clear Cart
   cart.items = [];
   await cart.save();
+
+  // 🔥 6. Shipment Creation (NEW)
+  const warehouses = await Warehouse.find();
+  const shipment = await createShipment(order, warehouses);
+
+  order.shipmentId = shipment._id;
+  await order.save();
 
   // 🔥 EXISTING LOGIC (UNCHANGED)
   await generateInvoice(order);
@@ -62,12 +86,11 @@ export const createOrder = async (userId) => {
     message: `Your order ${order._id} has been placed`,
   });
 
-  // 🔥 NEW: EVENTS (ADDED ONLY, NO CHANGES TO EXISTING FLOW)
+  // 🔥 EVENTS (UNCHANGED)
   try {
     await onOrderCreated(order);
     trackOrder(order);
   } catch (err) {
-    // Do not break main flow if event fails
     console.error('Order event failed:', err.message);
   }
 

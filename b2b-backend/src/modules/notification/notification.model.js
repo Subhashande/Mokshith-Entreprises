@@ -5,10 +5,24 @@ const notificationSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      index: true,
     },
 
-    title: String,
-    message: String,
+    title: {
+      type: String,
+      required: true,
+    },
+
+    message: {
+      type: String,
+      required: true,
+    },
+
+    type: {
+      type: String,
+      enum: ['ORDER', 'PAYMENT', 'SYSTEM'],
+      default: 'SYSTEM',
+    },
 
     isRead: {
       type: Boolean,

@@ -6,6 +6,8 @@ const invoiceSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
       required: true,
+      unique: true, // 🔥 one invoice per order
+      index: true,
     },
 
     userId: {
@@ -13,14 +15,21 @@ const invoiceSchema = new mongoose.Schema(
       ref: 'User',
     },
 
-    amount: Number,
+    amount: {
+      type: Number,
+      required: true,
+    },
 
     invoiceNumber: {
       type: String,
       unique: true,
+      required: true,
     },
 
-    fileUrl: String,
+    fileUrl: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

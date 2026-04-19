@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      index: true,
     },
 
     items: [
@@ -16,11 +17,20 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    totalAmount: Number,
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ['COD', 'ONLINE', 'CREDIT'],
+      default: 'COD',
+    },
 
     shipmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Shipment',
+      ref: 'Logistics',
     },
 
     paymentStatus: {

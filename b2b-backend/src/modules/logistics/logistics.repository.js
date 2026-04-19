@@ -1,0 +1,13 @@
+import Logistics from './logistics.model.js';
+
+export const createShipment = (data) =>
+  Logistics.create(data);
+
+export const findByOrder = (orderId) =>
+  Logistics.findOne({ orderId });
+
+export const updateShipment = (id, data) =>
+  Logistics.findByIdAndUpdate(id, data, { new: true });
+
+export const findAll = () =>
+  Logistics.find().populate('orderId warehouseId');
