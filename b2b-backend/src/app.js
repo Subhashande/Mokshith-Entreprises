@@ -11,22 +11,30 @@ import { idempotencyMiddleware } from './middlewares/idempotency.middleware.js';
 
 const app = express();
 
-// Security
+// 🔥 Trust proxy (important for rate limiting, IP, cloud)
+app.set('trust proxy', 1);
+
+// 🔐 Security
 securityMiddleware(app);
 
-// Core
+// 🔥 Body parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 📜 Logging
 app.use(morgan('dev'));
 app.use(requestLogger);
+
+// 🔁 Idempotency (safe retries)
 app.use(idempotencyMiddleware);
 
-// Versioned Routes
+// 🚀 Routes
 app.use('/api', routes);
 
-// Not Found
+// ❌ Not Found
 app.use(notFound);
 
-// Error Handler
+// 💥 Error Handler (must be last)
 app.use(errorHandler);
 
 export default app;
