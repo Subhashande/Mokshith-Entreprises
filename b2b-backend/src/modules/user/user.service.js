@@ -1,6 +1,9 @@
 import AppError from '../../errors/AppError.js';
 import * as repo from './user.repository.js';
 
+// 🔥 Allowed update fields (security)
+const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile'];
+
 export const getProfile = async (userId) => {
   const user = await repo.findById(userId);
 
@@ -10,7 +13,16 @@ export const getProfile = async (userId) => {
 };
 
 export const updateProfile = async (userId, data) => {
-  const user = await repo.updateUserById(userId, data);
+  const filteredData = {};
+
+  // 🔥 Prevent updating restricted fields
+  for (const key of ALLOWED_PROFILE_FIELDS) {
+    if (data[key] !== undefined) {
+      filteredData[key] = data[key];
+    }
+  }
+
+  const user = await repo.updateUserById(userId, filteredData);
 
   if (!user) throw new AppError('User not found', 404);
 
@@ -29,6 +41,7 @@ export const getAllUsers = async (query) => {
     filter.$or = [
       { name: { $regex: search, $options: 'i' } },
       { email: { $regex: search, $options: 'i' } },
+      { mobile: { $regex: search, $options: 'i' } },
     ];
   }
 

@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     email: {
@@ -14,6 +15,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
 
     mobile: {
@@ -21,12 +23,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      index: true,
     },
 
     password: {
       type: String,
       required: true,
-      select: false, // 🔒 never return password by default
+      select: false,
     },
 
     role: {
@@ -45,11 +48,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'],
       default: 'ACTIVE',
+      index: true,
     },
 
     isDeleted: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     isVerified: {
@@ -58,38 +63,22 @@ const userSchema = new mongoose.Schema(
     },
 
     otp: {
-      code: {
-        type: String,
-      },
-      expiresAt: {
-        type: Date,
-      },
+      code: String,
+      expiresAt: Date,
     },
 
     refreshToken: {
       type: String,
-      select: false, // 🔒 do not expose refresh token
+      select: false,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-/**
- * 🔥 GLOBAL QUERY FILTER
- * Automatically exclude soft-deleted users
- */
+// 🔥 Soft delete filter
 userSchema.pre(/^find/, function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
 });
-
-/**
- * 🔍 Indexes (Performance Optimization)
- */
-userSchema.index({ email: 1 });
-userSchema.index({ mobile: 1 });
-userSchema.index({ companyId: 1 });
 
 export default mongoose.model('User', userSchema);

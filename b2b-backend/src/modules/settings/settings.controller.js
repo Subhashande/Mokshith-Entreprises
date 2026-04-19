@@ -7,10 +7,18 @@ export const updateSetting = asyncHandler(async (req, res) => {
     req.body.key,
     req.body.value
   );
-  successResponse(res, data);
+
+  successResponse(res, data, 'Setting updated');
 });
 
 export const getSetting = asyncHandler(async (req, res) => {
   const data = await service.fetchSetting(req.params.key);
+
+  successResponse(res, data);
+});
+
+export const getAllSettings = asyncHandler(async (req, res) => {
+  const data = await service.getAllSettings();
+
   successResponse(res, data);
 });

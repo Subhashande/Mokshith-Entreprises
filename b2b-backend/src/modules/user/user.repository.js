@@ -18,5 +18,8 @@ export const countUsers = async (filter) => {
 };
 
 export const updateUserById = async (id, data) => {
-  return User.findByIdAndUpdate(id, data, { new: true });
+  return User.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  });
 };

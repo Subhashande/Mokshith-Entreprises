@@ -7,3 +7,5 @@ export const findByOrderId = (orderId) =>
 
 export const updateShipment = (id, data) =>
   Shipment.findByIdAndUpdate(id, data, { new: true });
+
+export const findById = (id) => Shipment.findById(id);

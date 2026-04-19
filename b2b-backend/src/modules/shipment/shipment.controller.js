@@ -7,6 +7,7 @@ export const createShipment = asyncHandler(async (req, res) => {
     req.body.orderId,
     req.body.warehouseId
   );
+
   successResponse(res, data, 'Shipment created');
 });
 
@@ -15,5 +16,6 @@ export const updateShipmentStatus = asyncHandler(async (req, res) => {
     req.params.id,
     req.body.status
   );
+
   successResponse(res, data, 'Shipment updated');
 });
