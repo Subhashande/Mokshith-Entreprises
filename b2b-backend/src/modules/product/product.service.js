@@ -1,8 +1,25 @@
 import * as repo from './product.repository.js';
 import AppError from '../../errors/AppError.js';
+import { buildProductFilter } from './product.utils.js';
+
+// 🔥 EVENTS
+import { onProductCreated } from './product.events.js';
 
 export const createProduct = async (data) => {
-  return repo.createProduct(data);
+  if (data.price <= 0) {
+    throw new AppError('Price must be greater than 0', 400);
+  }
+
+  const product = await repo.createProduct(data);
+
+  // 🔥 EVENT (non-blocking)
+  try {
+    onProductCreated(product);
+  } catch (err) {
+    console.error('Product event error:', err.message);
+  }
+
+  return product;
 };
 
 export const getProducts = async (query) => {
@@ -10,15 +27,12 @@ export const getProducts = async (query) => {
 
   const skip = (page - 1) * limit;
 
-  let filter = {};
+  const filter = buildProductFilter({ categoryId, search });
 
-  if (categoryId) filter.categoryId = categoryId;
-
-  if (search) {
-    filter.name = { $regex: search, $options: 'i' };
-  }
-
-  return repo.findProducts(filter, { skip, limit: Number(limit) });
+  return repo.findProducts(filter, {
+    skip,
+    limit: Number(limit),
+  });
 };
 
 export const getProductById = async (id) => {

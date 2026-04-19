@@ -6,6 +6,7 @@ const paymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
       required: true,
+      index: true,
     },
 
     userId: {
@@ -13,7 +14,10 @@ const paymentSchema = new mongoose.Schema(
       ref: 'User',
     },
 
-    amount: Number,
+    amount: {
+      type: Number,
+      required: true,
+    },
 
     status: {
       type: String,
@@ -21,9 +25,16 @@ const paymentSchema = new mongoose.Schema(
       default: 'INITIATED',
     },
 
-    paymentMethod: String,
+    paymentMethod: {
+      type: String,
+      enum: ['ONLINE', 'COD', 'CREDIT'],
+      default: 'ONLINE',
+    },
 
-    transactionId: String,
+    transactionId: {
+      type: String,
+      index: true,
+    },
   },
   { timestamps: true }
 );

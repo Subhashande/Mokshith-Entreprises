@@ -1,12 +1,29 @@
 import * as repo from './payment.repository.js';
 import * as gateway from './payment.gateway.js';
 import AppError from '../../errors/AppError.js';
+
 import Order from '../order/order.model.js';
+
+import { repayCredit } from '../credit/credit.service.js';
+import { sendNotification } from '../notification/notification.service.js';
+import { TEMPLATES } from '../notification/notification.templates.js';
 
 export const initiatePayment = async (orderId, userId) => {
   const order = await Order.findById(orderId);
 
   if (!order) throw new AppError('Order not found', 404);
+
+  // 🔥 Skip payment if already paid
+  if (order.paymentStatus === 'PAID') {
+    throw new AppError('Order already paid', 400);
+  }
+
+  // 🔥 Credit orders don't need gateway
+  if (order.paymentMethod === 'CREDIT') {
+    return {
+      message: 'Payment handled via credit',
+    };
+  }
 
   const paymentOrder = await gateway.createPaymentOrder({
     amount: order.totalAmount,
@@ -17,6 +34,7 @@ export const initiatePayment = async (orderId, userId) => {
     userId,
     amount: order.totalAmount,
     transactionId: paymentOrder.gatewayOrderId,
+    paymentMethod: order.paymentMethod || 'ONLINE',
   });
 
   return {
@@ -34,13 +52,31 @@ export const verifyPayment = async (payload) => {
 
   if (!payment) throw new AppError('Payment not found', 404);
 
+  // 🔥 Prevent duplicate success
+  if (payment.status === 'SUCCESS') {
+    return payment;
+  }
+
   payment.status = 'SUCCESS';
   await payment.save();
 
-  // update order
+  // 🔥 Update Order
   const order = await Order.findById(payload.orderId);
+
+  order.paymentStatus = 'PAID';
   order.status = 'CONFIRMED';
   await order.save();
+
+  // 🔥 Credit repayment (if needed)
+  if (order.paymentMethod === 'CREDIT') {
+    await repayCredit(order.userId, order.totalAmount);
+  }
+
+  // 🔥 Notification
+  await sendNotification({
+    userId: order.userId,
+    ...TEMPLATES.PAYMENT_SUCCESS(order.totalAmount),
+  });
 
   return payment;
 };

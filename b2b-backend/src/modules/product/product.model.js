@@ -2,18 +2,35 @@ import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
 
-    description: String,
+    description: {
+      type: String,
+      trim: true,
+    },
 
-    price: { type: Number, required: true },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
-    stock: { type: Number, default: 0 },
+    stock: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: true,
+      index: true,
     },
 
     vendorId: {
@@ -31,6 +48,7 @@ const productSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
     },
   },
   { timestamps: true }

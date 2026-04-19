@@ -8,6 +8,7 @@ export const findProducts = (filter, options) => {
   return Product.find(filter)
     .skip(skip)
     .limit(limit)
+    .sort({ createdAt: -1 })
     .populate('categoryId vendorId companyId');
 };
 

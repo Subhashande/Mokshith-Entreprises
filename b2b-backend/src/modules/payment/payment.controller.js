@@ -7,10 +7,12 @@ export const initiatePayment = asyncHandler(async (req, res) => {
     req.params.orderId,
     req.user.id
   );
+
   successResponse(res, data, 'Payment initiated');
 });
 
 export const verifyPayment = asyncHandler(async (req, res) => {
   const payment = await service.verifyPayment(req.body);
+
   successResponse(res, payment, 'Payment successful');
 });

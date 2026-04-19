@@ -8,6 +8,8 @@ export const paymentWebhook = async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error('Webhook failed:', err.message);
+
     res.status(400).json({ success: false });
   }
 };

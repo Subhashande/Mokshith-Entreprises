@@ -6,7 +6,12 @@ import { createProductSchema } from './product.validation.js';
 
 const router = express.Router();
 
-router.post('/', protect, validate(createProductSchema), controller.createProduct);
+router.post(
+  '/',
+  protect,
+  validate(createProductSchema),
+  controller.createProduct
+);
 
 router.get('/', protect, controller.getProducts);
 

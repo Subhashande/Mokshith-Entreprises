@@ -1,5 +1,4 @@
 export const createPaymentOrder = async ({ amount }) => {
-  // simulate Razorpay/Stripe
   return {
     gatewayOrderId: `order_${Date.now()}`,
     amount,
@@ -7,6 +6,6 @@ export const createPaymentOrder = async ({ amount }) => {
 };
 
 export const verifyPayment = async (payload) => {
-  // simulate verification
+  // 🔥 simulate verification (replace with real gateway later)
   return true;
 };

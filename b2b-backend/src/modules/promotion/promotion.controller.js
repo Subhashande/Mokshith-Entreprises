@@ -7,5 +7,6 @@ export const applyCoupon = asyncHandler(async (req, res) => {
     req.body.code,
     req.body.amount
   );
-  successResponse(res, data);
+
+  successResponse(res, data, 'Coupon applied');
 });

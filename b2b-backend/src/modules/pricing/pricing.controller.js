@@ -4,5 +4,6 @@ import { successResponse } from '../../utils/responseHandler.js';
 
 export const getPrice = asyncHandler(async (req, res) => {
   const data = await service.getPrice(req.body);
-  successResponse(res, data);
+
+  successResponse(res, data, 'Price calculated');
 });
