@@ -1,7 +1,9 @@
 import Category from './category.model.js';
 
-export const createCategory = (data) => Category.create(data);
+export const createCategory = async (data) => Category.create(data);
 
-export const findAllCategories = () => Category.find();
+export const findAllCategories = async () =>
+  Category.find().populate('parentId');
 
-export const findById = (id) => Category.findById(id);
+export const findById = async (id) =>
+  Category.findById(id).populate('parentId');

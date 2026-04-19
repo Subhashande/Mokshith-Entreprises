@@ -17,4 +17,7 @@ router.post(
 
 router.get('/', protect, controller.getCategories);
 
+// 🔥 NEW
+router.get('/:id', protect, controller.getCategoryById);
+
 export default router;

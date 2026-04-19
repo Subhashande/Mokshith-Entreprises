@@ -3,6 +3,7 @@ import {
   findUserByEmailOrMobile,
   createUser,
   updateUser,
+  findUserById,
 } from './auth.repository.js';
 
 import { hashPassword } from '../../utils/hashPassword.js';
@@ -11,7 +12,8 @@ import { generateOTP } from '../../utils/otpGenerator.js';
 import {
   generateAccessToken,
   generateRefreshToken,
-} from '../../utils/generateToken.js';
+  verifyToken,
+} from './auth.token.js';
 
 export const register = async (data) => {
   const existing = await findUserByEmailOrMobile(data.email);
@@ -61,7 +63,7 @@ export const sendOTP = async (identifier) => {
     },
   });
 
-  return otp; // later integrate SMS/Email
+  return otp; // 🔥 dev only
 };
 
 // VERIFY OTP
@@ -90,11 +92,11 @@ export const verifyOTP = async ({ identifier, otp }) => {
   return { user, accessToken, refreshToken };
 };
 
-// REFRESH TOKEN
+// REFRESH TOKEN (FIXED)
 export const refreshAuthToken = async (token) => {
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = verifyToken(token);
 
-  const user = await updateUser(decoded.id);
+  const user = await findUserById(decoded.id);
 
   if (!user || user.refreshToken !== token) {
     throw new AppError('Invalid refresh token', 401);

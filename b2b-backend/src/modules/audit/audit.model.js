@@ -2,11 +2,23 @@ import mongoose from 'mongoose';
 
 const auditSchema = new mongoose.Schema(
   {
-    userId: mongoose.Schema.Types.ObjectId,
-    action: String,
-    entity: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+    },
+    action: {
+      type: String,
+      required: true,
+    },
+    entity: {
+      type: String,
+      required: true,
+    },
     entityId: mongoose.Schema.Types.ObjectId,
-    data: Object,
+    data: {
+      type: Object,
+      default: {},
+    },
   },
   { timestamps: true }
 );

@@ -1,10 +1,12 @@
 import Company from './company.model.js';
 
-export const createCompany = (data) => Company.create(data);
+export const createCompany = async (data) => Company.create(data);
 
-export const findCompanyById = (id) => Company.findById(id);
+export const findCompanyById = async (id) =>
+  Company.findById(id).populate('createdBy');
 
-export const findAllCompanies = () => Company.find();
+export const findAllCompanies = async () =>
+  Company.find().populate('createdBy');
 
-export const updateCompany = (id, data) =>
+export const updateCompany = async (id, data) =>
   Company.findByIdAndUpdate(id, data, { new: true });

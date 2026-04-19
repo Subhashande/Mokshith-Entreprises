@@ -8,6 +8,11 @@ export const addToCart = async (userId, { productId, quantity }) => {
   const product = await Product.findById(productId);
   if (!product) throw new AppError('Product not found', 404);
 
+  // 🔥 Optional: stock validation
+  if (product.stock < quantity) {
+    throw new AppError('Insufficient stock', 400);
+  }
+
   if (!cart) {
     return repo.createCart({
       userId,
@@ -16,7 +21,7 @@ export const addToCart = async (userId, { productId, quantity }) => {
   }
 
   const existingItem = cart.items.find(
-    (item) => item.productId._id.toString() === productId
+    (item) => item.productId._id.toString() === productId.toString()
   );
 
   if (existingItem) {
@@ -38,7 +43,7 @@ export const removeFromCart = async (userId, productId) => {
   if (!cart) throw new AppError('Cart not found', 404);
 
   cart.items = cart.items.filter(
-    (item) => item.productId._id.toString() !== productId
+    (item) => item.productId._id.toString() !== productId.toString()
   );
 
   return cart.save();

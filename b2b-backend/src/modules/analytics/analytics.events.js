@@ -1,3 +1,3 @@
-export const trackOrder = (order) => {
-  console.log('Tracking analytics for order:', order._id);
+export const trackEvent = (event, data) => {
+  console.log(`Analytics Event: ${event}`, data);
 };
