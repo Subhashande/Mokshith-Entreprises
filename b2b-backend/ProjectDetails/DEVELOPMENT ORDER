@@ -1,0 +1,45 @@
+🧱 PHASE 1 — FOUNDATION (MUST FIRST)
+config + middlewares
+errors + utils
+auth
+user
+
+🧑‍💼 PHASE 2 — ORGANIZATION
+company
+vendor
+admin
+superAdmin
+
+🛍️ PHASE 3 — PRODUCT SYSTEM
+category
+product
+pricing
+promotion
+search
+review
+
+🛒 PHASE 4 — BUYING FLOW
+cart
+wishlist
+order
+
+💳 PHASE 5 — PAYMENT SYSTEM
+payment
+credit
+
+🚚 PHASE 6 — LOGISTICS
+warehouse
+inventory
+shipment
+logistics
+
+📄 PHASE 7 — FINANCIAL
+invoice
+
+🔔 PHASE 8 — SYSTEM SUPPORT
+notification
+analytics
+audit
+
+⚙️ PHASE 9 — CONTROL
+settings

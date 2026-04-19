@@ -1,0 +1,93 @@
+🧑‍💼 1. IDENTITY & ACCESS DOMAIN
+auth
+user
+admin
+superAdmin
+company
+vendor
+
+👉 Handles:
+
+Login / OTP / JWT
+Roles & permissions
+Organization structure
+
+🛍️ 2. PRODUCT & CATALOG DOMAIN
+product
+category
+pricing
+promotion
+review
+search
+
+👉 Handles:
+
+Product listing
+Pricing rules
+Discounts
+Search & discovery
+
+🛒 3. BUYING FLOW DOMAIN
+cart
+wishlist
+order
+
+👉 Handles:
+
+Add to cart
+Wishlist
+Order creation
+
+💳 4. PAYMENT & CREDIT DOMAIN
+payment
+credit
+
+👉 Handles:
+
+Online payments
+Credit system (B2B core)
+
+🚚 5. LOGISTICS DOMAIN
+warehouse
+inventory
+shipment
+logistics
+
+👉 Handles:
+
+Stock
+Warehousing
+Delivery
+
+📄 6. FINANCIAL & DOCUMENT DOMAIN
+invoice
+
+👉 Handles:
+
+Invoice generation
+Financial traceability
+
+🔔 7. COMMUNICATION DOMAIN
+notification
+
+👉 Handles:
+
+Alerts, updates
+
+📊 8. ANALYTICS & TRACKING DOMAIN
+analytics
+audit
+
+👉 Handles:
+
+Metrics
+Logs
+System tracking
+
+⚙️ 9. SYSTEM CONTROL DOMAIN
+settings
+
+👉 Handles:
+
+Feature flags
+Maintenance mode

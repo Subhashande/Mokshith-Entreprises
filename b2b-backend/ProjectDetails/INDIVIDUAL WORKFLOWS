@@ -1,0 +1,66 @@
+🔐 AUTH FLOW
+Register → OTP → Verify → Login → JWT → Access APIs
+
+🏢 COMPANY + VENDOR FLOW
+Admin creates Company
+        ↓
+Vendor registers
+        ↓
+Admin approves vendor
+
+🛍️ PRODUCT FLOW
+Admin/Vendor → Create Product
+       ↓
+Assign Category + Pricing
+       ↓
+Visible in search/catalog
+
+
+🛒 BUYING FLOW
+Wishlist → Cart → Order
+
+Detailed:
+
+User adds product → Cart
+      ↓
+Order created
+      ↓
+Inventory checked
+
+
+💳 PAYMENT FLOW
+Order → Payment Initiated → Gateway → Verify → SUCCESS
+
+OR
+
+Order → Credit used → Ledger updated
+
+
+🚚 LOGISTICS FLOW
+Order → Warehouse selected
+      ↓
+Inventory reduced
+      ↓
+Shipment created
+      ↓
+Delivered
+
+
+📄 INVOICE FLOW
+Order Success → Invoice Generated
+
+
+🔔 NOTIFICATION FLOW
+Order → Notification
+Payment → Notification
+Shipment → Notification
+
+
+📊 ANALYTICS FLOW
+Order → Track revenue
+User → Track activity
+
+
+⚙️ SETTINGS FLOW
+SuperAdmin → Toggle maintenance mode
+            → Feature flags

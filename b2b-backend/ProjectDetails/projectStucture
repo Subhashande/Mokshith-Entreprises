@@ -1,0 +1,203 @@
+b2b-backend/
+│
+├── logs/
+│   ├── access.log
+│   ├── combined.log
+│   ├── error.log
+│   └── exceptions.log
+│
+├── ProjectDetails/
+│   └── architecture.md
+│
+├── scripts/
+│   ├── backup.js
+│   ├── cleanup.js
+│   ├── migrate.js
+│   └── seed.js
+│
+├── tests/
+│   ├── e2e/
+│   │   └── checkout.test.js
+│   │
+│   ├── integration/
+│   │   ├── order.test.js
+│   │   └── payment.test.js
+│   │
+│   ├── unit/
+│   │   ├── auth.test.js
+│   │   ├── product.test.js
+│   │   └── user.test.js
+│   │
+│   └── setup.js
+│
+├── src/
+│
+│   ├── config/
+│   │   ├── cors.js
+│   │   ├── db.js
+│   │   ├── env.js
+│   │   ├── featureFlags.js
+│   │   ├── logger.js
+│   │   ├── queue.js
+│   │   ├── rateLimiter.js
+│   │   ├── redis.js
+│   │   └── security.js
+│
+│   ├── constants/
+│   │   ├── cacheKeys.js
+│   │   ├── creditStatus.js
+│   │   ├── deliveryStatus.js
+│   │   ├── errorMessages.js
+│   │   ├── featureFlags.js
+│   │   ├── fileTypes.js
+│   │   ├── httpStatus.js
+│   │   ├── notificationTypes.js
+│   │   ├── orderStatus.js
+│   │   ├── paymentStatus.js
+│   │   ├── permissions.js
+│   │   ├── queueNames.js
+│   │   ├── roles.js
+│   │   ├── userStatus.js
+│   │   └── vendorStatus.js
+│
+│   ├── docs/
+│   │   ├── api-guidelines.md
+│   │   ├── openapi.yaml
+│   │   ├── postman.json
+│   │   └── swagger.js
+│
+│   ├── errors/
+│   │   ├── AppError.js
+│   │   ├── AuthError.js
+│   │   ├── NotFoundError.js
+│   │   ├── PaymentError.js
+│   │   ├── PermissionError.js
+│   │   ├── RateLimitError.js
+│   │   └── ValidationError.js
+│
+│   ├── jobs/
+│   │   ├── analytics.job.js
+│   │   ├── cleanup.job.js
+│   │   ├── creditReminder.job.js
+│   │   ├── cron.js
+│   │   ├── inventorySync.job.js
+│   │   ├── notification.job.js
+│   │   ├── orderCleanup.job.js
+│   │   └── paymentReconcile.job.js
+│
+│   ├── middlewares/
+│   │   ├── audit.middleware.js
+│   │   ├── auth.middleware.js
+│   │   ├── error.middleware.js
+│   │   ├── idempotency.middleware.js
+│   │   ├── notFound.middleware.js
+│   │   ├── permission.middleware.js
+│   │   ├── rateLimiter.middleware.js
+│   │   ├── requestLogger.middleware.js
+│   │   ├── role.middleware.js
+│   │   ├── sanitize.middleware.js
+│   │   ├── timeout.middleware.js
+│   │   ├── upload.middleware.js
+│   │   └── validate.middleware.js
+│
+│   ├── queues/
+│   │   ├── audit.queue.js
+│   │   ├── email.queue.js
+│   │   ├── inventory.queue.js
+│   │   ├── notification.queue.js
+│   │   ├── payment.queue.js
+│   │   └── webhook.queue.js
+│
+│   ├── routes/
+│   │   ├── health.routes.js
+│   │   ├── index.js
+│   │   ├── v1.routes.js
+│   │   └── v2.routes.js
+│
+│   ├── services/
+│   │   ├── audit.service.js
+│   │   ├── cache.service.js
+│   │   ├── email.service.js
+│   │   ├── encryption.service.js
+│   │   ├── featureFlag.service.js
+│   │   ├── fileUpload.service.js
+│   │   ├── notification.service.js
+│   │   ├── payment.service.js
+│   │   ├── pdf.service.js
+│   │   ├── redis.service.js
+│   │   ├── scheduler.service.js
+│   │   ├── search.service.js
+│   │   ├── sms.service.js
+│   │   ├── vendorAssignment.service.js
+│   │   └── webhook.service.js
+│
+│   ├── utils/
+│   │   ├── apiFeatures.js
+│   │   ├── asyncHandler.js
+│   │   ├── comparePassword.js
+│   │   ├── currency.utils.js
+│   │   ├── date.utils.js
+│   │   ├── encryption.utils.js
+│   │   ├── file.utils.js
+│   │   ├── generateToken.js
+│   │   ├── hashPassword.js
+│   │   ├── number.utils.js
+│   │   ├── otpGenerator.js
+│   │   ├── pagination.js
+│   │   ├── responseHandler.js
+│   │   └── retry.utils.js
+│
+│   ├── validations/
+│   │   ├── common.validation.js
+│   │   ├── file.validation.js
+│   │   ├── objectId.validation.js
+│   │   ├── pagination.validation.js
+│   │   └── query.validation.js
+│
+│   ├── modules/
+│
+│   │   ├── admin/
+│   │   ├── analytics/
+│   │   ├── audit/
+│   │   ├── auth/
+│   │   ├── cart/
+│   │   ├── category/
+│   │   ├── company/
+│   │   ├── credit/
+│   │   ├── inventory/
+│   │   ├── invoice/
+│   │   ├── logistics/
+│   │   ├── notification/
+│   │   ├── order/
+│   │   ├── payment/
+│   │   ├── pricing/
+│   │   ├── product/
+│   │   ├── promotion/
+│   │   ├── review/
+│   │   ├── search/
+│   │   ├── settings/
+│   │   ├── shipment/
+│   │   ├── superAdmin/
+│   │   ├── user/
+│   │   ├── vendor/
+│   │   ├── warehouse/
+│   │   └── wishlist/
+│
+│   ├── uploads/
+│   │   ├── invoices/
+│   │   ├── logs/
+│   │   ├── products/
+│   │   ├── temp/
+│   │   └── users/
+│
+│   └── app.js
+│
+├── .env
+├── .env.example
+├── .gitignore
+├── eslint.config.js
+├── nodemon.json
+├── package.json
+├── prettier.config.js
+├── README.md
+└── server.js
