@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ORDER_STATUS } from '../../constants/orderStatus.js';
 
 const orderSchema = new mongoose.Schema(
   {
@@ -24,7 +25,7 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ['COD', 'ONLINE', 'CREDIT'],
+      enum: ['COD', 'ONLINE', 'CREDIT', 'Credit'],
       default: 'COD',
     },
 
@@ -39,10 +40,28 @@ const orderSchema = new mongoose.Schema(
       default: 'PENDING',
     },
 
+    address: {
+      name: String,
+      phone: String,
+      addressLine: String,
+      city: String,
+      state: String,
+      pincode: String,
+    },
+
+    shippingAddress: {
+      name: String,
+      phone: String,
+      addressLine: String,
+      city: String,
+      state: String,
+      pincode: String,
+    },
+
     status: {
       type: String,
-      enum: ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
-      default: 'PENDING',
+      enum: Object.values(ORDER_STATUS),
+      default: ORDER_STATUS.PENDING,
     },
   },
   { timestamps: true }

@@ -36,13 +36,13 @@ const productSchema = new mongoose.Schema(
     vendorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vendor',
-      required: true,
+      required: false,
     },
 
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
-      required: true,
+      required: false,
     },
 
     isActive: {
@@ -50,6 +50,34 @@ const productSchema = new mongoose.Schema(
       default: true,
       index: true,
     },
+
+    moq: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+
+    bulkPricing: [
+      {
+        minQuantity: Number,
+        price: Number,
+      },
+    ],
+
+    variants: [
+      {
+        name: String,
+        value: String,
+        additionalPrice: {
+          type: Number,
+          default: 0,
+        },
+        stock: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

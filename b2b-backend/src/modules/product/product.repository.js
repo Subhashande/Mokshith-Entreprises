@@ -17,3 +17,6 @@ export const findById = (id) =>
 
 export const updateProduct = (id, data) =>
   Product.findByIdAndUpdate(id, data, { new: true });
+
+export const deleteProduct = (id) =>
+  Product.findByIdAndDelete(id);

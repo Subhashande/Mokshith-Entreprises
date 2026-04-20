@@ -10,6 +10,11 @@ import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/Register";
 import ProductPage from "../modules/product/pages/ProductPage";
 import AdminPage from "../modules/admin/pages/AdminPage";
+import AdminUsersPage from "../modules/admin/pages/Users";
+import AdminProductsPage from "../modules/admin/pages/Products";
+import AdminOrdersPage from "../modules/admin/pages/Orders";
+import AdminVendorsPage from "../modules/admin/pages/Vendors";
+import AdminApprovalsPage from "../modules/admin/pages/Approvals";
 import SuperAdminPage from "../modules/superAdmin/pages/SuperAdminPage";
 import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
 import CreditPage from "../modules/credit/pages/CreditPage";
@@ -28,7 +33,7 @@ const AppRoutes = () => {
         {/* B2C ROUTES */}
         <Route path={routes.HOME} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["USER"]}>
+            <RoleBasedRoute allowedRoles={["B2C_CUSTOMER"]}>
               <ProductPage /> {/* B2C Home */}
             </RoleBasedRoute>
           </ProtectedRoute>
@@ -42,14 +47,14 @@ const AppRoutes = () => {
         {/* B2B ROUTES */}
         <Route path={routes.DASHBOARD} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["VENDOR"]}>
+            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
               <ProductPage /> {/* B2B Dashboard */}
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.CREDIT} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["VENDOR"]}>
+            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
               <CreditPage />
             </RoleBasedRoute>
           </ProtectedRoute>
@@ -58,8 +63,43 @@ const AppRoutes = () => {
         {/* ADMIN ROUTES */}
         <Route path={routes.ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminPage />
+            </RoleBasedRoute>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_USERS} element={
+          <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminUsersPage />
+            </RoleBasedRoute>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_PRODUCTS} element={
+          <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminProductsPage />
+            </RoleBasedRoute>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_ORDERS} element={
+          <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminOrdersPage />
+            </RoleBasedRoute>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_VENDORS} element={
+          <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminVendorsPage />
+            </RoleBasedRoute>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_APPROVALS} element={
+          <ProtectedRoute>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminApprovalsPage />
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
@@ -67,7 +107,7 @@ const AppRoutes = () => {
         {/* SUPER ADMIN ROUTES */}
         <Route path={routes.SUPER_ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["SUPER_ADMIN"]}>
+            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <SuperAdminPage />
             </RoleBasedRoute>
           </ProtectedRoute>
@@ -76,7 +116,7 @@ const AppRoutes = () => {
         {/* DELIVERY ROUTES */}
         <Route path={routes.DELIVERY} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["DELIVERY"]}>
+            <RoleBasedRoute allowedRoles={["DELIVERY_PARTNER"]}>
               <DeliveryPage />
             </RoleBasedRoute>
           </ProtectedRoute>

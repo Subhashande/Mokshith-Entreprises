@@ -44,22 +44,24 @@ const superAdminSlice = createSlice({
     },
     fetchConfigSuccess: (state, action) => {
       state.loading = false;
-      state.config = { ...state.config, ...action.payload };
+      const data = action.payload.data || action.payload;
+      state.config = { ...state.config, ...data };
     },
     updateConfigSuccess: (state, action) => {
-      state.config = { ...state.config, ...action.payload };
+      const data = action.payload.data || action.payload;
+      state.config = { ...state.config, ...data };
     },
     fetchMetricsSuccess: (state, action) => {
-      state.metrics = action.payload;
+      state.metrics = action.payload.data || action.payload;
     },
     fetchAdminsSuccess: (state, action) => {
-      state.admins = action.payload;
+      state.admins = action.payload.data || action.payload;
     },
     fetchCategoriesSuccess: (state, action) => {
-      state.categories = action.payload;
+      state.categories = action.payload.data || action.payload;
     },
     fetchAuditLogsSuccess: (state, action) => {
-      state.auditLogs = action.payload;
+      state.auditLogs = action.payload.data || action.payload;
     },
     fetchFailure: (state, action) => {
       state.loading = false;

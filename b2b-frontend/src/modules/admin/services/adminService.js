@@ -40,4 +40,20 @@ export const adminService = {
       throw new Error("Failed to fetch stats");
     }
   },
+
+  async getUsers() {
+    try {
+      return await apiClient.get("/admin/users");
+    } catch {
+      throw new Error("Failed to fetch users");
+    }
+  },
+
+  async updateCredit(userId, creditLimit) {
+    try {
+      return await apiClient.patch(`/admin/users/${userId}/credit`, { creditLimit });
+    } catch {
+      throw new Error("Failed to update credit");
+    }
+  },
 };  

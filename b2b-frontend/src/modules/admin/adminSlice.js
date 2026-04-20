@@ -17,11 +17,11 @@ const adminSlice = createSlice({
     },
     fetchStatsSuccess: (state, action) => {
       state.loading = false;
-      state.stats = action.payload;
+      state.stats = action.payload.data || action.payload;
     },
     fetchApprovalsSuccess: (state, action) => {
       state.loading = false;
-      state.approvals = action.payload;
+      state.approvals = action.payload.data || action.payload;
     },
     fetchFailure: (state, action) => {
       state.loading = false;

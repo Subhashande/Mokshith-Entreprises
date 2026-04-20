@@ -2,7 +2,16 @@ import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 
 const FeatureAndSecurityPanel = ({ config, onSave }) => {
-  const featureFlags = config?.featureFlags || {};
+  const defaultFlags = {
+    creditSystem: true,
+    cod: true,
+    notifications: true,
+    reviews: true,
+    recommendations: true,
+    dynamicPricing: false
+  };
+
+  const featureFlags = config?.featureFlags || defaultFlags;
 
   const handleToggleFeature = (feature) => {
     const newFlags = { ...featureFlags, [feature]: !featureFlags[feature] };

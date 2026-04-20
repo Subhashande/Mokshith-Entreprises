@@ -10,11 +10,20 @@ const router = express.Router();
 router.use(protect, authorize('ADMIN', 'SUPER_ADMIN'));
 
 router.get('/users', adminController.getUsers);
+router.get('/approvals', adminController.getApprovals);
+router.post('/approve/:id', adminController.approveUser);
+router.post('/reject/:id', adminController.rejectUser);
+router.get('/stats', adminController.getStats);
 
 router.patch(
   '/users/:id',
   validate(updateUserStatusSchema),
   adminController.updateUserStatus
+);
+
+router.patch(
+  '/users/:id/credit',
+  adminController.updateUserCredit
 );
 
 export default router;

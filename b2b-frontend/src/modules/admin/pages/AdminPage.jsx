@@ -4,14 +4,46 @@ import ApprovalCard from "../components/ApprovalCard";
 import AdminStats from "../components/AdminStats";
 import Button from "../../../components/ui/Button";
 import { routes } from "../../../routes/routeConfig";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const AdminPage = () => {
   const { approvals, stats, loading, error, approve, reject, fetchLogs } = useAdmin();
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleQuickAction = (action) => {
-    alert(`Quick Action: ${action} - Success!\nIn a real system, this would open a specific management interface.`);
+    switch (action) {
+      case "Add New Product":
+        navigate(routes.ADMIN_PRODUCTS);
+        break;
+      case "Export Sales Report":
+        handleExportReport();
+        break;
+      case "User Management":
+        navigate(routes.ADMIN_USERS);
+        break;
+      case "Platform Settings":
+        navigate(routes.SUPER_ADMIN); // Redirect to Super Admin settings
+        break;
+      default:
+        alert(`Quick Action: ${action}`);
+    }
+  };
+
+  const handleExportReport = () => {
+    const reportData = {
+      generatedAt: new Date().toISOString(),
+      stats: stats,
+      approvals: approvals
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `sales_report_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    alert("Sales report exported successfully!");
   };
 
   const handleViewLogs = async () => {

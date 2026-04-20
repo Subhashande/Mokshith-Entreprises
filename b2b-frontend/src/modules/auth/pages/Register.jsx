@@ -11,11 +11,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    companyName: "",
-    fullName: "",
+    name: "",
     email: "",
-    phone: "",
+    mobile: "",
     password: "",
+    role: "B2B_CUSTOMER"
   });
 
   const handleChange = (e) => {
@@ -68,18 +68,19 @@ const Register = () => {
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <Input
-                label="Company Name"
-                name="companyName"
-                placeholder="Enter company"
-                value={form.companyName}
+                label="Full Name"
+                name="name"
+                placeholder="Your name"
+                value={form.name}
                 onChange={handleChange}
                 required
               />
               <Input
-                label="Full Name"
-                name="fullName"
-                placeholder="Your name"
-                value={form.fullName}
+                label="Phone Number"
+                type="tel"
+                name="mobile"
+                placeholder="9876543210"
+                value={form.mobile}
                 onChange={handleChange}
                 required
               />
@@ -91,16 +92,6 @@ const Register = () => {
               name="email"
               placeholder="name@company.com"
               value={form.email}
-              onChange={handleChange}
-              required
-            />
-
-            <Input
-              label="Phone Number"
-              type="tel"
-              name="phone"
-              placeholder="+91 XXXXX XXXXX"
-              value={form.phone}
               onChange={handleChange}
               required
             />

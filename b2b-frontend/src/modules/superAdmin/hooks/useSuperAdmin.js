@@ -47,6 +47,56 @@ export const useSuperAdmin = () => {
     }
   };
 
+  const createAdmin = async (payload) => {
+    try {
+      const response = await superAdminService.createAdmin(payload);
+      const newAdmin = response.data || response;
+      const updatedAdmins = [...admins, newAdmin];
+      dispatch(fetchAdminsSuccess(updatedAdmins));
+      return true;
+    } catch (err) {
+      console.error(err);
+      throw err; // Re-throw so the component can catch it
+    }
+  };
+
+  const deleteAdmin = async (id) => {
+    try {
+      await superAdminService.deleteAdmin(id);
+      const updatedAdmins = admins.filter(admin => (admin.id || admin._id) !== id);
+      dispatch(fetchAdminsSuccess(updatedAdmins));
+      return true;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const createCategory = async (payload) => {
+    try {
+      const response = await superAdminService.createCategory(payload);
+      const newCategory = response.data || response;
+      const updatedCategories = [...categories, newCategory];
+      dispatch(fetchCategoriesSuccess(updatedCategories));
+      return true;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteCategory = async (id) => {
+    try {
+      await superAdminService.deleteCategory(id);
+      const updatedCategories = categories.filter(cat => (cat.id || cat._id) !== id);
+      dispatch(fetchCategoriesSuccess(updatedCategories));
+      return true;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const fetchDbCollection = async (name) => {
     try {
       return await superAdminService.getDbCollection(name);
@@ -60,5 +110,19 @@ export const useSuperAdmin = () => {
     fetchSuperAdminData();
   }, [fetchSuperAdminData]);
 
-  return { config, metrics, admins, categories, auditLogs, loading, error, updateConfig, fetchDbCollection };
+  return { 
+    config, 
+    metrics, 
+    admins, 
+    categories, 
+    auditLogs, 
+    loading, 
+    error, 
+    updateConfig, 
+    createAdmin,
+    deleteAdmin,
+    createCategory,
+    deleteCategory,
+    fetchDbCollection 
+  };
 };

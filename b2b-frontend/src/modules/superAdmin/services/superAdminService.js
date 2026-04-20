@@ -25,35 +25,67 @@ export const superAdminService = {
     }
   },
 
+  async createAdmin(payload) {
+    try {
+      return await apiClient.post("/superadmin/admins", payload);
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  async deleteAdmin(id) {
+    try {
+      return await apiClient.delete(`/superadmin/admins/${id}`);
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
   async getCategories() {
     try {
       return await apiClient.get("/superadmin/categories");
-    } catch {
-      throw new Error("Failed to fetch categories");
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  async createCategory(payload) {
+    try {
+      return await apiClient.post("/superadmin/categories", payload);
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  async deleteCategory(id) {
+    try {
+      return await apiClient.delete(`/superadmin/categories/${id}`);
+    } catch (error) {
+      throw new Error(error);
     }
   },
 
   async getDbCollection(name) {
     try {
       return await apiClient.get(`/superadmin/db/${name}`);
-    } catch {
-      throw new Error(`Failed to fetch ${name} collection`);
+    } catch (error) {
+      throw new Error(error);
     }
   },
 
   async getConfig() {
     try {
       return await apiClient.get("/superadmin/config");
-    } catch {
-      throw new Error("Failed to fetch config");
+    } catch (error) {
+      throw new Error(error);
     }
   },
 
   async updateConfig(payload) {
     try {
       return await apiClient.post("/superadmin/config", payload);
-    } catch {
-      throw new Error("Failed to update config");
+    } catch (error) {
+      throw new Error(error);
     }
   },
 };

@@ -4,6 +4,9 @@ import { env } from './env.js';
 const redis = new Redis({
   host: env.REDIS_HOST,
   port: env.REDIS_PORT,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  lazyConnect: true, // 🔥 Only connect when needed
 });
 
 redis.on('connect', () => console.log('Redis connected'));

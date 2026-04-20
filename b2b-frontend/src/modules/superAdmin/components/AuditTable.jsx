@@ -13,26 +13,34 @@ const AuditTable = ({ logs }) => {
           </tr>
         </thead>
         <tbody>
-          {logs.map((log) => (
-            <tr key={log.id} style={{ borderBottom: '1px solid var(--border)' }}>
-              <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '500' }}>{log.user}</td>
-              <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
-                <span style={{ 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '4px', 
-                  backgroundColor: '#f1f5f9', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '700' 
-                }}>
-                  {log.action}
-                </span>
-              </td>
-              <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{log.target}</td>
-              <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                {new Date(log.timestamp).toLocaleString()}
+          {Array.isArray(logs) && logs.length > 0 ? (
+            logs.map((log) => (
+              <tr key={log.id || log._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '500' }}>{log.user}</td>
+                <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
+                  <span style={{ 
+                    padding: '0.25rem 0.5rem', 
+                    borderRadius: '4px', 
+                    backgroundColor: '#f1f5f9', 
+                    fontSize: '0.75rem', 
+                    fontWeight: '700' 
+                  }}>
+                    {log.action}
+                  </span>
+                </td>
+                <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{log.target}</td>
+                <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                  {new Date(log.timestamp || log.createdAt).toLocaleString()}
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No audit logs available.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </Card>

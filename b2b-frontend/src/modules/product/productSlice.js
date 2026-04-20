@@ -17,7 +17,7 @@ const productSlice = createSlice({
     },
     fetchProductsSuccess: (state, action) => {
       state.loading = false;
-      state.products = action.payload;
+      state.products = action.payload.data || action.payload; // Handle both direct array and {data: []}
     },
     fetchProductDetailSuccess: (state, action) => {
       state.loading = false;

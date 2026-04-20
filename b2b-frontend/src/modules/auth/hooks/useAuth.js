@@ -13,29 +13,34 @@ export const useAuth = () => {
 
     try {
       const res = await authService.login(data);
+      const { user, accessToken, refreshToken, config } = res;
 
-      dispatch(loginSuccess({ user: res.user, token: res.token }));
+      if (!accessToken) {
+        throw new Error("No access token received from server");
+      }
+
+      dispatch(loginSuccess({ user, token: accessToken }));
       
       // Update global config in store if available
-      if (res.config) {
-        dispatch(fetchConfigSuccess(res.config));
+      if (config) {
+        dispatch(fetchConfigSuccess(config));
       }
       
       // Redirect based on role
-      switch (res.user.role) {
+      switch (user.role) {
         case "SUPER_ADMIN":
           window.location.href = "/super-admin/dashboard";
           break;
         case "ADMIN":
           window.location.href = "/admin/dashboard";
           break;
-        case "DELIVERY":
+        case "DELIVERY_PARTNER":
           window.location.href = "/delivery/dashboard";
           break;
-        case "VENDOR":
+        case "B2B_CUSTOMER":
           window.location.href = "/dashboard";
           break;
-        case "USER":
+        case "B2C_CUSTOMER":
           window.location.href = "/home";
           break;
         default:

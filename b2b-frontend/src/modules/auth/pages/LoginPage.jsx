@@ -11,7 +11,7 @@ const LoginPage = () => {
   const { config } = useSelector((state) => state.superAdmin);
 
   const [form, setForm] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
 
@@ -76,10 +76,10 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit}>
             <Input
               label="Email Address"
-              type="email"
-              name="email"
+              type="text"
+              name="identifier"
               placeholder="name@company.com"
-              value={form.email}
+              value={form.identifier}
               onChange={handleChange}
               required
             />

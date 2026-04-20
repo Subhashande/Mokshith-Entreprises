@@ -5,7 +5,7 @@ import { successResponse } from '../../utils/responseHandler.js';
 export const createOrder = asyncHandler(async (req, res) => {
   const order = await service.createOrder(
     req.user.id,
-    req.body.paymentMethod
+    req.body
   );
 
   successResponse(res, order, 'Order created');

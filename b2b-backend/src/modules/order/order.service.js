@@ -17,8 +17,18 @@ import { checkStock, reduceStock } from '../inventory/inventory.service.js';
 import { useCredit } from '../credit/credit.service.js';
 import { createShipment } from '../logistics/logistics.service.js';
 import Warehouse from '../warehouse/warehouse.model.js';
+import { fetchSetting } from '../settings/settings.service.js';
 
-export const createOrder = async (userId, paymentMethod = 'COD') => {
+export const createOrder = async (userId, data) => {
+  const { paymentMethod = 'COD', shippingAddress } = data;
+
+  // 🔥 Check Maintenance Mode
+  const maintenance = await fetchSetting('maintenanceMode');
+  const maintenanceOld = await fetchSetting('MAINTENANCE_MODE');
+  if (maintenance?.value === true || maintenanceOld?.value === true) {
+    throw new AppError('System under maintenance. Order placement is blocked.', 503);
+  }
+
   const cart = await cartRepo.findCartByUser(userId);
 
   if (!cart || cart.items.length === 0) {
@@ -47,18 +57,31 @@ export const createOrder = async (userId, paymentMethod = 'COD') => {
     });
   }
 
+  // Add 18% GST if not already included
+  const tax = totalAmount * 0.18;
+  const finalTotal = totalAmount + tax;
+
   // 🔥 2. Credit Handling
-  if (paymentMethod === 'CREDIT') {
-    await useCredit(userId, totalAmount);
+  if (paymentMethod.toUpperCase() === 'CREDIT') {
+    const user = await User.findById(userId);
+    if (!user || user.availableCredit < finalTotal) {
+      throw new AppError('Insufficient credit limit', 400);
+    }
+    
+    user.availableCredit -= finalTotal;
+    await user.save();
   }
 
   // 🔥 3. Create Order
   const order = await orderRepo.createOrder({
     userId,
     items,
-    totalAmount,
+    totalAmount: finalTotal,
     paymentMethod,
+    shippingAddress,
+    address: shippingAddress, // for compatibility
     status: 'PENDING',
+    paymentStatus: paymentMethod.toUpperCase() === 'CREDIT' ? 'PAID' : 'PENDING'
   });
 
   // 🔥 4. Reduce Inventory (NEW)
@@ -71,11 +94,16 @@ export const createOrder = async (userId, paymentMethod = 'COD') => {
   await cart.save();
 
   // 🔥 6. Shipment Creation (NEW)
-  const warehouses = await Warehouse.find();
-  const shipment = await createShipment(order, warehouses);
-
-  order.shipmentId = shipment._id;
-  await order.save();
+  try {
+    const warehouses = await Warehouse.find();
+    if (warehouses && warehouses.length > 0) {
+      const shipment = await createShipment(order, warehouses);
+      order.shipmentId = shipment._id;
+      await order.save();
+    }
+  } catch (err) {
+    console.error('Shipment creation failed:', err.message);
+  }
 
   // 🔥 EXISTING LOGIC (UNCHANGED)
   await generateInvoice(order);
@@ -91,7 +119,7 @@ export const createOrder = async (userId, paymentMethod = 'COD') => {
     await onOrderCreated(order);
     trackOrder(order);
   } catch (err) {
-    console.error('Order event failed:', err.message);
+    console.error('Order event error:', err.message);
   }
 
   return order;

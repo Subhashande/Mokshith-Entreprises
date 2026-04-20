@@ -12,27 +12,56 @@ const Checkout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [address, setAddress] = useState({
+    name: user?.name || "",
+    phone: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: ""
+  });
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.18; // 18% GST
   const total = subtotal + tax;
 
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setAddress({ ...address, [name]: value });
+  };
+
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return alert("Cart is empty!");
     
+    // Validate address
+    const requiredFields = ['name', 'phone', 'addressLine', 'city', 'state', 'pincode'];
+    const missingFields = requiredFields.filter(f => !address[f]);
+    if (missingFields.length > 0) return alert("Please fill in all address details.");
+
+    if (paymentMethod === "Credit" && user?.availableCredit < total) {
+      return alert("Insufficient credit balance. Please use COD or contact admin.");
+    }
+    
     setLoading(true);
     try {
-      await placeOrder({
-        items: cart,
-        total,
-        userId: user?.id,
-        address: "Default Business Address, Bangalore, India"
-      });
+      const payload = {
+        items: cart.map(item => ({
+          productId: item.id || item._id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: total,
+        paymentMethod,
+        shippingAddress: address
+      };
+
+      await placeOrder(payload);
       alert("Order placed successfully! Redirecting to orders...");
       clearCart();
       navigate(routes.ORDERS);
     } catch (err) {
-      alert("Failed to place order. Please try again.");
+      alert(err.message || "Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,12 +84,17 @@ const Checkout = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
           <div>
             <Card style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Shipping Details</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <Input label="Full Name" defaultValue={user?.name} />
-                <Input label="Phone" placeholder="+91 XXXXX XXXXX" />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Business Shipping Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <Input label="Full Name / Business Name" name="name" value={address.name} onChange={handleAddressChange} required />
+                <Input label="Phone" name="phone" placeholder="+91 XXXXX XXXXX" value={address.phone} onChange={handleAddressChange} required />
               </div>
-              <Input label="Business Address" defaultValue="123 Industrial Area, Phase II, Bangalore" />
+              <Input label="Address Line" name="addressLine" value={address.addressLine} onChange={handleAddressChange} required />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                <Input label="City" name="city" value={address.city} onChange={handleAddressChange} required />
+                <Input label="State" name="state" value={address.state} onChange={handleAddressChange} required />
+                <Input label="Pincode" name="pincode" value={address.pincode} onChange={handleAddressChange} required />
+              </div>
             </Card>
 
             <Card>
@@ -94,14 +128,45 @@ const Checkout = () => {
               </div>
               
               <div style={{ marginBottom: '1.5rem' }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.75rem' }}>Payment Method</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: '600' }}>Payment Method</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '700' }}>
+                    Credit: ₹{user?.availableCredit?.toLocaleString() || '0'}
+                  </p>
+                </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  <label style={{ flex: 1, border: '1px solid var(--primary)', padding: '0.75rem', borderRadius: 'var(--radius-md)', textAlign: 'center', cursor: 'pointer', backgroundColor: 'var(--primary-light)' }}>
-                    <input type="radio" name="payment" defaultChecked style={{ marginRight: '0.5rem' }} />
+                  <label 
+                    style={{ 
+                      flex: 1, 
+                      border: paymentMethod === 'COD' ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      padding: '0.75rem', 
+                      borderRadius: 'var(--radius-md)', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      backgroundColor: paymentMethod === 'COD' ? 'var(--primary-light)' : 'transparent' 
+                    }}
+                    onClick={() => setPaymentMethod('COD')}
+                  >
+                    <input type="radio" name="payment" checked={paymentMethod === 'COD'} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
                     <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>COD</span>
                   </label>
-                  <label style={{ flex: 1, border: '1px solid var(--border)', padding: '0.75rem', borderRadius: 'var(--radius-md)', textAlign: 'center', cursor: 'pointer' }}>
-                    <input type="radio" name="payment" style={{ marginRight: '0.5rem' }} />
+                  <label 
+                    style={{ 
+                      flex: 1, 
+                      border: paymentMethod === 'Credit' ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      padding: '0.75rem', 
+                      borderRadius: 'var(--radius-md)', 
+                      textAlign: 'center', 
+                      cursor: 'pointer',
+                      backgroundColor: paymentMethod === 'Credit' ? 'var(--primary-light)' : 'transparent',
+                      opacity: user?.availableCredit < total ? 0.5 : 1
+                    }}
+                    onClick={() => {
+                      if (user?.availableCredit < total) return alert("Insufficient credit balance");
+                      setPaymentMethod('Credit');
+                    }}
+                  >
+                    <input type="radio" name="payment" checked={paymentMethod === 'Credit'} onChange={() => {}} style={{ marginRight: '0.5rem' }} disabled={user?.availableCredit < total} />
                     <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Credit</span>
                   </label>
                 </div>

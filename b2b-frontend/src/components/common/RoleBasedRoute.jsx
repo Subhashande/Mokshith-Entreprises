@@ -16,9 +16,9 @@ const RoleBasedRoute = ({ children, allowedRoles }) => {
     switch (user?.role) {
       case "SUPER_ADMIN": return <Navigate to={routes.SUPER_ADMIN} />;
       case "ADMIN": return <Navigate to={routes.ADMIN} />;
-      case "DELIVERY": return <Navigate to={routes.DELIVERY} />;
-      case "VENDOR": return <Navigate to={routes.DASHBOARD} />;
-      case "USER": return <Navigate to={routes.HOME} />;
+      case "DELIVERY_PARTNER": return <Navigate to={routes.DELIVERY} />;
+      case "B2B_CUSTOMER": return <Navigate to={routes.DASHBOARD} />;
+      case "B2C_CUSTOMER": return <Navigate to={routes.HOME} />;
       default: return <Navigate to={routes.PRODUCTS} />;
     }
   }

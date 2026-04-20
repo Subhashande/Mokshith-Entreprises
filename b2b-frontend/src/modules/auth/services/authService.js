@@ -4,18 +4,19 @@ export const authService = {
   async login(payload) {
     try {
       const res = await apiClient.post("/auth/login", payload);
-      return res.data;
+      // Ensure we handle the standard backend response structure
+      return res.data || res; 
     } catch (error) {
-      throw new Error(error?.response?.data?.message || "Login failed");
+      throw new Error(error || "Login failed");
     }
   },
 
   async register(payload) {
     try {
       const res = await apiClient.post("/auth/register", payload);
-      return res;
+      return res.data || res;
     } catch (error) {
-      throw new Error(error?.response?.data?.message || "Registration failed");
+      throw new Error(error || "Registration failed");
     }
   },
 

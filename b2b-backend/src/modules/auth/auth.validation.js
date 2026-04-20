@@ -1,10 +1,13 @@
 import Joi from 'joi';
+import { ROLES } from '../../constants/roles.js';
 
 export const registerSchema = Joi.object({
   body: Joi.object({
+    name: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
-    mobile: Joi.string().optional(),
+    mobile: Joi.string().required(),
+    role: Joi.string().valid(...Object.values(ROLES)).default(ROLES.B2B_CUSTOMER),
   }),
 });
 

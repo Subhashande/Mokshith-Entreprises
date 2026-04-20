@@ -11,7 +11,21 @@ import DbShell from "../components/DbShell";
 import Button from "../../../components/ui/Button";
 
 const SuperAdminPage = () => {
-  const { config, metrics, admins, categories, auditLogs, loading, error, updateConfig, fetchDbCollection } = useSuperAdmin();
+  const { 
+    config, 
+    metrics, 
+    admins, 
+    categories, 
+    auditLogs, 
+    loading, 
+    error, 
+    updateConfig, 
+    createAdmin,
+    deleteAdmin,
+    createCategory,
+    deleteCategory,
+    fetchDbCollection 
+  } = useSuperAdmin();
   const { logout } = useAuth();
   const [showDbShell, setShowDbShell] = useState(false);
 
@@ -92,9 +106,9 @@ const SuperAdminPage = () => {
 
         <FeatureAndSecurityPanel config={config} onSave={updateConfig} />
 
-        <AdminManagement admins={admins} />
+        <AdminManagement admins={admins} onCreateAdmin={createAdmin} onDeleteAdmin={deleteAdmin} />
 
-        <CategoryControl categories={categories} />
+        <CategoryControl categories={categories} onCreateCategory={createCategory} onDeleteCategory={deleteCategory} />
 
         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: '700' }}>System Audit Trail</h3>

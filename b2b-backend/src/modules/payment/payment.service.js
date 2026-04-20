@@ -44,11 +44,17 @@ export const initiatePayment = async (orderId, userId) => {
 };
 
 export const verifyPayment = async (payload) => {
-  const isValid = await gateway.verifyPayment(payload);
+  const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = payload;
+  
+  const isValid = await gateway.verifyPayment({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+  });
 
   if (!isValid) throw new AppError('Payment verification failed', 400);
 
-  const payment = await repo.findByOrderId(payload.orderId);
+  const payment = await repo.findByOrderId(orderId);
 
   if (!payment) throw new AppError('Payment not found', 404);
 

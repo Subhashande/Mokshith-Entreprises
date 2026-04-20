@@ -3,12 +3,17 @@ import Card from "../../../components/ui/Card";
 const MetricsCards = ({ metrics }) => {
   if (!metrics) return null;
 
+  const formatCurrency = (val) => {
+    if (val === undefined || val === null || isNaN(val)) return "₹0.0K";
+    return `₹${(val / 1000).toFixed(1)}K`;
+  };
+
   const items = [
-    { label: "Total Users", value: metrics.totalUsers, color: "var(--primary)" },
-    { label: "Active Vendors", value: metrics.activeVendors, color: "var(--success)" },
-    { label: "Orders Today", value: metrics.ordersToday, color: "var(--info)" },
-    { label: "Revenue Today", value: `₹${(metrics.revenueToday / 1000).toFixed(1)}K`, color: "var(--accent)" },
-    { label: "Pending Approvals", value: metrics.pendingApprovals, color: "var(--warning)" }
+    { label: "Total Users", value: metrics.totalUsers || 0, color: "var(--primary)" },
+    { label: "Active Vendors", value: metrics.activeVendors || 0, color: "var(--success)" },
+    { label: "Orders Today", value: metrics.ordersToday || 0, color: "var(--info)" },
+    { label: "Revenue Today", value: formatCurrency(metrics.revenueToday), color: "var(--accent)" },
+    { label: "Pending Approvals", value: metrics.pendingApprovals || 0, color: "var(--warning)" }
   ];
 
   return (

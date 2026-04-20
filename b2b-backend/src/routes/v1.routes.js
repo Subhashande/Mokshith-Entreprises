@@ -83,5 +83,6 @@ router.use('/search', searchRoutes);
 // 🛡️ Admin
 router.use('/admin', adminRoutes);
 router.use('/super-admin', superAdminRoutes);
+router.use('/superadmin', superAdminRoutes); // Alias for frontend
 
 export default router;

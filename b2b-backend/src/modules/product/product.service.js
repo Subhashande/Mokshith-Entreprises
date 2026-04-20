@@ -42,3 +42,43 @@ export const getProductById = async (id) => {
 
   return product;
 };
+
+export const updateProduct = async (id, data) => {
+  const product = await repo.findById(id);
+
+  if (!product) throw new AppError('Product not found', 404);
+
+  const updatedProduct = await repo.updateProduct(id, data);
+
+  return updatedProduct;
+};
+
+export const deleteProduct = async (id) => {
+  const product = await repo.findById(id);
+
+  if (!product) throw new AppError('Product not found', 404);
+
+  await repo.deleteProduct(id);
+
+  return { message: 'Product deleted successfully' };
+};
+
+export const updateStock = async (id, stock) => {
+  if (stock < 0) {
+    throw new AppError('Stock cannot be negative', 400);
+  }
+
+  const product = await repo.updateProduct(id, { stock });
+
+  if (!product) throw new AppError('Product not found', 404);
+
+  return product;
+};
+
+export const updateStatus = async (id, isActive) => {
+  const product = await repo.updateProduct(id, { isActive });
+
+  if (!product) throw new AppError('Product not found', 404);
+
+  return product;
+};

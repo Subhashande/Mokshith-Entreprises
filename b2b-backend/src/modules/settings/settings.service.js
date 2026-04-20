@@ -1,14 +1,24 @@
 import * as repo from './settings.repository.js';
-
-export const updateSetting = (key, value) =>
-  repo.upsertSetting(key, value);
-
-export const fetchSetting = (key) =>
-  repo.getSetting(key);import * as repo from './settings.repository.js';
 import AppError from '../../errors/AppError.js';
 
 // 🔥 Allowed keys (for safety)
 const ALLOWED_KEYS = [
+  'maintenanceMode',
+  'siteName',
+  'supportEmail',
+  'defaultCurrency',
+  'commissionRate',
+  'orderCutoffTime',
+  'maxCreditLimit',
+  'allowRegistration',
+  'enableCOD',
+  'creditSystem',
+  'cod',
+  'notifications',
+  'reviews',
+  'recommendations',
+  'dynamicPricing',
+  'featureFlags',
   'MAINTENANCE_MODE',
   'MAX_ORDER_LIMIT',
   'DEFAULT_CURRENCY',
