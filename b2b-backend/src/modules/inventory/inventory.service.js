@@ -1,5 +1,7 @@
+import mongoose from 'mongoose';
 import * as repo from './inventory.repository.js';
 import AppError from '../../errors/AppError.js';
+import Warehouse from '../warehouse/warehouse.model.js';
 
 // ➕ Add Stock
 export const addStock = async ({ productId, warehouseId, stock }) => {
@@ -29,6 +31,23 @@ export const checkStock = async (productId, quantity) => {
   }
 
   const items = await repo.findByProduct(productId);
+
+  // If no inventory records found, automatically create a default stock for demo/new products
+  if (items.length === 0) {
+    console.log(`Auto-seeding stock for product: ${productId}`);
+    // Find first warehouse or create a default one
+    let warehouse = await Warehouse.findOne();
+    if (!warehouse) {
+      warehouse = await Warehouse.create({ name: 'Main Warehouse', location: { city: 'Default' } });
+    }
+    
+    await repo.createInventory({
+      productId,
+      warehouseId: warehouse._id,
+      stock: 1000 // Seed with 1000 units for new products
+    });
+    return true;
+  }
 
   const totalStock = items.reduce((sum, i) => sum + i.stock, 0);
 

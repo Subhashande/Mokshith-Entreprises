@@ -1,20 +1,26 @@
 import mongoose from 'mongoose';
 import { ORDER_STATUS } from '../../constants/orderStatus.js';
+import { PAYMENT_STATUS } from '../../constants/paymentStatus.js';
 
 const orderSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      required: true,
       index: true,
     },
 
     items: [
       {
-        productId: mongoose.Schema.Types.ObjectId,
-        name: String,
-        price: Number,
-        quantity: Number,
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+        name: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true, min: 1 },
       },
     ],
 
@@ -25,8 +31,9 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ['COD', 'ONLINE', 'CREDIT', 'Credit'],
+      enum: ['COD', 'ONLINE', 'CREDIT', 'RAZORPAY', 'UPI', 'CARD'],
       default: 'COD',
+      required: true,
     },
 
     shipmentId: {
@@ -36,17 +43,18 @@ const orderSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: ['PENDING', 'PAID', 'FAILED'],
-      default: 'PENDING',
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.PENDING,
+      required: true,
     },
 
     address: {
-      name: String,
-      phone: String,
-      addressLine: String,
-      city: String,
-      state: String,
-      pincode: String,
+      name: { type: String, required: true },
+      phone: { type: String, required: true },
+      addressLine: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
     },
 
     shippingAddress: {
@@ -62,6 +70,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(ORDER_STATUS),
       default: ORDER_STATUS.PENDING,
+      required: true,
     },
   },
   { timestamps: true }

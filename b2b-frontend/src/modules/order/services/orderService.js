@@ -11,9 +11,11 @@ export const orderService = {
 
   async placeOrder(payload) {
     try {
-      return await apiClient.post("/orders", payload);
-    } catch {
-      throw new Error("Order placement failed");
+      const response = await apiClient.post("/orders", payload);
+      return response.data || response;
+    } catch (error) {
+      console.error("API Error during placeOrder:", error);
+      throw new Error(error.response?.data?.message || error.message || "Order placement failed");
     }
   },
 };

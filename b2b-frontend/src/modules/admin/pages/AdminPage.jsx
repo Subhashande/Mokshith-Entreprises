@@ -13,6 +13,9 @@ const AdminPage = () => {
 
   const handleQuickAction = (action) => {
     switch (action) {
+      case "Manage Orders":
+        navigate(routes.ADMIN_ORDERS);
+        break;
       case "Add New Product":
         navigate(routes.ADMIN_PRODUCTS);
         break;
@@ -135,6 +138,12 @@ const AdminPage = () => {
           <div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <Button 
+                style={{ justifyContent: 'flex-start' }}
+                onClick={() => handleQuickAction("Manage Orders")}
+              >
+                📦 Manage All Orders
+              </Button>
               <Button 
                 variant="secondary" 
                 style={{ justifyContent: 'flex-start' }}

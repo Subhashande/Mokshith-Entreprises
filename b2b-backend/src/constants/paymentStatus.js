@@ -1,5 +1,5 @@
 export const PAYMENT_STATUS = {
   PENDING: 'PENDING',
-  SUCCESS: 'SUCCESS',
+  PAID: 'PAID',
   FAILED: 'FAILED',
 };

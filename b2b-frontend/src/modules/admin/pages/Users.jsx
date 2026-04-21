@@ -17,7 +17,10 @@ const AdminUsersPage = () => {
     try {
       setLoading(true);
       const response = await adminService.getUsers();
-      setUsers(response.data || response || []);
+      const allUsers = response.data || response || [];
+      // Filter out ADMIN and SUPER_ADMIN roles to only show customers/vendors
+      const filteredUsers = allUsers.filter(u => u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN');
+      setUsers(filteredUsers);
     } catch (err) {
       setError(err.message);
     } finally {

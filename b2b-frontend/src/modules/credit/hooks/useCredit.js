@@ -15,10 +15,12 @@ export const useCredit = () => {
         creditService.getLedger(),
       ]);
 
-      setCredit(creditData);
-      setLedger(ledgerData);
+      setCredit(creditData.data);
+      setLedger(ledgerData.data || []);
+      console.log("Credit Data Loaded:", creditData.data);
+      console.log("Ledger Data Loaded:", ledgerData.data || []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || err);
     } finally {
       setLoading(false);
     }
@@ -26,6 +28,10 @@ export const useCredit = () => {
 
   useEffect(() => {
     fetchCredit();
+    
+    // Refresh credit data when window regains focus (e.g. after returning from checkout)
+    window.addEventListener('focus', fetchCredit);
+    return () => window.removeEventListener('focus', fetchCredit);
   }, [fetchCredit]);
 
   return { credit, ledger, loading, error };

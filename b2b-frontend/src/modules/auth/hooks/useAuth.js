@@ -65,5 +65,9 @@ export const useAuth = () => {
     }
   }, [dispatch]);
 
-  return { login, logout, loading, error, user, isAuthenticated };
+  const updateUserInfo = useCallback((userData) => {
+    dispatch(loginSuccess({ user: userData, token: localStorage.getItem('token') }));
+  }, [dispatch]);
+
+  return { login, logout, updateUserInfo, loading, error, user, isAuthenticated };
 };

@@ -84,7 +84,21 @@ export const repayCredit = async (userId, amount) => {
 };
 
 export const getCredit = async (userId) => {
-  return repo.findByUser(userId);
+  let credit = await repo.findByUser(userId);
+  
+  // 🔥 Auto-create credit account if not exists (demo purposes)
+  if (!credit) {
+    console.log(`Auto-creating credit account for user: ${userId}`);
+    credit = await repo.createCredit({
+      userId,
+      creditLimit: 50000,
+      availableCredit: 50000,
+      usedCredit: 0,
+      status: 'ACTIVE'
+    });
+  }
+  
+  return credit;
 };
 
 export const getLedger = async (userId) => {

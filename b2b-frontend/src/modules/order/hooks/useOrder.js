@@ -11,17 +11,17 @@ import {
   fetchFailure 
 } from "../orderSlice";
 
-export const useOrder = () => {
+export const useOrder = (shouldFetch = false) => {
   const dispatch = useDispatch();
   const { orders, cart, loading, error } = useSelector((state) => state.order);
 
   const fetchOrders = useCallback(async () => {
     dispatch(fetchStart());
     try {
-      const data = await orderService.getOrders();
-      dispatch(fetchOrdersSuccess(data));
+      const response = await orderService.getOrders();
+      dispatch(fetchOrdersSuccess(response.data || response));
     } catch (err) {
-      dispatch(fetchFailure(err.message));
+      dispatch(fetchFailure(err.message || err));
     }
   }, [dispatch]);
 
@@ -50,14 +50,16 @@ export const useOrder = () => {
       await fetchOrders();
       return newOrder;
     } catch (err) {
-      dispatch(fetchFailure(err.message));
+      dispatch(fetchFailure(err.message || err));
       throw err;
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    if (shouldFetch) {
+      fetchOrders();
+    }
+  }, [shouldFetch, fetchOrders]);
 
   return { 
     orders, 

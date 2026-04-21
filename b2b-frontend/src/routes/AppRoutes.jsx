@@ -15,11 +15,12 @@ import AdminProductsPage from "../modules/admin/pages/Products";
 import AdminOrdersPage from "../modules/admin/pages/Orders";
 import AdminVendorsPage from "../modules/admin/pages/Vendors";
 import AdminApprovalsPage from "../modules/admin/pages/Approvals";
-import SuperAdminPage from "../modules/superAdmin/pages/SuperAdminPage";
+import SuperAdminPage from "../modules/superadmin/pages/SuperAdminPage";
 import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
 import CreditPage from "../modules/credit/pages/CreditPage";
 import CheckoutPage from "../modules/order/pages/Checkout";
 import OrdersPage from "../modules/order/pages/OrdersPage";
+import ProductDetails from "../modules/product/pages/ProductDetails";
 
 const AppRoutes = () => {
   return (
@@ -41,6 +42,11 @@ const AppRoutes = () => {
         <Route path={routes.PRODUCTS} element={
           <ProtectedRoute>
             <ProductPage />
+          </ProtectedRoute>
+        } />
+        <Route path={`${routes.PRODUCTS}/:id`} element={
+          <ProtectedRoute>
+            <ProductDetails />
           </ProtectedRoute>
         } />
 

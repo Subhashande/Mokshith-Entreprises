@@ -33,4 +33,9 @@ const creditSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+creditSchema.pre('save', function (next) {
+  this.availableCredit = this.creditLimit - this.usedCredit;
+  next();
+});
+
 export default mongoose.model('Credit', creditSchema);

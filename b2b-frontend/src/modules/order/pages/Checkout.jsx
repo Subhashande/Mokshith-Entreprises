@@ -6,13 +6,14 @@ import Input from "../../../components/ui/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
+import { PAYMENT_METHODS } from "../../../utils/constants";
 
 const Checkout = () => {
   const { cart, placeOrder, clearCart } = useOrder();
-  const { user } = useAuth();
+  const { user, updateUserInfo } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.COD);
   const [address, setAddress] = useState({
     name: user?.name || "",
     phone: "",
@@ -31,17 +32,32 @@ const Checkout = () => {
     setAddress({ ...address, [name]: value });
   };
 
-  const handlePlaceOrder = async () => {
-    if (cart.length === 0) return alert("Cart is empty!");
-    
-    // Validate address
-    const requiredFields = ['name', 'phone', 'addressLine', 'city', 'state', 'pincode'];
-    const missingFields = requiredFields.filter(f => !address[f]);
-    if (missingFields.length > 0) return alert("Please fill in all address details.");
-
-    if (paymentMethod === "Credit" && user?.availableCredit < total) {
-      return alert("Insufficient credit balance. Please use COD or contact admin.");
+  const validateCheckout = () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return false;
     }
+
+    const requiredFields = ['name', 'phone', 'addressLine', 'city', 'state', 'pincode'];
+    const missingFields = requiredFields.filter(f => !address[f]?.trim());
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in all shipping details: ${missingFields.join(', ')}`);
+      return false;
+    }
+
+    if (paymentMethod === PAYMENT_METHODS.CREDIT) {
+      if (!user?.availableCredit || user.availableCredit < total) {
+        alert("Insufficient credit balance. Please choose another payment method.");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!validateCheckout()) return;
     
     setLoading(true);
     try {
@@ -49,7 +65,8 @@ const Checkout = () => {
         items: cart.map(item => ({
           productId: item.id || item._id,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          name: item.name
         })),
         totalAmount: total,
         paymentMethod,
@@ -57,11 +74,22 @@ const Checkout = () => {
       };
 
       await placeOrder(payload);
-      alert("Order placed successfully! Redirecting to orders...");
+      
+      // 🔥 Update local credit state if credit was used
+      if (paymentMethod === PAYMENT_METHODS.CREDIT && user) {
+        updateUserInfo({
+          ...user,
+          availableCredit: user.availableCredit - total,
+          usedCredit: (user.usedCredit || 0) + total
+        });
+      }
+
+      alert("🎉 Order placed successfully!");
       clearCart();
       navigate(routes.ORDERS);
     } catch (err) {
-      alert(err.message || "Failed to place order. Please try again.");
+      console.error("Checkout Error:", err);
+      alert(err.message || "Failed to place order. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -99,8 +127,8 @@ const Checkout = () => {
 
             <Card>
               <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Order Items</h3>
-              {cart.map((item) => (
-                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
+              {cart.map((item, index) => (
+                <div key={item._id || item.id || index} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
                   <div>
                     <p style={{ fontWeight: '600' }}>{item.name}</p>
                     <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Quantity: {item.quantity}</p>
@@ -134,40 +162,70 @@ const Checkout = () => {
                     Credit: ₹{user?.availableCredit?.toLocaleString() || '0'}
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <label 
                     style={{ 
                       flex: 1, 
-                      border: paymentMethod === 'COD' ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      border: paymentMethod === PAYMENT_METHODS.COD ? '1px solid var(--primary)' : '1px solid var(--border)', 
                       padding: '0.75rem', 
                       borderRadius: 'var(--radius-md)', 
                       textAlign: 'center', 
                       cursor: 'pointer', 
-                      backgroundColor: paymentMethod === 'COD' ? 'var(--primary-light)' : 'transparent' 
+                      backgroundColor: paymentMethod === PAYMENT_METHODS.COD ? 'var(--primary-light)' : 'transparent' 
                     }}
-                    onClick={() => setPaymentMethod('COD')}
+                    onClick={() => setPaymentMethod(PAYMENT_METHODS.COD)}
                   >
-                    <input type="radio" name="payment" checked={paymentMethod === 'COD'} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
+                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.COD} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
                     <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>COD</span>
                   </label>
                   <label 
                     style={{ 
                       flex: 1, 
-                      border: paymentMethod === 'Credit' ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      border: paymentMethod === PAYMENT_METHODS.CREDIT ? '1px solid var(--primary)' : '1px solid var(--border)', 
                       padding: '0.75rem', 
                       borderRadius: 'var(--radius-md)', 
                       textAlign: 'center', 
                       cursor: 'pointer',
-                      backgroundColor: paymentMethod === 'Credit' ? 'var(--primary-light)' : 'transparent',
+                      backgroundColor: paymentMethod === PAYMENT_METHODS.CREDIT ? 'var(--primary-light)' : 'transparent',
                       opacity: user?.availableCredit < total ? 0.5 : 1
                     }}
                     onClick={() => {
                       if (user?.availableCredit < total) return alert("Insufficient credit balance");
-                      setPaymentMethod('Credit');
+                      setPaymentMethod(PAYMENT_METHODS.CREDIT);
                     }}
                   >
-                    <input type="radio" name="payment" checked={paymentMethod === 'Credit'} onChange={() => {}} style={{ marginRight: '0.5rem' }} disabled={user?.availableCredit < total} />
+                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.CREDIT} onChange={() => {}} style={{ marginRight: '0.5rem' }} disabled={user?.availableCredit < total} />
                     <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Credit</span>
+                  </label>
+                  <label 
+                    style={{ 
+                      flex: 1, 
+                      border: paymentMethod === PAYMENT_METHODS.RAZORPAY ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      padding: '0.75rem', 
+                      borderRadius: 'var(--radius-md)', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      backgroundColor: paymentMethod === PAYMENT_METHODS.RAZORPAY ? 'var(--primary-light)' : 'transparent' 
+                    }}
+                    onClick={() => setPaymentMethod(PAYMENT_METHODS.RAZORPAY)}
+                  >
+                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.RAZORPAY} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
+                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Razorpay</span>
+                  </label>
+                  <label 
+                    style={{ 
+                      flex: 1, 
+                      border: paymentMethod === PAYMENT_METHODS.ONLINE ? '1px solid var(--primary)' : '1px solid var(--border)', 
+                      padding: '0.75rem', 
+                      borderRadius: 'var(--radius-md)', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      backgroundColor: paymentMethod === PAYMENT_METHODS.ONLINE ? 'var(--primary-light)' : 'transparent' 
+                    }}
+                    onClick={() => setPaymentMethod(PAYMENT_METHODS.ONLINE)}
+                  >
+                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.ONLINE} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
+                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Online</span>
                   </label>
                 </div>
               </div>
