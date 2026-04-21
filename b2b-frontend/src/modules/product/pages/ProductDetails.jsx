@@ -105,8 +105,6 @@ const ProductDetails = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <Navbar />
-
       <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '4rem' }}>
           {/* Image Section */}

@@ -1,0 +1,160 @@
+🔐 AUTH FLOW (Frontend)
+User opens app
+     ↓
+Check auth state (Redux / Context / storage)
+     ↓
+NOT LOGGED IN → Redirect to Login Page
+     ↓
+Login Form (UI)
+     ↓
+User enters credentials / OTP
+     ↓
+useAuth hook
+     ↓
+authService (API call)
+     ↓
+JWT stored (cookie/localStorage)
+     ↓
+Global state updated
+     ↓
+Redirect to Dashboard (role-based)
+
+🏢 COMPANY + VENDOR FLOW (Frontend)
+Admin Dashboard (UI)
+     ↓
+Company Management Page
+     ↓
+Create Company (Form → Service → API)
+     ↓
+Vendor registers (Public UI)
+     ↓
+Admin Approval Page
+     ↓
+Approve button (UI)
+     ↓
+useAdmin hook → adminService
+     ↓
+UI updates (Approved status)
+
+🛍️ PRODUCT FLOW (Frontend)
+Admin/Vendor Dashboard
+     ↓
+Product Form Page
+     ↓
+Fill Product Details (UI)
+     ↓
+Variant + Pricing + Category
+     ↓
+useProduct hook
+     ↓
+productService → API
+     ↓
+Success → UI refresh
+
+User Side:
+     ↓
+Search Page / Product Page
+     ↓
+Fetch products (useProduct)
+     ↓
+Render catalog (UI)
+
+🛒 BUYING FLOW (Frontend)
+User browses products
+     ↓
+Clicks "Add to Cart"
+     ↓
+Cart State Updated (Redux / Hook)
+     ↓
+Cart Page UI
+     ↓
+Checkout button
+     ↓
+Order creation API (useOrder)
+     ↓
+Order success → Navigate to Payment
+
+💳 PAYMENT FLOW (Frontend)
+Order Page
+     ↓
+Click "Pay Now"
+     ↓
+PaymentPage UI
+     ↓
+paymentService → initiate API
+     ↓
+Redirect / Open Gateway (Razorpay/Stripe)
+
+Success:
+     ↓
+Verify Payment API
+     ↓
+Update UI → Success screen
+
+OR
+
+Credit Flow:
+     ↓
+Select "Use Credit"
+     ↓
+creditService → API
+     ↓
+Ledger updated → UI refreshed
+
+🚚 LOGISTICS FLOW (Frontend)
+Order Placed
+     ↓
+Delivery Page
+     ↓
+useDelivery hook
+     ↓
+deliveryService → API
+     ↓
+Render RouteMap (UI)
+
+Status Updates:
+     ↓
+Pending → Shipped → Delivered
+     ↓
+UI updates dynamically
+
+📄 INVOICE FLOW (Frontend)
+Order Success
+     ↓
+Navigate to Invoice Page
+     ↓
+useInvoice hook
+     ↓
+invoiceService → API
+     ↓
+Render InvoicePreview (UI)
+     ↓
+Download / Print (future)
+
+🔔 NOTIFICATION FLOW (Frontend)
+User logged in
+     ↓
+NotificationPage loads
+     ↓
+useNotification hook
+     ↓
+notificationService → API
+
+User action:
+     ↓
+Click notification
+     ↓
+markAsRead()
+     ↓
+UI updates instantly
+
+📊 ANALYTICS FLOW (Frontend)
+Dashboard Page
+     ↓
+Filters selected (date range)
+     ↓
+useAnalytics hook
+     ↓
+analyticsService → API
+     ↓
+Render KPI Widgets + Charts

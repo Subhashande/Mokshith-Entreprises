@@ -9,6 +9,8 @@ import { securityMiddleware } from './config/security.js';
 import { requestLogger } from './middlewares/requestLogger.middleware.js';
 import { idempotencyMiddleware } from './middlewares/idempotency.middleware.js';
 
+import logisticsRoutes from './modules/logistics/logistics.routes.js';
+
 const app = express();
 
 // 🔥 Trust proxy (important for rate limiting, IP, cloud)
@@ -29,7 +31,11 @@ app.use(requestLogger);
 app.use(idempotencyMiddleware);
 
 // 🚀 Routes
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date() }));
 app.use('/api', routes);
+
+// 🔥 The previous emergency route for /api/v1/logistics was redundant and potentially conflicting
+// since it is already registered via app.use('/api', routes) -> index.js -> v1.routes.js -> logistics.routes.js
 
 // ❌ Not Found
 app.use(notFound);

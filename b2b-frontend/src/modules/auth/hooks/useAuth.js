@@ -49,8 +49,6 @@ export const useAuth = () => {
           window.location.href = "/delivery/dashboard";
           break;
         case "B2B_CUSTOMER":
-          window.location.href = "/dashboard";
-          break;
         case "B2C_CUSTOMER":
           window.location.href = "/home";
           break;

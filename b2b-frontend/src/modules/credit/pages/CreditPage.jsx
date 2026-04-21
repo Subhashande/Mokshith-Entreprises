@@ -14,8 +14,6 @@ const CreditPage = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <Navbar />
-
       <main style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Credit Management</h2>

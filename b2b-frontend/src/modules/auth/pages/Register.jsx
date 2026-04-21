@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
 import { authService } from "../services/authService";
+import { useAuth } from "../hooks/useAuth";
 import { 
   User, 
   Building2, 
@@ -17,7 +18,16 @@ import {
 
 const Register = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(1); // 1: Role Selection, 2: Details
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(routes.DASHBOARD);
+    }
+  }, [user, navigate]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);

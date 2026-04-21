@@ -19,9 +19,13 @@ import {
 
 const B2BDashboard = () => {
   const { user } = useAuth();
-  const { orders } = useOrder();
-  const { creditLimit, balance } = useCredit();
+  const { orders, loading: ordersLoading } = useOrder(true);
+  const { credit, loading: creditLoading } = useCredit();
   const navigate = useNavigate();
+
+  const creditLimit = credit?.creditLimit || 0;
+  const balance = credit?.availableCredit || 0;
+  const usedCredit = credit?.usedCredit || 0;
 
   const stats = [
     { 
@@ -33,7 +37,7 @@ const B2BDashboard = () => {
     },
     { 
       label: "Credit Limit", 
-      value: `₹${creditLimit?.toLocaleString() || 0}`, 
+      value: `₹${creditLimit.toLocaleString()}`, 
       icon: <CreditCard size={20} />, 
       color: "green",
       link: routes.CREDIT
@@ -47,7 +51,7 @@ const B2BDashboard = () => {
     },
     { 
       label: "Available Balance", 
-      value: `₹${balance?.toLocaleString() || 0}`, 
+      value: `₹${balance.toLocaleString()}`, 
       icon: <TrendingUp size={20} />, 
       color: "purple",
       link: routes.CREDIT
@@ -56,13 +60,19 @@ const B2BDashboard = () => {
 
   const recentOrders = orders?.slice(0, 5) || [];
 
+  const quickLinks = [
+    { icon: <FileText size={20} />, label: "Invoices", path: routes.ORDERS },
+    { icon: <Clock size={20} />, label: "Statements", path: routes.CREDIT },
+    { icon: <Settings size={20} />, label: "Settings", path: "/settings" }
+  ];
+
   return (
     <div className="dashboard-container">
       <main className="dashboard-main">
         <header className="dashboard-header">
           <div className="header-left">
             <h1>Business Dashboard</h1>
-            <p>Manage your procurement and credit lines</p>
+            <p>Welcome back, {user?.name}</p>
           </div>
           <div className="header-right">
             <button 
@@ -99,7 +109,9 @@ const B2BDashboard = () => {
             </div>
             
             <div className="orders-table-wrapper">
-              {recentOrders.length > 0 ? (
+              {(ordersLoading) ? (
+                <div className="empty-state"><p>Loading orders...</p></div>
+              ) : recentOrders.length > 0 ? (
                 <table className="orders-table">
                   <thead>
                     <tr>
@@ -137,19 +149,23 @@ const B2BDashboard = () => {
           <div className="side-content">
             <section className="credit-preview premium-card">
               <h2 className="section-title">Credit Utilization</h2>
-              <div className="credit-progress-wrapper">
-                <div className="credit-labels">
-                  <span>Used: ₹{(creditLimit - balance).toLocaleString()}</span>
-                  <span>Total: ₹{creditLimit?.toLocaleString()}</span>
+              {creditLoading ? (
+                <p>Loading credit info...</p>
+              ) : (
+                <div className="credit-progress-wrapper">
+                  <div className="credit-labels">
+                    <span>Used: ₹{usedCredit.toLocaleString()}</span>
+                    <span>Total: ₹{creditLimit.toLocaleString()}</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${creditLimit > 0 ? (usedCredit / creditLimit) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                  <p className="credit-help">Maintain a healthy utilization for better credit limits.</p>
                 </div>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${((creditLimit - balance) / creditLimit) * 100}%` }}
-                  ></div>
-                </div>
-                <p className="credit-help">Maintain a healthy utilization for better credit limits.</p>
-              </div>
+              )}
               <button className="premium-button premium-button-secondary full-width" onClick={() => navigate(routes.CREDIT)}>
                 Manage Credit
               </button>
@@ -158,18 +174,12 @@ const B2BDashboard = () => {
             <section className="quick-links-section">
               <h2 className="section-title">Quick Links</h2>
               <div className="quick-links-grid">
-                <Link to="#" className="quick-link-card">
-                  <FileText size={20} />
-                  <span>Invoices</span>
-                </Link>
-                <Link to="#" className="quick-link-card">
-                  <Clock size={20} />
-                  <span>Statements</span>
-                </Link>
-                <Link to="#" className="quick-link-card">
-                  <Settings size={20} />
-                  <span>Settings</span>
-                </Link>
+                {quickLinks.map((link, index) => (
+                  <Link key={index} to={link.path} className="quick-link-card">
+                    {link.icon}
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
               </div>
             </section>
           </div>

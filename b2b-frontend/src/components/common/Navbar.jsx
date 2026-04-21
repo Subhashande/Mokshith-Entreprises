@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../modules/auth/hooks/useAuth';
 import { useOrder } from '../../modules/order/hooks/useOrder';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { routes } from '../../routes/routeConfig';
 import { ShoppingCart, User, Menu, X, LogOut, LayoutDashboard, Package, CreditCard } from 'lucide-react';
 import Sidebar from './Sidebar';
 import CartDrawer from './CartDrawer';
+import ConfirmDialog from '../feedback/ConfirmDialog';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -14,6 +15,11 @@ const Navbar = () => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    setShowLogoutConfirm(false);
+  }, [location.pathname]);
 
   const cartCount = cart?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   const isLandingPage = location.pathname === routes.LANDING;
@@ -90,8 +96,19 @@ const Navbar = () => {
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         user={user} 
-        onLogout={handleLogout} 
+        onLogout={() => setShowLogoutConfirm(true)} 
       />
+
+      {showLogoutConfirm && (
+        <ConfirmDialog
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+          title="Logout"
+          message="Are you sure you want to logout?"
+          confirmText="Logout"
+        />
+      )}
 
       <CartDrawer 
         isOpen={isCartOpen} 

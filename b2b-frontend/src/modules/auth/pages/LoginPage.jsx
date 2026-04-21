@@ -16,8 +16,15 @@ import {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, loading, error } = useAuth();
+  const { login, loading, error, user } = useAuth();
   const { config } = useSelector((state) => state.superAdmin);
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (user) {
+      navigate(routes.DASHBOARD);
+    }
+  }, [user, navigate]);
 
   const [form, setForm] = useState({
     identifier: "",

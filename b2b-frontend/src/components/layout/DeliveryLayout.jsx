@@ -1,16 +1,23 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../modules/auth/hooks/useAuth';
 import { routes } from '../../routes/routeConfig';
 import Button from '../ui/Button';
+import ConfirmDialog from '../feedback/ConfirmDialog';
 
 const DeliveryLayout = ({ children }) => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    setShowLogoutConfirm(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
-    navigate(routes.LOGIN);
+    navigate(routes.LANDING);
   };
 
   return (
@@ -34,11 +41,23 @@ const DeliveryLayout = ({ children }) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <span style={{ fontSize: '0.875rem', fontWeight: '600', opacity: 0.8 }}>{user?.name}</span>
-          <Button variant="secondary" size="small" onClick={handleLogout} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
+          <Button variant="secondary" size="small" onClick={() => setShowLogoutConfirm(true)} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
             Logout
           </Button>
         </div>
       </header>
+
+      {showLogoutConfirm && (
+        <ConfirmDialog
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+          title="Logout"
+          message="Are you sure you want to logout?"
+          confirmText="Logout"
+        />
+      )}
+
       <main style={{ padding: '1.5rem', maxWidth: '800px', margin: '0 auto' }}>
         {children}
       </main>

@@ -47,6 +47,35 @@ export const assignDeliveryPartner = async (id, partnerId) => {
   return repo.updateShipment(id, { deliveryPartnerId: partnerId });
 };
 
-export const getShipments = async () => {
-  return repo.findAll();
+export const getShipments = async (user) => {
+  const filter = {};
+  if (user.role === 'DELIVERY_PARTNER') {
+    filter.deliveryPartnerId = user._id;
+  } else if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    // Admin sees everything
+  } else {
+    // Other roles see nothing for now to prevent data leakage
+    return [];
+  }
+  return repo.findAll(filter);
+};
+
+export const getShipmentById = async (id) => {
+  const shipment = await repo.findById(id);
+  if (!shipment) throw new AppError('Shipment not found', 404);
+  return shipment;
+};
+
+export const getMyAssignments = async (deliveryBoyId) => {
+  const filter = {
+    deliveryPartnerId: deliveryBoyId,
+    status: { $ne: 'DELIVERED' }
+  };
+  return repo.findAll(filter);
+};
+
+export const updateLocation = async (id, location) => {
+  const shipment = await repo.updateShipment(id, { currentLocation: location });
+  if (!shipment) throw new AppError('Shipment not found', 404);
+  return shipment;
 };

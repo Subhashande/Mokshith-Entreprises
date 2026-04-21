@@ -71,7 +71,7 @@ router.use('/credit', creditRoutes);
 router.use('/warehouses', warehouseRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/shipments', shipmentRoutes);
-router.use('/deliveries', logisticsRoutes);
+router.use('/logistics', logisticsRoutes);
 
 // 🔔 Support
 router.use('/notifications', notificationRoutes);

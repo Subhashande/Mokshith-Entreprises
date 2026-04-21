@@ -17,6 +17,7 @@ import { trackOrder } from '../analytics/analytics.events.js';
 import { checkStock, reduceStock } from '../inventory/inventory.service.js';
 import { useCredit } from '../credit/credit.service.js';
 import { createShipment } from '../logistics/logistics.service.js';
+import { assignDelivery } from '../../services/deliveryAssignment.service.js';
 import Warehouse from '../warehouse/warehouse.model.js';
 import { fetchSetting } from '../settings/settings.service.js';
 
@@ -182,6 +183,9 @@ export const createOrder = async (userId, data) => {
       order.shipmentId = shipment._id;
       await order.save();
     }
+
+    // 🔥 Auto-assign Delivery Partner
+    await assignDelivery(order);
   } catch (err) {
     console.error('Non-critical post-order error:', err.message);
   }

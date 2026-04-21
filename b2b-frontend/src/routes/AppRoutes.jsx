@@ -7,6 +7,7 @@ import RoleBasedRoute from "../components/common/RoleBasedRoute";
 
 // Layouts
 import MainLayout from "../components/layout/MainLayout";
+import PublicLayout from "../components/layout/PublicLayout";
 import AdminLayout from "../components/layout/AdminLayout";
 import SuperAdminLayout from "../components/layout/SuperAdminLayout";
 import DeliveryLayout from "../components/layout/DeliveryLayout";
@@ -35,17 +36,17 @@ const AppRoutes = () => {
     <BrowserRouter>
       <Routes>
         {/* PUBLIC ROUTES */}
-        <Route path={routes.LANDING} element={<LandingPage />} />
+        <Route path={routes.LANDING} element={<PublicLayout><LandingPage /></PublicLayout>} />
         <Route path={routes.LOGIN} element={<LoginPage />} />
         <Route path={routes.REGISTER} element={<RegisterPage />} />
         
         <Route path={routes.PRODUCTS} element={<MainLayout><ProductPage /></MainLayout>} />
         <Route path={`${routes.PRODUCTS}/:id`} element={<MainLayout><ProductDetails /></MainLayout>} />
 
-        {/* B2C ROUTES */}
+        {/* B2C & B2B HOME */}
         <Route path={routes.HOME} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["B2C_CUSTOMER"]}>
+            <RoleBasedRoute allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
               <MainLayout><ProductPage /></MainLayout>
             </RoleBasedRoute>
           </ProtectedRoute>

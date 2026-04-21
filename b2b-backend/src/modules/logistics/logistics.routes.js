@@ -9,14 +9,20 @@ const router = express.Router();
 
 router.post('/:orderId', protect, authorize('ADMIN'), controller.createShipment);
 
+router.get('/my-assignments', protect, authorize('DELIVERY_PARTNER'), controller.getMyAssignments);
+
+router.patch('/:id/location', protect, authorize('DELIVERY_PARTNER'), controller.updateLocation);
+
+router.get('/', protect, authorize('ADMIN'), controller.getShipments);
+
+router.get('/:id', protect, controller.getShipmentDetails);
+
 router.patch(
   '/:id/status',
   protect,
   authorize('ADMIN', 'DELIVERY_PARTNER'),
   validate(updateStatusSchema),
-  controller.updateStatus
+  controller.updateDeliveryStatus
 );
-
-router.get('/', protect, authorize('ADMIN', 'DELIVERY_PARTNER'), controller.getShipments);
 
 export default router;

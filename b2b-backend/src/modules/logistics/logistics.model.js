@@ -22,8 +22,23 @@ const logisticsSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: Object.values(DELIVERY_STATUS),
-      default: DELIVERY_STATUS.PENDING,
+      enum: ["ASSIGNED", "OUT_FOR_DELIVERY", "DELIVERED"],
+      default: "ASSIGNED",
+    },
+
+    address: {
+      type: String,
+      required: true,
+    },
+    customerName: String,
+    phone: String,
+    etaMinutes: {
+      type: Number,
+      default: 0,
+    },
+    currentLocation: {
+      lat: Number,
+      lng: Number,
     },
 
     trackingNumber: {

@@ -1,19 +1,56 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import app from './src/app.js';
 import connectDB from './src/config/db.js';
 import { logger } from './src/config/logger.js';
+import { Server } from 'socket.io';
+import http from 'http';
 
 const PORT = process.env.PORT || 5000;
 
 let server;
+let io;
 
 const startServer = async () => {
   try {
     // 🔥 Connect DB
     await connectDB();
 
+    // Create HTTP server
+    const httpServer = http.createServer(app);
+
+    // Initialize Socket.io
+    io = new Server(httpServer, {
+      path: '/socket.io',
+      cors: {
+        origin: ["http://localhost:5174", "http://127.0.0.1:5174", "http://localhost:5173", "http://127.0.0.1:5173"],
+        methods: ["GET", "POST", "PATCH"],
+        credentials: true
+      },
+      transports: ['polling', 'websocket']
+    });
+
+    // Verify IO initialization
+    if (io) {
+      logger.info('✅ Socket.io initialized');
+    }
+
+    // Store io globally and in app locals
+    global.io = io;
+    app.set('io', io);
+
+    io.on('connection', (socket) => {
+      logger.info(`🔌 New socket connection: ${socket.id}`);
+
+      socket.on('disconnect', () => {
+        logger.info(`🔌 Socket disconnected: ${socket.id}`);
+      });
+    });
+
     // 🚀 Start server
-    server = app.listen(PORT, () => {
-      logger.info(`🚀 Server running on port ${PORT}`);
+    server = httpServer.listen(PORT, '0.0.0.0', () => {
+      logger.info(`🚀 Server running on http://localhost:${PORT}`);
     });
 
     // 🔥 Handle server errors

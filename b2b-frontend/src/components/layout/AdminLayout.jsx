@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -14,12 +14,18 @@ import {
 } from 'lucide-react';
 import { routes } from '../../routes/routeConfig';
 import { useAuth } from '../../modules/auth/hooks/useAuth';
+import ConfirmDialog from '../feedback/ConfirmDialog';
 
 const AdminLayout = ({ children, title = "Admin Panel" }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    setShowLogoutConfirm(false);
+  }, [location.pathname]);
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: routes.ADMIN },
@@ -83,7 +89,7 @@ const AdminLayout = ({ children, title = "Admin Panel" }) => {
 
         <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <button 
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -170,6 +176,17 @@ const AdminLayout = ({ children, title = "Admin Panel" }) => {
           {children}
         </main>
       </div>
+
+      {showLogoutConfirm && (
+        <ConfirmDialog
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+          title="Logout"
+          message="Are you sure you want to logout?"
+          confirmText="Logout"
+        />
+      )}
     </div>
   );
 };

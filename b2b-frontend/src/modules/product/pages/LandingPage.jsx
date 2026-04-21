@@ -11,11 +11,11 @@ import {
   ArrowRight 
 } from 'lucide-react';
 import { routes } from '../../../routes/routeConfig';
-import Navbar from '../../../components/common/Navbar';
-import Footer from '../../../components/common/Footer';
+import { useAuth } from '../../auth/hooks/useAuth';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const features = [
     {
@@ -43,8 +43,6 @@ const LandingPage = () => {
 
   return (
     <div className="landing-container">
-      <Navbar />
-      
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
@@ -55,12 +53,21 @@ const LandingPage = () => {
             Manage bulk purchases, credit, and logistics in one seamless system. Built for modern enterprises.
           </p>
           <div className="hero-actions">
-            <button 
-              onClick={() => navigate(routes.REGISTER)}
-              className="premium-button premium-button-primary"
-            >
-              Get Started <ArrowRight size={18} />
-            </button>
+            {user ? (
+              <button 
+                onClick={() => navigate(routes.DASHBOARD)}
+                className="premium-button premium-button-primary"
+              >
+                Go to Dashboard <ArrowRight size={18} />
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate(routes.REGISTER)}
+                className="premium-button premium-button-primary"
+              >
+                Get Started <ArrowRight size={18} />
+              </button>
+            )}
             <button 
               onClick={() => navigate(routes.PRODUCTS)}
               className="premium-button premium-button-secondary"
@@ -115,8 +122,6 @@ const LandingPage = () => {
           </button>
         </div>
       </section>
-
-      <Footer />
 
       <style>{`
         .landing-container {

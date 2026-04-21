@@ -3,7 +3,7 @@ import apiClient from "../../../services/apiClient";
 export const deliveryService = {
   async getDeliveries() {
     try {
-      return await apiClient.get("/shipments");
+      return await apiClient.get("/logistics/my-assignments");
     } catch {
       throw new Error("Failed to fetch deliveries");
     }
@@ -11,7 +11,7 @@ export const deliveryService = {
 
   async getDeliveryById(id) {
     try {
-      return await apiClient.get(`/shipments/${id}`);
+      return await apiClient.get(`/logistics/${id}`);
     } catch {
       throw new Error("Delivery fetch failed");
     }
@@ -19,7 +19,8 @@ export const deliveryService = {
 
   async updateStatus(id, status) {
     try {
-      return await apiClient.patch(`/shipments/${id}/status`, { status });
+      const response = await apiClient.patch(`/logistics/${id}/status`, { status });
+      return response.data;
     } catch {
       throw new Error("Failed to update delivery status");
     }
