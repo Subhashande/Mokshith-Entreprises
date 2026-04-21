@@ -170,8 +170,8 @@ const AdminProductsPage = () => {
   );
 
   return (
-    <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh', padding: '2rem' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ padding: '1rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
           <div>
             <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Product Management</h2>

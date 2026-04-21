@@ -5,7 +5,14 @@ import { routes } from "./routeConfig";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import RoleBasedRoute from "../components/common/RoleBasedRoute";
 
+// Layouts
+import MainLayout from "../components/layout/MainLayout";
+import AdminLayout from "../components/layout/AdminLayout";
+import SuperAdminLayout from "../components/layout/SuperAdminLayout";
+import DeliveryLayout from "../components/layout/DeliveryLayout";
+
 // Pages
+import LandingPage from "../modules/product/pages/LandingPage";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/Register";
 import ProductPage from "../modules/product/pages/ProductPage";
@@ -21,32 +28,26 @@ import CreditPage from "../modules/credit/pages/CreditPage";
 import CheckoutPage from "../modules/order/pages/Checkout";
 import OrdersPage from "../modules/order/pages/OrdersPage";
 import ProductDetails from "../modules/product/pages/ProductDetails";
+import Dashboard from "../modules/user/pages/Dashboard";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* PUBLIC ROUTES */}
-        <Route path="/" element={<Navigate to={routes.LOGIN} />} />
+        <Route path={routes.LANDING} element={<LandingPage />} />
         <Route path={routes.LOGIN} element={<LoginPage />} />
         <Route path={routes.REGISTER} element={<RegisterPage />} />
+        
+        <Route path={routes.PRODUCTS} element={<MainLayout><ProductPage /></MainLayout>} />
+        <Route path={`${routes.PRODUCTS}/:id`} element={<MainLayout><ProductDetails /></MainLayout>} />
 
         {/* B2C ROUTES */}
         <Route path={routes.HOME} element={
           <ProtectedRoute>
             <RoleBasedRoute allowedRoles={["B2C_CUSTOMER"]}>
-              <ProductPage /> {/* B2C Home */}
+              <MainLayout><ProductPage /></MainLayout>
             </RoleBasedRoute>
-          </ProtectedRoute>
-        } />
-        <Route path={routes.PRODUCTS} element={
-          <ProtectedRoute>
-            <ProductPage />
-          </ProtectedRoute>
-        } />
-        <Route path={`${routes.PRODUCTS}/:id`} element={
-          <ProtectedRoute>
-            <ProductDetails />
           </ProtectedRoute>
         } />
 
@@ -54,14 +55,14 @@ const AppRoutes = () => {
         <Route path={routes.DASHBOARD} element={
           <ProtectedRoute>
             <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
-              <ProductPage /> {/* B2B Dashboard */}
+              <MainLayout><Dashboard /></MainLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.CREDIT} element={
           <ProtectedRoute>
             <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
-              <CreditPage />
+              <MainLayout><CreditPage /></MainLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
@@ -69,43 +70,43 @@ const AppRoutes = () => {
         {/* ADMIN ROUTES */}
         <Route path={routes.ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="Overview"><AdminPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_USERS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminUsersPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="User Management"><AdminUsersPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_PRODUCTS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminProductsPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="Product Inventory"><AdminProductsPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_ORDERS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminOrdersPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="Order Fulfillment"><AdminOrdersPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_VENDORS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminVendorsPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="Vendor Control"><AdminVendorsPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_APPROVALS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-              <AdminApprovalsPage />
+            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+              <AdminLayout title="New Approvals"><AdminApprovalsPage /></AdminLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
@@ -113,7 +114,7 @@ const AppRoutes = () => {
         {/* SUPER ADMIN ROUTES */}
         <Route path={routes.SUPER_ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+            <RoleBasedRoute allowedRoles={["SUPER_ADMIN"]}>
               <SuperAdminPage />
             </RoleBasedRoute>
           </ProtectedRoute>
@@ -123,25 +124,29 @@ const AppRoutes = () => {
         <Route path={routes.DELIVERY} element={
           <ProtectedRoute>
             <RoleBasedRoute allowedRoles={["DELIVERY_PARTNER"]}>
-              <DeliveryPage />
+              <DeliveryLayout><DeliveryPage /></DeliveryLayout>
             </RoleBasedRoute>
           </ProtectedRoute>
         } />
 
-        {/* COMMON PRIVATE ROUTES */}
+        {/* COMMON PRIVATE ROUTES (Mainly for Customers) */}
         <Route path={routes.ORDERS} element={
           <ProtectedRoute>
-            <OrdersPage />
+            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER", "B2C_CUSTOMER"]}>
+              <MainLayout><OrdersPage /></MainLayout>
+            </RoleBasedRoute>
           </ProtectedRoute>
         } />
         <Route path={routes.CHECKOUT} element={
           <ProtectedRoute>
-            <CheckoutPage />
+            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER", "B2C_CUSTOMER"]}>
+              <MainLayout><CheckoutPage /></MainLayout>
+            </RoleBasedRoute>
           </ProtectedRoute>
         } />
 
         {/* FALLBACK */}
-        <Route path="*" element={<h2>404 Not Found</h2>} />
+        <Route path="*" element={<MainLayout><h2>404 Not Found</h2></MainLayout>} />
       </Routes>
     </BrowserRouter>
   );

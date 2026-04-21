@@ -34,20 +34,8 @@ const DeliveryPage = () => {
   );
 
   return (
-    <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <header style={{ 
-        backgroundColor: 'var(--primary)', 
-        color: 'white',
-        padding: '1rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Delivery Partner Portal</h1>
-        <Button variant="secondary" onClick={logout}>Logout</Button>
-      </header>
-
-      <main style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '0.5rem' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>My Assignments</h2>
           <p style={{ color: 'var(--text-muted)' }}>Manage your active deliveries and update statuses</p>
@@ -99,7 +87,7 @@ const DeliveryPage = () => {
             </Card>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 };

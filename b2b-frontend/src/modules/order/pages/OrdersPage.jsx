@@ -2,7 +2,6 @@ import { useOrder } from "../hooks/useOrder";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import Navbar from "../../../components/common/Navbar";
 import OrderStatusBadge from "../components/OrderStatusBadge";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
@@ -30,8 +29,6 @@ const OrdersPage = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <Navbar />
-
       <main style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Order History</h2>

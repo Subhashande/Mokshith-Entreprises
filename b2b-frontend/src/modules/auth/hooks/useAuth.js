@@ -19,6 +19,17 @@ export const useAuth = () => {
         throw new Error("No access token received from server");
       }
 
+      // Check for Admin Approval
+      // Admins and Super Admins bypass approval check as they are created by root/system
+      if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
+        if (user.status === "pending" || user.isApproved === false) {
+          throw new Error("Your account is pending admin approval. Please wait for an administrator to review your registration.");
+        }
+        if (user.status === "rejected") {
+          throw new Error("Your registration request has been declined. Please contact support for more information.");
+        }
+      }
+
       dispatch(loginSuccess({ user, token: accessToken }));
       
       // Update global config in store if available

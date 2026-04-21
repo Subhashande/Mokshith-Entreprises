@@ -9,6 +9,8 @@ import CategoryControl from "../components/CategoryControl";
 import FeatureAndSecurityPanel from "../components/FeatureAndSecurityPanel";
 import DbShell from "../components/DbShell";
 import Button from "../../../components/ui/Button";
+import SuperAdminLayout from "../../../components/layout/SuperAdminLayout";
+import { LogOut, LayoutDashboard, Database, Activity, ShieldAlert } from 'lucide-react';
 
 const SuperAdminPage = () => {
   const { 
@@ -54,50 +56,33 @@ const SuperAdminPage = () => {
   );
 
   return (
-    <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      {/* SuperAdmin Header */}
-      <header style={{ 
-        backgroundColor: '#0f172a', 
-        color: 'white',
-        padding: '1rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '4px solid var(--primary)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Root Control Panel</h1>
-          <span style={{ 
-            fontSize: '0.75rem', 
-            backgroundColor: 'var(--error)', 
-            padding: '0.2rem 0.5rem', 
-            borderRadius: '4px',
-            fontWeight: '700'
-          }}>
-            SUPER_USER
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Button 
-            variant="secondary" 
-            style={{ backgroundColor: 'transparent', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}
-            onClick={() => setShowDbShell(true)}
-          >
-            Database Shell
-          </Button>
-          <Button onClick={logout}>
-            Logout
-          </Button>
-        </div>
-      </header>
-
+    <SuperAdminLayout onDbShellOpen={() => setShowDbShell(true)}>
       <main style={{ padding: '2.5rem', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Global Management</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Enterprise control center for Mokshith B2B platform</p>
+        <div style={{ 
+          marginBottom: '2.5rem', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-sm)',
+          border: '1px solid var(--border)'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Global Management</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Enterprise control center for Mokshith B2B platform</p>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Button 
+              variant="secondary" 
+              onClick={logout}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--error)', borderColor: 'var(--error)' }}
+            >
+              <LogOut size={18} />
+              Logout from System
+            </Button>
+          </div>
         </div>
 
         <MetricsCards metrics={metrics} />
@@ -124,7 +109,7 @@ const SuperAdminPage = () => {
           onClose={() => setShowDbShell(false)} 
         />
       )}
-    </div>
+    </SuperAdminLayout>
   );
 };
 

@@ -12,11 +12,11 @@ router.post('/:orderId', protect, authorize('ADMIN'), controller.createShipment)
 router.patch(
   '/:id/status',
   protect,
-  authorize('ADMIN'),
+  authorize('ADMIN', 'DELIVERY_PARTNER'),
   validate(updateStatusSchema),
   controller.updateStatus
 );
 
-router.get('/', protect, controller.getShipments);
+router.get('/', protect, authorize('ADMIN', 'DELIVERY_PARTNER'), controller.getShipments);
 
 export default router;

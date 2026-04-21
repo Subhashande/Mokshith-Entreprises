@@ -9,6 +9,8 @@ import {
   updateShipmentSchema,
 } from './shipment.validation.js';
 
+import * as logisticsController from '../logistics/logistics.controller.js';
+
 const router = express.Router();
 
 router.post(
@@ -25,6 +27,13 @@ router.patch(
   authorize('ADMIN'),
   validate(updateShipmentSchema),
   controller.updateShipmentStatus
+);
+
+router.get(
+  '/',
+  protect,
+  authorize('ADMIN', 'DELIVERY_PARTNER'),
+  logisticsController.getShipments
 );
 
 export default router;

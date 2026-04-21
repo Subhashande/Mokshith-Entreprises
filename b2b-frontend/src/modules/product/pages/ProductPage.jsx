@@ -1,24 +1,25 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useOrder } from "../../order/hooks/useOrder";
 import { useAuth } from "../../auth/hooks/useAuth";
-import Button from "../../../components/ui/Button";
-import Card from "../../../components/ui/Card";
-import Input from "../../../components/ui/Input";
-import Navbar from "../../../components/common/Navbar";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
+import ProductCard from "../components/ProductCard";
+import Toast from "../../../components/feedback/Toast";
+import { Search, Filter, SlidersHorizontal, ChevronDown } from 'lucide-react';
 
 const ProductPage = () => {
   const { products, loading, error } = useProduct();
-  const { addToCart, cart } = useOrder();
+  const { addToCart } = useOrder();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
 
   const handleAddToCart = (product) => {
     addToCart(product);
-    alert(`${product.name} added to cart!`);
+    setToast({ message: `${product.name} added to cart`, type: 'success' });
   };
 
   const handleBuyNow = (product) => {
@@ -27,145 +28,280 @@ const ProductPage = () => {
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)' }}>Loading premium catalog...</p>
+    <div className="loading-screen">
+      <div className="loader"></div>
+      <p>Loading premium catalog...</p>
     </div>
   );
   
   if (error) return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <p style={{ color: 'var(--error)' }}>{error}</p>
-      <Button onClick={() => window.location.reload()} style={{ marginTop: '1rem' }}>Retry</Button>
+    <div className="error-screen">
+      <p>{error}</p>
+      <button onClick={() => window.location.reload()} className="premium-button premium-button-primary">Retry</button>
     </div>
   );
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.category || p.categoryId?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = ["All", ...new Set(products.map(p => p.category || p.categoryId?.name || "General"))];
 
-  const getProductImage = (product) => {
-    if (product.images && product.images.length > 0) return product.images[0];
-    if (product.image && !product.image.includes('📦')) return product.image;
-    
-    // Professional placeholder images based on category
-    const category = (product.category || product.categoryId?.name || "").toLowerCase();
-    if (category.includes('laptop') || category.includes('electronics')) 
-      return "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=500&q=80";
-    if (category.includes('phone') || category.includes('mobile'))
-      return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80";
-    if (category.includes('office') || category.includes('furniture'))
-      return "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=500&q=80";
-    
-    return "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=500&q=80";
-  };
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         (p.category || p.categoryId?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "All" || (p.category || p.categoryId?.name || "General") === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <Navbar />
-
-      <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Product Catalog</h2>
-            <p style={{ color: 'var(--text-muted)' }}>Browse and order items for your business</p>
+    <div className="page-container">
+      <main className="main-content">
+        <header className="catalog-header">
+          <div className="header-info">
+            <h1>Product Catalog</h1>
+            <p>Premium selection for your business needs</p>
           </div>
-          <div style={{ width: '320px' }}>
-            <Input 
-              placeholder="Search products..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ marginBottom: 0 }}
-            />
+          
+          <div className="header-controls">
+            <div className="search-wrapper">
+              <Search size={18} className="search-icon" />
+              <input 
+                type="text" 
+                placeholder="Search products, categories..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="premium-input search-input"
+              />
+            </div>
+            
+            <div className="filter-wrapper">
+              <div className="category-select-wrapper">
+                <select 
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="category-select"
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="select-arrow" />
+              </div>
+              
+              <button className="filter-button">
+                <SlidersHorizontal size={18} />
+                <span>Filters</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </header>
 
-        {/* Product Grid */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-          gap: '1.5rem' 
-        }}>
-          {filteredProducts.map((product, index) => (
-            <Card 
-              key={product._id || product.id || index} 
-              style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', cursor: 'pointer' }}
-              onClick={() => navigate(`${routes.PRODUCTS}/${product._id || product.id}`)}
-            >
-              <div style={{ height: '220px', backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-                <img 
-                  src={getProductImage(product)} 
-                  alt={product.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=500&q=80"; }}
+        <section className="product-grid-section">
+          {filteredProducts.length > 0 ? (
+            <div className="product-grid">
+              {filteredProducts.map((product, index) => (
+                <ProductCard 
+                  key={product._id || product.id || index} 
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
+                  user={user}
                 />
-              </div>
-              <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    fontWeight: '700', 
-                    textTransform: 'uppercase', 
-                    color: 'var(--primary)',
-                    backgroundColor: 'var(--primary-light)',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: 'var(--radius-sm)'
-                  }}>
-                    {product.category || product.categoryId?.name || "Uncategorized"}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SKU: {product.sku || product._id?.substring(0, 8)}</span>
-                </div>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: '700', marginBottom: '0.5rem' }}>{product.name}</h3>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem', flex: 1 }}>
-                  {product.description}
-                </p>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <div>
-                    <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>₹{product.price?.toLocaleString()}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>/ unit</span>
-                  </div>
-                  <span style={{ 
-                    fontSize: '0.875rem', 
-                    fontWeight: '600',
-                    color: product.stock > 0 ? 'var(--success)' : 'var(--error)'
-                  }}>
-                    {product.stock} in stock
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCart(product);
-                    }}
-                    variant="secondary" 
-                    style={{ flex: 1 }}
-                  >
-                    Add to Cart
-                  </Button>
-                  <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleBuyNow(product);
-                    }}
-                    style={{ flex: 1 }}
-                  >
-                    Buy Now
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)' }}>No products found matching your search.</p>
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <h3>No products found</h3>
+              <p>Try adjusting your search or filters</p>
+              <button onClick={() => { setSearchTerm(""); setSelectedCategory("All"); }} className="premium-button premium-button-secondary">
+                Clear all filters
+              </button>
+            </div>
+          )}
+        </section>
       </main>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+
+      <style>{`
+        .page-container {
+          background-color: var(--background);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .main-content {
+          padding: 3rem 2rem;
+          max-width: 1200px;
+          margin: 0 auto;
+          width: 100%;
+          flex: 1;
+        }
+
+        .catalog-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: 3rem;
+          gap: 2rem;
+          flex-wrap: wrap;
+        }
+
+        .header-info h1 {
+          font-size: 2.25rem;
+          font-weight: 800;
+          color: var(--text-main);
+          margin-bottom: 0.5rem;
+          letter-spacing: -0.02em;
+        }
+
+        .header-info p {
+          color: var(--text-muted);
+          font-size: 1.125rem;
+        }
+
+        .header-controls {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .search-wrapper {
+          position: relative;
+          width: 350px;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-muted);
+        }
+
+        .search-input {
+          padding-left: 3rem !important;
+        }
+
+        .filter-wrapper {
+          display: flex;
+          gap: 0.75rem;
+        }
+
+        .category-select-wrapper {
+          position: relative;
+        }
+
+        .category-select {
+          appearance: none;
+          background: var(--surface);
+          border: 1.5px solid var(--border);
+          padding: 0.75rem 2.5rem 0.75rem 1rem;
+          border-radius: var(--radius-md);
+          font-weight: 600;
+          color: var(--text-main);
+          cursor: pointer;
+          min-width: 150px;
+          transition: var(--transition-fast);
+        }
+
+        .category-select:focus {
+          border-color: var(--primary);
+          outline: none;
+        }
+
+        .select-arrow {
+          position: absolute;
+          right: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-muted);
+          pointer-events: none;
+        }
+
+        .filter-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background: var(--surface);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          font-weight: 600;
+          color: var(--text-main);
+          cursor: pointer;
+          transition: var(--transition-fast);
+        }
+
+        .filter-button:hover {
+          background: var(--background);
+          border-color: var(--secondary);
+        }
+
+        .product-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 2rem;
+        }
+
+        .loading-screen, .error-screen, .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 5rem 2rem;
+          text-align: center;
+        }
+
+        .loader {
+          width: 40px;
+          height: 40px;
+          border: 3px solid var(--primary-light);
+          border-top: 3px solid var(--primary);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .empty-state h3 {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+          color: var(--text-muted);
+          margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+          .catalog-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .search-wrapper {
+            width: 100%;
+          }
+          .filter-wrapper {
+            width: 100%;
+          }
+          .category-select-wrapper {
+            flex: 1;
+          }
+          .category-select {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 };

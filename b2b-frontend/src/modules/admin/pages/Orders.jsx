@@ -3,7 +3,6 @@ import { useOrder } from "../../order/hooks/useOrder";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import OrderStatusBadge from "../../order/components/OrderStatusBadge";
-import Navbar from "../../../components/common/Navbar";
 import { orderService } from "../../order/services/orderService";
 
 const AdminOrdersPage = () => {
@@ -45,7 +44,6 @@ const AdminOrdersPage = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh' }}>
-      <Navbar />
       <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

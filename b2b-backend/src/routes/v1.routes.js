@@ -25,6 +25,7 @@ import creditRoutes from '../modules/credit/credit.routes.js';
 import warehouseRoutes from '../modules/warehouse/warehouse.routes.js';
 import inventoryRoutes from '../modules/inventory/inventory.routes.js';
 import shipmentRoutes from '../modules/shipment/shipment.routes.js';
+import logisticsRoutes from '../modules/logistics/logistics.routes.js';
 
 // Support
 import notificationRoutes from '../modules/notification/notification.routes.js';
@@ -70,6 +71,7 @@ router.use('/credit', creditRoutes);
 router.use('/warehouses', warehouseRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/shipments', shipmentRoutes);
+router.use('/deliveries', logisticsRoutes);
 
 // 🔔 Support
 router.use('/notifications', notificationRoutes);
