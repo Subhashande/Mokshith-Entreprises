@@ -1,10 +1,6 @@
-import Razorpay from 'razorpay';
+import { razorpay } from '../../config/razorpay.js';
 import crypto from 'crypto';
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+import { env } from '../../config/env.js';
 
 export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) => {
   const options = {
@@ -21,14 +17,15 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
       currency: order.currency,
     };
   } catch (error) {
-    throw new Error('Razorpay order creation failed');
+    console.error('Razorpay Error:', error);
+    throw new Error(`Razorpay order creation failed: ${error.message || 'Unknown error'}`);
   }
 };
 
 export const verifyPayment = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
   const sign = razorpay_order_id + '|' + razorpay_payment_id;
   const expectedSign = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .createHmac('sha256', env.RAZORPAY_KEY_SECRET)
     .update(sign.toString())
     .digest('hex');
 

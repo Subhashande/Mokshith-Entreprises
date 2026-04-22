@@ -9,6 +9,14 @@ export const paymentService = {
     }
   },
 
+  async createRazorpayOrder(amount) {
+    try {
+      return await apiClient.post("/payments/create-order", { amount });
+    } catch {
+      throw new Error("Failed to create Razorpay order");
+    }
+  },
+
   async verifyPayment(payload) {
     try {
       return await apiClient.post("/payments/verify", payload);

@@ -31,11 +31,11 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
   ];
 
   const customerLinks = [
-    { icon: <User size={18} />, label: "My Profile", path: "#" },
+    { icon: <User size={18} />, label: "My Profile", path: routes.PROFILE },
     { icon: <Package size={18} />, label: "My Orders", path: routes.ORDERS },
     { icon: <CreditCard size={18} />, label: "Credit Balance", path: routes.CREDIT },
-    { icon: <Shield size={18} />, label: "Security", path: "#" },
-    { icon: <HelpCircle size={18} />, label: "Help & Support", path: "#" },
+    { icon: <Shield size={18} />, label: "Security", path: routes.SECURITY },
+    { icon: <HelpCircle size={18} />, label: "Help & Support", path: routes.HELP },
   ];
 
   const links = (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") ? adminLinks : customerLinks;

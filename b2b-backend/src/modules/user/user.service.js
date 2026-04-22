@@ -1,8 +1,19 @@
 import AppError from '../../errors/AppError.js';
 import * as repo from './user.repository.js';
+import { hashPassword } from '../../utils/hashPassword.js';
+
+export const changePassword = async (userId, newPassword) => {
+  const user = await repo.findById(userId);
+  if (!user) throw new AppError('User not found', 404);
+
+  const hashedPassword = await hashPassword(newPassword);
+  
+  // Directly update through repository to avoid filter restrictions in updateProfile
+  await repo.updateUserById(userId, { password: hashedPassword });
+};
 
 // 🔥 Allowed update fields (security)
-const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile'];
+const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile', 'profileImage', 'phone', 'address', 'companyName'];
 
 export const getProfile = async (userId) => {
   const user = await repo.findById(userId);

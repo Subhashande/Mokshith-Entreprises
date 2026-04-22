@@ -56,6 +56,35 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Download App Section */}
+        <div className="footer-download-app">
+          <div className="download-content">
+            <div className="download-text">
+              <h3>For better experience download our mobile application</h3>
+              <p>Get real-time updates, track orders, and manage bulk purchases on the go.</p>
+              <div className="app-badges">
+                <a href="#" className="app-badge">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" />
+                </a>
+                <a href="#" className="app-badge">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" />
+                </a>
+              </div>
+            </div>
+            <div className="download-visual">
+              <div className="mini-mockup">
+                <div className="mini-mockup-screen">
+                  <div className="mini-header"></div>
+                  <div className="mini-body">
+                    <div className="mini-card"></div>
+                    <div className="mini-card"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="footer-bottom">
           <p>&copy; {currentYear} Mokshith Enterprises. All rights reserved.</p>
           <div className="footer-bottom-links">
@@ -70,7 +99,7 @@ const Footer = () => {
         .footer-main {
           background-color: var(--surface);
           border-top: 1px solid var(--border);
-          padding: 5rem 2rem 2rem;
+          padding: 3rem 2rem 1.5rem;
           margin-top: auto;
         }
 
@@ -82,8 +111,8 @@ const Footer = () => {
         .footer-grid {
           display: grid;
           grid-template-columns: 2fr 1fr 1fr 1.5fr;
-          gap: 4rem;
-          margin-bottom: 4rem;
+          gap: 2.5rem;
+          margin-bottom: 3rem;
         }
 
         .footer-logo {
@@ -91,11 +120,114 @@ const Footer = () => {
           align-items: center;
           gap: 0.5rem;
           text-decoration: none;
+          margin-bottom: 1rem;
+        }
+
+        .footer-download-app {
+          background: linear-gradient(to right, var(--primary-light), white);
+          border-radius: var(--radius-xl);
+          padding: 2rem;
+          margin-bottom: 3rem;
+          border: 1px solid var(--border);
+        }
+
+        .download-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 2rem;
+        }
+
+        .download-text h3 {
+          font-size: 1.5rem;
+          font-weight: 800;
+          margin-bottom: 0.75rem;
+          color: var(--text-main);
+        }
+
+        .download-text p {
+          color: var(--text-muted);
           margin-bottom: 1.5rem;
+          max-width: 500px;
+          font-size: 0.9375rem;
+        }
+
+        .app-badges {
+          display: flex;
+          gap: 0.875rem;
+        }
+
+        .app-badge img {
+          height: 36px;
+          transition: transform var(--transition-fast);
+        }
+
+        .app-badge:hover img {
+          transform: translateY(-2px);
+        }
+
+        .download-visual {
+          flex-shrink: 0;
+        }
+
+        .mini-mockup {
+          width: 120px;
+          height: 200px;
+          background: #1a1a1a;
+          border-radius: 1.25rem;
+          padding: 5px;
+          box-shadow: var(--shadow-lg);
+        }
+
+        .mini-mockup-screen {
+          background: white;
+          height: 100%;
+          border-radius: 1rem;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .mini-header {
+          height: 32px;
+          background: var(--primary);
+        }
+
+        .mini-body {
+          flex: 1;
+          padding: 0.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .mini-card {
+          height: 50px;
+          background: #f1f5f9;
+          border-radius: 0.375rem;
+        }
+
+        @media (max-width: 768px) {
+          .footer-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+          .download-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+          }
+          .app-badges {
+            justify-content: center;
+          }
+          .download-text p {
+            margin-left: auto;
+            margin-right: auto;
+          }
         }
 
         .logo-text {
-          font-size: 1.5rem;
+          font-size: 1.25rem;
           font-weight: 800;
           color: #000000;
           letter-spacing: -0.02em;
@@ -104,22 +236,22 @@ const Footer = () => {
         .logo-badge {
           background-color: var(--primary);
           color: white;
-          font-size: 0.75rem;
+          font-size: 0.625rem;
           font-weight: 700;
-          padding: 0.125rem 0.5rem;
+          padding: 0.125rem 0.4rem;
           border-radius: var(--radius-sm);
         }
 
         .brand-description {
           color: #4b5563;
-          line-height: 1.6;
-          margin-bottom: 1.5rem;
-          font-size: 0.9375rem;
+          line-height: 1.5;
+          margin-bottom: 1.25rem;
+          font-size: 0.875rem;
         }
 
         .social-links {
           display: flex;
-          gap: 1.25rem;
+          gap: 1rem;
         }
 
         .social-links a {
@@ -132,9 +264,9 @@ const Footer = () => {
         }
 
         .footer-links h4, .footer-contact h4 {
-          font-size: 1rem;
+          font-size: 0.9375rem;
           font-weight: 700;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
           color: #000000;
         }
 
@@ -145,13 +277,13 @@ const Footer = () => {
         }
 
         .footer-links li {
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.5rem;
         }
 
         .footer-links a {
           color: #4b5563;
           text-decoration: none;
-          font-size: 0.9375rem;
+          font-size: 0.875rem;
           transition: var(--transition-fast);
         }
 
@@ -162,25 +294,25 @@ const Footer = () => {
         .footer-contact li {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.5rem;
           color: #4b5563;
-          font-size: 0.9375rem;
-          margin-bottom: 1rem;
+          font-size: 0.875rem;
+          margin-bottom: 0.75rem;
         }
 
         .footer-bottom {
-          padding-top: 2rem;
+          padding-top: 1.5rem;
           border-top: 1px solid var(--border);
           display: flex;
           justify-content: space-between;
           align-items: center;
           color: #4b5563;
-          font-size: 0.875rem;
+          font-size: 0.8125rem;
         }
 
         .footer-bottom-links {
           display: flex;
-          gap: 2rem;
+          gap: 1.5rem;
         }
 
         .footer-bottom-links a {
@@ -196,7 +328,7 @@ const Footer = () => {
         @media (max-width: 992px) {
           .footer-grid {
             grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            gap: 2.5rem;
           }
         }
 
@@ -206,7 +338,7 @@ const Footer = () => {
           }
           .footer-bottom {
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
             text-align: center;
           }
         }

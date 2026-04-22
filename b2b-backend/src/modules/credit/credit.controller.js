@@ -12,7 +12,7 @@ export const createCredit = asyncHandler(async (req, res) => {
 });
 
 export const useCredit = asyncHandler(async (req, res) => {
-  const data = await service.useCredit(req.user.id, req.body.amount);
+  const data = await service.useCredit(req.user.id, req.body.orderId);
   successResponse(res, data, 'Credit used');
 });
 

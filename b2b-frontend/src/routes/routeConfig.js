@@ -17,4 +17,8 @@ export const routes = {
   CREDIT: "/credit",
   CHECKOUT: "/checkout",
   ORDERS: "/orders",
+  PAYMENT: "/payment/:orderId",
+  PROFILE: "/profile",
+  SECURITY: "/security",
+  HELP: "/help",
 };

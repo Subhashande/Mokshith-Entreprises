@@ -16,4 +16,11 @@ export const creditService = {
       throw new Error("Failed to fetch ledger");
     }
   },
+async useCredit(orderId) {
+    try {
+      return await apiClient.post("/credit/use", { orderId });
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to use credit");
+    }
+  },
 };

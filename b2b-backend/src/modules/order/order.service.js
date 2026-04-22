@@ -71,41 +71,6 @@ export const createOrder = async (userId, data) => {
   const tax = totalAmount * 0.18;
   const finalTotal = totalAmount + tax;
 
-  // 🔥 2. Credit Handling
-  let creditDeducted = false;
-  if (paymentMethod.toUpperCase() === 'CREDIT') {
-      const credit = await creditRepo.findByUser(userId);
-      if (!credit) throw new AppError('Credit account not found', 404);
-      
-      if (credit.availableCredit < finalTotal) {
-        throw new AppError(`Insufficient credit limit. Available: ₹${credit.availableCredit.toLocaleString()}`, 400);
-      }
-      
-      console.log(`[Credit] User ${userId} credit before update:`, credit.usedCredit, credit.availableCredit);
-      await creditRepo.updateCredit(userId, {
-        usedCredit: credit.usedCredit + finalTotal,
-        availableCredit: credit.availableCredit - finalTotal,
-      });
-      const updatedCredit = await creditRepo.findByUser(userId);
-      console.log(`[Credit] User ${userId} credit after update:`, updatedCredit.usedCredit, updatedCredit.availableCredit);
-
-      // 🔥 Add to Credit Ledger
-      try {
-        console.log(`[Ledger] Adding ledger entry for user ${userId}, amount ${finalTotal}, type DEBIT`);
-        await creditRepo.addLedger({
-          userId,
-          amount: finalTotal,
-          type: 'DEBIT',
-          description: `Order Payment for #${paymentMethod}`,
-        });
-        console.log(`[Ledger] Credit ledger updated for user: ${userId}`);
-      } catch (ledgerErr) {
-        console.error('[Ledger] Failed to add to credit ledger:', ledgerErr.message);
-      }
-
-      creditDeducted = true;
-    }
-
   // 🔥 3. Prepare Order Data
   const orderData = {
     userId,
@@ -118,15 +83,20 @@ export const createOrder = async (userId, data) => {
     paymentStatus: PAYMENT_STATUS.PENDING
   };
 
-  // 🔥 4. Status Mapping based on Payment Method
+  // 🔥 4. Status Mapping based on Payment Method (Strict Flow)
   if (paymentMethod.toUpperCase() === 'COD') {
     orderData.status = ORDER_STATUS.CONFIRMED;
   } else if (paymentMethod.toUpperCase() === 'CREDIT') {
-    orderData.paymentStatus = PAYMENT_STATUS.PAID;
-    orderData.status = ORDER_STATUS.CONFIRMED;
-  } else if (['RAZORPAY', 'ONLINE', 'UPI', 'CARD'].includes(paymentMethod.toUpperCase())) {
-    orderData.paymentStatus = PAYMENT_STATUS.PAID;
-    orderData.status = ORDER_STATUS.CONFIRMED;
+    // For credit, we keep it pending until creditService.useCredit is called from frontend
+    // Or we can keep existing logic if it's already working, but user wants strict flow.
+    // User's Part 3 says: if (paymentMethod === "CREDIT") { await creditService.useCredit(order._id); }
+    // This implies credit deduction should happen AFTER order creation.
+    orderData.paymentStatus = PAYMENT_STATUS.PENDING;
+    orderData.status = ORDER_STATUS.PENDING;
+  } else {
+    // For RAZORPAY, ONLINE, etc.
+    orderData.paymentStatus = PAYMENT_STATUS.PENDING;
+    orderData.status = ORDER_STATUS.PENDING;
   }
 
   // 🔥 5. Atomic Order Creation + Stock Deduction
@@ -140,16 +110,6 @@ export const createOrder = async (userId, data) => {
   } catch (err) {
     // 🔥 Rollback Logic
     if (order) await Order.findByIdAndDelete(order._id);
-    
-    if (creditDeducted) {
-      const credit = await creditRepo.findByUser(userId);
-      if (credit) {
-        await creditRepo.updateCredit(userId, {
-          availableCredit: credit.availableCredit + finalTotal,
-          usedCredit: credit.usedCredit - finalTotal,
-        });
-      }
-    }
     
     throw new AppError(err.message || 'Order placement failed', err.statusCode || 500);
   }

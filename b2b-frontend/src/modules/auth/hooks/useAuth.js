@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { authService } from "../services/authService";
-import { loginStart, loginSuccess, loginFailure, logout as logoutAction } from "../authSlice";
+import { loginStart, loginSuccess, loginFailure, updateUser as updateUserAction, logout as logoutAction } from "../authSlice";
 import { fetchConfigSuccess } from "../../superAdmin/superAdminSlice";
 
 export const useAuth = () => {
@@ -20,6 +20,10 @@ export const useAuth = () => {
   };
 
   const user = reduxUser || getUser();
+
+  const updateUserInfo = useCallback((userData) => {
+    dispatch(updateUserAction(userData));
+  }, [dispatch]);
 
   const login = useCallback(async (data) => {
     dispatch(loginStart());
@@ -87,9 +91,14 @@ export const useAuth = () => {
     }
   }, [dispatch]);
 
-  const updateUserInfo = useCallback((userData) => {
-    dispatch(loginSuccess({ user: userData, token: localStorage.getItem('token') }));
-  }, [dispatch]);
-
-  return { login, logout, updateUserInfo, loading, error, user, isAuthenticated, getUser };
+  return { 
+    login, 
+    logout, 
+    updateUserInfo, 
+    loading, 
+    error, 
+    user, 
+    isAuthenticated, 
+    getUser 
+  };
 };

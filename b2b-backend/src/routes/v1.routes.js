@@ -31,6 +31,7 @@ import logisticsRoutes from '../modules/logistics/logistics.routes.js';
 import notificationRoutes from '../modules/notification/notification.routes.js';
 import analyticsRoutes from '../modules/analytics/analytics.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
+import supportRoutes from '../modules/support/support.routes.js';
 
 // Engagement
 import wishlistRoutes from '../modules/wishlist/wishlist.routes.js';
@@ -77,6 +78,7 @@ router.use('/logistics', logisticsRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/support', supportRoutes);
 
 // 🔍 Engagement
 router.use('/reviews', reviewRoutes);

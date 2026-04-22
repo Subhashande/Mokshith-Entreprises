@@ -8,6 +8,16 @@ import { repayCredit } from '../credit/credit.service.js';
 import { sendNotification } from '../notification/notification.service.js';
 import { TEMPLATES } from '../notification/notification.templates.js';
 
+export const createRazorpayOrder = async (amount) => {
+  const options = {
+    amount: amount,
+    receipt: "order_rcptid_" + Date.now(),
+  };
+
+  const order = await gateway.createPaymentOrder(options);
+  return order;
+};
+
 export const initiatePayment = async (orderId, userId) => {
   const order = await Order.findById(orderId);
 

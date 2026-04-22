@@ -97,6 +97,11 @@ const userSchema = new mongoose.Schema(
       default: 50000,
       min: 0,
     },
+
+    profileImage: String,
+    phone: String,
+    address: String,
+    companyName: String,
   },
   { timestamps: true }
 );

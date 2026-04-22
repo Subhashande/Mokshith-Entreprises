@@ -73,20 +73,17 @@ const Checkout = () => {
         shippingAddress: address
       };
 
-      await placeOrder(payload);
+      const response = await placeOrder(payload);
+      const newOrder = response.data || response;
       
-      // 🔥 Update local credit state if credit was used
-      if (paymentMethod === PAYMENT_METHODS.CREDIT && user) {
-        updateUserInfo({
-          ...user,
-          availableCredit: user.availableCredit - total,
-          usedCredit: (user.usedCredit || 0) + total
-        });
-      }
-
-      alert("🎉 Order placed successfully!");
+      alert("🎉 Order created! Proceeding to payment.");
       clearCart();
-      navigate(routes.ORDERS);
+      
+      if (paymentMethod === PAYMENT_METHODS.COD) {
+        navigate(routes.ORDERS);
+      } else {
+        navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
+      }
     } catch (err) {
       console.error("Checkout Error:", err);
       alert(err.message || "Failed to place order. Please check your connection and try again.");

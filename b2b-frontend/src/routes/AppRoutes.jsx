@@ -28,6 +28,10 @@ import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
 import CreditPage from "../modules/credit/pages/CreditPage";
 import CheckoutPage from "../modules/order/pages/Checkout";
 import OrdersPage from "../modules/order/pages/OrdersPage";
+import PaymentPage from "../modules/payment/pages/PaymentPage";
+import ProfilePage from "../modules/user/pages/Profile";
+import SecurityPage from "../modules/user/pages/Security";
+import HelpPage from "../modules/user/pages/Help";
 import ProductDetails from "../modules/product/pages/ProductDetails";
 import Dashboard from "../modules/user/pages/Dashboard";
 
@@ -133,9 +137,27 @@ const AppRoutes = () => {
         {/* COMMON PRIVATE ROUTES (Mainly for Customers) */}
         <Route path={routes.ORDERS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER", "B2C_CUSTOMER"]}>
-              <MainLayout><OrdersPage /></MainLayout>
-            </RoleBasedRoute>
+            <MainLayout><OrdersPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.PAYMENT} element={
+          <ProtectedRoute>
+            <MainLayout><PaymentPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.PROFILE} element={
+          <ProtectedRoute>
+            <MainLayout><ProfilePage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.SECURITY} element={
+          <ProtectedRoute>
+            <MainLayout><SecurityPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.HELP} element={
+          <ProtectedRoute>
+            <MainLayout><HelpPage /></MainLayout>
           </ProtectedRoute>
         } />
         <Route path={routes.CHECKOUT} element={

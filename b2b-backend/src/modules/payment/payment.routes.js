@@ -6,6 +6,7 @@ import { verifyPaymentSchema } from './payment.validation.js';
 
 const router = express.Router();
 
+router.post('/create-order', protect, controller.createRazorpayOrder);
 router.post('/:orderId', protect, controller.initiatePayment);
 
 router.post(

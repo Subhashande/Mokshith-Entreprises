@@ -17,6 +17,8 @@ router.put(
   controller.updateProfile
 );
 
+router.put('/change-password', protect, controller.changePassword);
+
 // ADMIN
 router.get(
   '/',

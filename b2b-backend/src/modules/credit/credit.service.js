@@ -21,8 +21,15 @@ export const createCreditAccount = async (userId, limit) => {
   });
 };
 
+import Order from '../order/order.model.js';
+
 // 💳 Use Credit (ORDER INTEGRATION)
-export const useCredit = async (userId, amount) => {
+export const useCredit = async (userId, orderId) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new AppError('Order not found', 404);
+  
+  const amount = order.totalAmount;
+
   if (amount <= 0) {
     throw new AppError('Amount must be greater than 0', 400);
   }
@@ -48,8 +55,13 @@ export const useCredit = async (userId, amount) => {
     userId,
     type: 'DEBIT',
     amount,
-    description: 'Order payment',
+    description: `Order payment for #${orderId}`,
   });
+
+  // 🔥 Update Order
+  order.paymentStatus = 'PAID';
+  order.status = 'CONFIRMED';
+  await order.save();
 
   return updated;
 };

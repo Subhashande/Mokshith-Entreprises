@@ -27,3 +27,8 @@ export const deleteUser = asyncHandler(async (req, res) => {
   const user = await service.deleteUser(req.params.id);
   successResponse(res, user, 'User deleted');
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+  await service.changePassword(req.user.id, req.body.newPassword);
+  successResponse(res, null, 'Password changed successfully');
+});
