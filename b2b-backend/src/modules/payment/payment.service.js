@@ -28,7 +28,16 @@ export const createRazorpayOrder = async (amount) => {
 
 export const hybridPayment = async (orderId, userId, useCredit) => {
   console.log('Hybrid payment request:', { orderId, userId, useCredit });
-  
+
+  // 🔥 ADD: prevent "hybrid" string issue
+  if (orderId === 'hybrid') {
+    console.error('Route conflict: orderId received as "hybrid"');
+    throw new AppError('Invalid orderId passed', 400);
+  }
+
+  // 🔥 ADD: ensure string
+  orderId = String(orderId);
+
   if (!mongoose.Types.ObjectId.isValid(orderId)) {
     console.error('Invalid orderId format:', orderId);
     throw new AppError('Invalid order ID format', 400);
@@ -52,12 +61,10 @@ export const hybridPayment = async (orderId, userId, useCredit) => {
     throw new AppError('Order has an invalid total amount', 400);
   }
 
-  // 🔥 1. Prevent duplicate payment
   if (order.paymentStatus === 'PAID') {
     throw new AppError('Order is already paid', 400);
   }
 
-  // Use a small epsilon for floating point comparisons
   let remainingAmount = Math.round(order.totalAmount * 100) / 100;
 
   if (useCredit) {
@@ -69,9 +76,9 @@ export const hybridPayment = async (orderId, userId, useCredit) => {
 
     if (credit && credit.availableCredit > 0 && credit.status !== 'BLOCKED') {
       const usedAmount = Math.round(Math.min(credit.availableCredit, remainingAmount) * 100) / 100;
-      
+
       console.log('Deducting credit:', usedAmount);
-      
+
       credit.availableCredit = Math.round((credit.availableCredit - usedAmount) * 100) / 100;
       credit.usedCredit = Math.round((credit.usedCredit + usedAmount) * 100) / 100;
       await credit.save();
@@ -89,22 +96,18 @@ export const hybridPayment = async (orderId, userId, useCredit) => {
   }
 
   if (remainingAmount <= 0) {
-    // Paid fully by credit
     order.paymentStatus = 'PAID';
-    
-    // 🔥 Validate transition before updating
+
     try {
       const { validateTransition } = await import('../order/order.workflow.js');
       validateTransition(order.status, 'CONFIRMED');
       order.status = 'CONFIRMED';
     } catch (err) {
       console.warn('Status transition skip:', err.message);
-      // If already CONFIRMED or in other state, just keep it
     }
-    
+
     await order.save();
 
-    // Generate Invoice
     try {
       await generateInvoice(order);
     } catch (err) {
@@ -114,16 +117,18 @@ export const hybridPayment = async (orderId, userId, useCredit) => {
     return { paidFullyByCredit: true };
   }
 
-  // If remaining amount is too small for Razorpay but > 0, 
-  // and we haven't already used credit (or even if we have), 
-  // maybe we should just fail or round up?
-  // For now, let createRazorpayOrder handle the < 1 check.
+  // 🔥 ADD: safety log before Razorpay
+  console.log('Creating Razorpay order for amount:', remainingAmount);
 
-  // Create Razorpay order for remaining amount
   try {
     const rzpOrder = await createRazorpayOrder(remainingAmount);
 
-    // Create or update payment record
+    // 🔥 ADD: validate Razorpay response
+    if (!rzpOrder || !rzpOrder.gatewayOrderId) {
+      console.error('Invalid Razorpay response:', rzpOrder);
+      throw new AppError('Failed to create payment order', 500);
+    }
+
     await repo.createPayment({
       orderId,
       userId,
@@ -148,12 +153,10 @@ export const initiatePayment = async (orderId, userId) => {
 
   if (!order) throw new AppError('Order not found', 404);
 
-  // 🔥 Skip payment if already paid
   if (order.paymentStatus === 'PAID') {
     throw new AppError('Order already paid', 400);
   }
 
-  // 🔥 Credit orders don't need gateway
   if (order.paymentMethod === 'CREDIT') {
     return {
       message: 'Payment handled via credit',
@@ -180,7 +183,7 @@ export const initiatePayment = async (orderId, userId) => {
 
 export const verifyPayment = async (payload) => {
   const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = payload;
-  
+
   const isValid = await gateway.verifyPayment({
     razorpay_order_id,
     razorpay_payment_id,
@@ -193,7 +196,6 @@ export const verifyPayment = async (payload) => {
 
   if (!payment) throw new AppError('Payment not found', 404);
 
-  // 🔥 Prevent duplicate success
   if (payment.status === 'SUCCESS') {
     return payment;
   }
@@ -201,12 +203,11 @@ export const verifyPayment = async (payload) => {
   payment.status = 'SUCCESS';
   await payment.save();
 
-  // 🔥 Update Order
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found', 404);
 
   order.paymentStatus = 'PAID';
-  
+
   try {
     const { validateTransition } = await import('../order/order.workflow.js');
     validateTransition(order.status, 'CONFIRMED');
@@ -214,22 +215,19 @@ export const verifyPayment = async (payload) => {
   } catch (err) {
     console.warn('Order status update skipped:', err.message);
   }
-  
+
   await order.save();
 
-  // 🔥 Generate Invoice
   try {
     await generateInvoice(order);
   } catch (err) {
     console.error('Invoice generation failed:', err.message);
   }
 
-  // 🔥 Credit repayment (if needed)
   if (order.paymentMethod === 'CREDIT') {
     await repayCredit(order.userId, order.totalAmount);
   }
 
-  // 🔥 Notification
   await sendNotification({
     userId: order.userId,
     ...TEMPLATES.PAYMENT_SUCCESS(order.totalAmount),

@@ -17,13 +17,28 @@ export const paymentService = {
     }
   },
 
+  // 🔥 FIXED CORRECTLY (IMPORTANT)
   async hybridPayment(orderId, useCredit) {
     try {
-      const response = await apiClient.post("/payments/hybrid", { orderId, useCredit });
+      // 🔥 ADD DEBUG
+      console.log("Calling Hybrid API:", { orderId, useCredit });
+
+      const response = await apiClient.post(
+        "/payments/hybrid", // ✅ CORRECT ENDPOINT
+        { orderId, useCredit } // ✅ send both
+      );
+
       return response;
     } catch (err) {
-      // apiClient response interceptor already extracts the message
-      const message = typeof err === 'string' ? err : (err.response?.data?.message || err.message || "Hybrid payment failed");
+      console.error("Hybrid Payment Error:", err);
+
+      const message =
+        typeof err === "string"
+          ? err
+          : err.response?.data?.message ||
+            err.message ||
+            "Hybrid payment failed";
+
       throw new Error(message);
     }
   },
