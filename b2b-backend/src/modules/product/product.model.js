@@ -51,6 +51,22 @@ const productSchema = new mongoose.Schema(
       index: true,
     },
 
+    unit: {
+      type: String,
+      default: 'unit',
+    },
+
+    minOrderQty: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+
+    weight: {
+      type: Number,
+      default: 0,
+    },
+
     moq: {
       type: Number,
       default: 1,

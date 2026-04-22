@@ -8,6 +8,12 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
 
+    slug: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',

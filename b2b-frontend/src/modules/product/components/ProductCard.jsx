@@ -1,20 +1,28 @@
-import React from 'react';
-import { ShoppingCart, Eye, Star, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, Eye, Star, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../routes/routeConfig';
 
 const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
   const navigate = useNavigate();
+  const minQty = product.minOrderQty || product.moq || 1;
+  const [qty, setQty] = useState(minQty);
 
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) return product.images[0];
     if (product.image && !product.image.includes('📦')) return product.image;
     
     const category = (product.category || product.categoryId?.name || "").toLowerCase();
-    if (category.includes('laptop') || category.includes('electronics')) 
-      return "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=500&q=80";
-    if (category.includes('phone') || category.includes('mobile'))
-      return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80";
+    const name = (product.name || "").toLowerCase();
+    
+    if (category.includes('rice') || name.includes('rice'))
+      return "https://images.unsplash.com/photo-1586201327693-86750f72332e?auto=format&fit=crop&w=500&q=80";
+    if (category.includes('dal') || name.includes('dal') || category.includes('pulse'))
+      return "https://images.unsplash.com/photo-1547825407-2d060104b7f8?auto=format&fit=crop&w=500&q=80";
+    if (category.includes('oil') || name.includes('oil'))
+      return "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=500&q=80";
+    if (category.includes('sugar') || name.includes('sugar') || category.includes('salt'))
+      return "https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=500&q=80";
     
     return "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=500&q=80";
   };
@@ -25,7 +33,21 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
       navigate(routes.LOGIN, { state: { from: window.location.pathname } });
       return;
     }
-    action(product);
+    if (qty < minQty) {
+      alert(`Minimum ${minQty} quantity required`);
+      return;
+    }
+    action({ ...product, quantity: qty });
+  };
+
+  const handleDecrease = (e) => {
+    e.stopPropagation();
+    if (qty > minQty) setQty(qty - 1);
+  };
+
+  const handleIncrease = (e) => {
+    e.stopPropagation();
+    setQty(qty + 1);
   };
 
   return (
@@ -54,7 +76,7 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
       <div className="product-info">
         <div className="product-meta">
           <span className="product-category">
-            {product.category || product.categoryId?.name || "General"}
+            {product.category || product.categoryId?.name || "Wholesale"}
           </span>
           <div className="product-rating">
             <Star size={14} fill="var(--accent)" color="var(--accent)" />
@@ -65,29 +87,38 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         <h3 className="product-title">{product.name}</h3>
         <p className="product-description">{product.description?.substring(0, 60)}...</p>
         
+        <div className="wholesale-badge">
+          <span>Minimum Order: {minQty} {product.unit || 'units'}</span>
+        </div>
+
         <div className="product-footer">
           <div className="product-price-wrapper">
-            <span className="price-label">Starting at</span>
+            <span className="price-label">Price per {product.unit || 'unit'}</span>
             <span className="product-price">
               ₹{product.price?.toLocaleString() || product.basePrice?.toLocaleString() || "0"}
             </span>
           </div>
           
-          <div className="product-actions">
-            <button 
-              className="add-to-cart-btn"
-              onClick={(e) => handleAction(e, onAddToCart)}
-              title="Add to Cart"
-            >
-              <ShoppingCart size={18} />
-            </button>
-            <button 
-              className="buy-now-btn"
-              onClick={(e) => handleAction(e, onBuyNow)}
-            >
-              Buy Now
-            </button>
+          <div className="quantity-selector-inline">
+            <button onClick={handleDecrease} className="qty-btn"><Minus size={14} /></button>
+            <span className="qty-val">{qty}</span>
+            <button onClick={handleIncrease} className="qty-btn"><Plus size={14} /></button>
           </div>
+        </div>
+
+        <div className="product-actions-full">
+          <button 
+            className="add-to-cart-btn-full"
+            onClick={(e) => handleAction(e, onAddToCart)}
+          >
+            <ShoppingCart size={18} /> Add
+          </button>
+          <button 
+            className="buy-now-btn-full"
+            onClick={(e) => handleAction(e, onBuyNow)}
+          >
+            Buy Now
+          </button>
         </div>
       </div>
 
@@ -98,15 +129,24 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
           height: 100%;
           background: var(--surface);
           border-radius: var(--radius-lg);
+          border: 1px solid var(--border-light);
+          transition: all 0.3s ease;
           overflow: hidden;
           cursor: pointer;
+          position: relative;
+        }
+
+        .product-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--shadow-lg);
+          border-color: var(--primary-light);
         }
 
         .product-image-wrapper {
           position: relative;
-          height: 200px;
-          background-color: #f8fafc;
+          height: 180px;
           overflow: hidden;
+          background: #f8fafc;
         }
 
         .product-image {
@@ -117,16 +157,13 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         }
 
         .product-card:hover .product-image {
-          transform: scale(1.05);
+          transform: scale(1.1);
         }
 
         .product-overlay {
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.2);
+          inset: 0;
+          background: rgba(0,0,0,0.2);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -139,38 +176,33 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         }
 
         .overlay-button {
-          background: white;
-          border: none;
-          padding: 0.75rem;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
-          color: var(--text-main);
-          box-shadow: var(--shadow-md);
+          background: var(--surface);
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: transform 0.2s ease;
-        }
-
-        .overlay-button:hover {
-          transform: scale(1.1);
-          color: var(--primary);
+          border: none;
+          cursor: pointer;
+          color: var(--text-main);
+          box-shadow: var(--shadow-md);
         }
 
         .badge-new {
           position: absolute;
-          top: 1rem;
-          left: 1rem;
-          background-color: var(--success);
+          top: 10px;
+          left: 10px;
+          background: var(--accent);
           color: white;
+          padding: 2px 8px;
+          border-radius: 4px;
           font-size: 0.75rem;
           font-weight: 700;
-          padding: 0.25rem 0.75rem;
-          border-radius: 9999px;
-          text-transform: uppercase;
         }
 
         .product-info {
-          padding: 1.5rem;
+          padding: 1.25rem;
           display: flex;
           flex-direction: column;
           flex: 1;
@@ -180,13 +212,13 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.5rem;
         }
 
         .product-category {
           font-size: 0.75rem;
-          font-weight: 600;
           color: var(--primary);
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -194,33 +226,46 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         .product-rating {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          font-size: 0.875rem;
+          gap: 4px;
+          font-size: 0.8125rem;
           font-weight: 600;
-          color: var(--text-main);
         }
 
         .product-title {
-          font-size: 1.125rem;
+          font-size: 1rem;
           font-weight: 700;
           color: var(--text-main);
           margin-bottom: 0.5rem;
-          line-height: 1.4;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .product-description {
-          font-size: 0.875rem;
+          font-size: 0.8125rem;
           color: var(--text-muted);
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
           line-height: 1.5;
         }
 
+        .wholesale-badge {
+          background: #eff6ff;
+          color: #1e40af;
+          padding: 0.5rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          border: 1px dashed #bfdbfe;
+        }
+
         .product-footer {
-          margin-top: auto;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 1rem;
+          margin-top: auto;
+          margin-bottom: 1rem;
         }
 
         .product-price-wrapper {
@@ -234,48 +279,79 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         }
 
         .product-price {
-          font-size: 1.25rem;
+          font-size: 1.125rem;
           font-weight: 800;
           color: var(--text-main);
         }
 
-        .product-actions {
+        .quantity-selector-inline {
           display: flex;
-          gap: 0.5rem;
+          align-items: center;
+          background: #f1f5f9;
+          border-radius: 20px;
+          padding: 4px;
+          gap: 12px;
         }
 
-        .add-to-cart-btn {
-          padding: 0.625rem;
-          border-radius: var(--radius-md);
-          border: 1.5px solid var(--border);
+        .qty-btn {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: none;
           background: white;
-          color: var(--text-main);
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s ease;
+          cursor: pointer;
+          color: var(--text-main);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        .add-to-cart-btn:hover {
-          border-color: var(--primary);
-          color: var(--primary);
-          background-color: var(--primary-light);
-        }
-
-        .buy-now-btn {
-          padding: 0.625rem 1rem;
-          border-radius: var(--radius-md);
-          border: none;
-          background-color: var(--primary);
-          color: white;
-          font-weight: 600;
+        .qty-val {
+          font-weight: 700;
           font-size: 0.875rem;
-          transition: all 0.2s ease;
+          min-width: 20px;
+          text-align: center;
         }
 
-        .buy-now-btn:hover {
-          background-color: var(--primary-hover);
-          box-shadow: var(--shadow-md);
+        .product-actions-full {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+        }
+
+        .add-to-cart-btn-full, .buy-now-btn-full {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 0.625rem;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: none;
+        }
+
+        .add-to-cart-btn-full {
+          background: var(--primary-light);
+          color: var(--primary);
+        }
+
+        .add-to-cart-btn-full:hover {
+          background: var(--primary);
+          color: white;
+        }
+
+        .buy-now-btn-full {
+          background: var(--primary);
+          color: white;
+        }
+
+        .buy-now-btn-full:hover {
+          background: var(--primary-dark);
+          transform: translateY(-2px);
         }
       `}</style>
     </div>

@@ -38,13 +38,20 @@ const PaymentPage = () => {
     fetchOrder();
   }, [orderId, navigate]);
 
-  const handleRazorpayPayment = async () => {
+  const handleRazorpayPayment = async (useCredit = false) => {
     setProcessing(true);
     try {
-      // 1. Create Razorpay Order on Backend
-      const { data: rzpOrder } = await paymentService.createRazorpayOrder(order.totalAmount);
+      // 1. Initiate Hybrid Payment (checks credit first)
+      const { data: hybridRes } = await paymentService.hybridPayment(orderId, useCredit);
 
-      // 2. Configure Razorpay Options
+      if (hybridRes.paidFullyByCredit) {
+        alert('Payment successful via Credit!');
+        navigate(routes.ORDERS);
+        return;
+      }
+
+      // 2. Configure Razorpay for remaining amount
+      const rzpOrder = hybridRes.gateway;
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: rzpOrder.amount,
@@ -83,74 +90,55 @@ const PaymentPage = () => {
       });
       rzp.open();
     } catch (err) {
-      console.error('Razorpay Error:', err);
-      alert('Failed to initiate payment.');
+      console.error('Payment Error:', err);
+      alert(err.message || 'Failed to initiate payment.');
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleCreditPayment = async () => {
-    setProcessing(true);
-    try {
-      await creditService.useCredit(orderId);
-      alert('Payment successful via Credit!');
-      navigate(routes.ORDERS);
-    } catch (err) {
-      alert(err.message || 'Credit payment failed.');
-    } finally {
-      setProcessing(false);
-    }
+  const handleCreditOnlyPayment = async () => {
+    await handleRazorpayPayment(true);
   };
 
   if (loading) return <Loader />;
   if (!order) return null;
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <Card title="Complete Payment">
-        <div className="space-y-4">
-          <div className="flex justify-between border-b pb-2">
-            <span className="font-semibold">Order ID:</span>
-            <span>{order._id}</span>
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <Card title={`Complete Payment for Order #${orderId}`}>
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span>Order Total:</span>
+            <span style={{ fontWeight: 'bold' }}>₹{order.totalAmount.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between border-b pb-2">
-            <span className="font-semibold">Total Amount:</span>
-            <span className="text-xl font-bold">₹{order.totalAmount.toLocaleString()}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            <span>Items:</span>
+            <span>{order.items.length} items</span>
           </div>
-          <div className="flex justify-between border-b pb-2">
-            <span className="font-semibold">Payment Method Selected:</span>
-            <span className="uppercase">{order.paymentMethod}</span>
-          </div>
+        </div>
 
-          <div className="mt-8 space-y-4">
-            {order.paymentMethod === 'CREDIT' ? (
-              <Button 
-                onClick={handleCreditPayment} 
-                className="w-full py-3" 
-                loading={processing}
-              >
-                Pay via Credit
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleRazorpayPayment} 
-                className="w-full py-3" 
-                loading={processing}
-              >
-                Pay via Razorpay
-              </Button>
-            )}
-            
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(routes.CHECKOUT)} 
-              className="w-full"
-              disabled={processing}
-            >
-              Cancel & Go Back
-            </Button>
-          </div>
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          <Button 
+            onClick={() => handleRazorpayPayment(false)} 
+            disabled={processing}
+            style={{ height: '60px', fontSize: '1.1rem' }}
+          >
+            {processing ? 'Processing...' : 'Pay with Razorpay / UPI / Card'}
+          </Button>
+
+          <Button 
+            variant="secondary"
+            onClick={handleCreditOnlyPayment} 
+            disabled={processing}
+            style={{ height: '60px', fontSize: '1.1rem' }}
+          >
+            {processing ? 'Processing...' : 'Use Business Credit + Razorpay'}
+          </Button>
+        </div>
+
+        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <p>Secure payment processed by Razorpay. GST invoice will be generated automatically.</p>
         </div>
       </Card>
     </div>

@@ -46,6 +46,18 @@ const Checkout = () => {
       return false;
     }
 
+    // 🔥 Wholesale MOQ validation
+    const moqViolations = cart.filter(item => {
+      const minQty = item.minOrderQty || item.moq || 1;
+      return item.quantity < minQty;
+    });
+
+    if (moqViolations.length > 0) {
+      const names = moqViolations.map(item => item.name).join(', ');
+      alert(`Minimum Order Quantity not met for: ${names}. Please adjust in cart.`);
+      return false;
+    }
+
     if (paymentMethod === PAYMENT_METHODS.CREDIT) {
       if (!user?.availableCredit || user.availableCredit < total) {
         alert("Insufficient credit balance. Please choose another payment method.");

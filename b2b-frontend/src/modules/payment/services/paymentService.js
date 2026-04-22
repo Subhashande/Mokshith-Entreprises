@@ -17,6 +17,17 @@ export const paymentService = {
     }
   },
 
+  async hybridPayment(orderId, useCredit) {
+    try {
+      const response = await apiClient.post("/payments/hybrid", { orderId, useCredit });
+      return response;
+    } catch (err) {
+      // apiClient response interceptor already extracts the message
+      const message = typeof err === 'string' ? err : (err.response?.data?.message || err.message || "Hybrid payment failed");
+      throw new Error(message);
+    }
+  },
+
   async verifyPayment(payload) {
     try {
       return await apiClient.post("/payments/verify", payload);

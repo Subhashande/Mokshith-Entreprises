@@ -20,6 +20,21 @@ const invoiceSchema = new mongoose.Schema(
       required: true,
     },
 
+    gst: {
+      type: Number,
+      default: 18,
+    },
+
+    taxAmount: {
+      type: Number,
+      required: true,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
     invoiceNumber: {
       type: String,
       unique: true,

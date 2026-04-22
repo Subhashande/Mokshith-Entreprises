@@ -8,6 +8,12 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
   successResponse(res, data, 'Razorpay order created');
 });
 
+export const hybridPayment = asyncHandler(async (req, res) => {
+  const { orderId, useCredit } = req.body;
+  const data = await service.hybridPayment(orderId, req.user.id, useCredit);
+  successResponse(res, data, 'Hybrid payment processed');
+});
+
 export const initiatePayment = asyncHandler(async (req, res) => {
   const data = await service.initiatePayment(
     req.params.orderId,

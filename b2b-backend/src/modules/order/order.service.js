@@ -47,22 +47,31 @@ export const createOrder = async (userId, data) => {
   }
 
   let totalAmount = 0;
+  let totalWeight = 0;
   const items = [];
 
   // 🔥 1. Validate + Prepare Items + Check Stock
   for (const item of finalItems) {
-    const product = await Product.findById(item.productId || item.id);
-    if (!product) throw new AppError(`Product ${item.name || item.productId} not found`, 404);
+    const product = await Product.findById(item.productId || item.id || item.productId?._id);
+    if (!product) throw new AppError(`Product not found`, 404);
+
+    // 🔥 Wholesale MOQ validation
+    const minQty = product.minOrderQty || product.moq || 1;
+    if (item.quantity < minQty) {
+      throw new AppError(`Minimum order quantity for ${product.name} is ${minQty}`, 400);
+    }
 
     await checkStock(product._id, item.quantity);
 
-    const itemTotal = product.price * item.quantity;
+    const productPrice = product.price || product.basePrice || 0;
+    const itemTotal = productPrice * item.quantity;
     totalAmount += itemTotal;
+    totalWeight += (product.weight || 0) * item.quantity;
 
     items.push({
       productId: product._id,
       name: product.name,
-      price: product.price,
+      price: productPrice,
       quantity: item.quantity,
     });
   }
@@ -76,11 +85,13 @@ export const createOrder = async (userId, data) => {
     userId,
     items,
     totalAmount: finalTotal,
+    totalWeight,
     paymentMethod: paymentMethod.toUpperCase(),
     address: shippingAddress,
     shippingAddress,
     status: ORDER_STATUS.PENDING,
-    paymentStatus: PAYMENT_STATUS.PENDING
+    paymentStatus: PAYMENT_STATUS.PENDING,
+    requiresHeavyVehicle: totalWeight > 100
   };
 
   // 🔥 4. Status Mapping based on Payment Method (Strict Flow)

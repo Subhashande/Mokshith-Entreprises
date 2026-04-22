@@ -17,7 +17,7 @@ import {
   Wheat,
   Utensils,
   Cookie,
-  Plus
+  Coffee
 } from 'lucide-react';
 import { routes } from '../../../routes/routeConfig';
 import { useAuth } from '../../auth/hooks/useAuth';
@@ -27,12 +27,12 @@ const LandingPage = () => {
   const { user } = useAuth();
 
   const categories = [
-    { name: "Rice & Grains", icon: <Wheat className="w-5 h-5" /> },
-    { name: "Pulses & Dals", icon: <Package className="w-5 h-5" /> },
-    { name: "Edible Oils", icon: <Droplets className="w-5 h-5" /> },
-    { name: "FMCG", icon: <LayoutGrid className="w-5 h-5" /> },
-    { name: "Sugar & Salt", icon: <Cookie className="w-5 h-5" /> },
-    { name: "More", icon: <Plus className="w-5 h-5" /> }
+    { name: "Rice & Grains", icon: <Wheat className="w-5 h-5" />, slug: "rice-grains" },
+    { name: "Pulses & Dals", icon: <Package className="w-5 h-5" />, slug: "pulses-dals" },
+    { name: "Edible Oils", icon: <Droplets className="w-5 h-5" />, slug: "edible-oils" },
+    { name: "FMCG", icon: <LayoutGrid className="w-5 h-5" />, slug: "fmcg" },
+    { name: "Sugar & Salt", icon: <Cookie className="w-5 h-5" />, slug: "sugar-salt" },
+    { name: "Beverages", icon: <Coffee className="w-5 h-5" />, slug: "beverages" }
   ];
 
   const features = [
@@ -69,10 +69,10 @@ const LandingPage = () => {
   ];
 
   const products = [
-    { name: "Sona Masoori Rice", price: "₹1,150", unit: "25kg", img: "🍚" },
-    { name: "Toor Dal Premium", price: "₹145", unit: "1kg", img: "🫘" },
-    { name: "Sunflower Oil", price: "₹1,770", unit: "15L", img: "🧴" },
-    { name: "Refined Sugar", price: "₹2,100", unit: "50kg", img: "🧂" }
+    { name: "Sona Masoori Rice", price: "₹1,150", unit: "25kg Bag", img: "🍚", minQty: 10, category: "Rice & Grains" },
+    { name: "Toor Dal Premium", price: "₹145", unit: "1kg Pouch", img: "🫘", minQty: 50, category: "Pulses & Dals" },
+    { name: "Sunflower Oil", price: "₹1,770", unit: "15L Tin", img: "🧴", minQty: 5, category: "Edible Oils" },
+    { name: "Refined Sugar", price: "₹2,100", unit: "50kg Bag", img: "🧂", minQty: 5, category: "Sugar & Salt" }
   ];
 
   const stats = [

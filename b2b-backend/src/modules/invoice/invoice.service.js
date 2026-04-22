@@ -14,10 +14,16 @@ export const generateInvoice = async (order) => {
     return existing; // return existing instead of error
   }
 
+  const amount = order.totalAmount / 1.18; // Assuming finalTotal includes 18% GST
+  const taxAmount = order.totalAmount - amount;
+
   return repo.createInvoice({
     orderId: order._id,
     userId: order.userId,
-    amount: order.totalAmount,
+    amount: Math.round(amount * 100) / 100,
+    gst: 18,
+    taxAmount: Math.round(taxAmount * 100) / 100,
+    totalAmount: order.totalAmount,
     invoiceNumber: generateInvoiceNumber(),
   });
 };
