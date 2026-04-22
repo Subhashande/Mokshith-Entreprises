@@ -41,6 +41,20 @@ const LandingPage = () => {
     { label: "Active vendors", value: "500+" }
   ];
 
+  const handleDashboard = () => {
+    if (!user) {
+      navigate(routes.LOGIN);
+    } else {
+      const rolePath = user.role.toLowerCase().replace('_', '-');
+      // Special case for customers who go to /home or /dashboard
+      if (user.role === 'B2B_CUSTOMER' || user.role === 'B2C_CUSTOMER') {
+        navigate(routes.DASHBOARD);
+      } else {
+        navigate(`/${rolePath}/dashboard`);
+      }
+    }
+  };
+
   return (
     <div className="landing-container">
       {/* Hero Section */}
@@ -53,21 +67,12 @@ const LandingPage = () => {
             Manage bulk purchases, credit, and logistics in one seamless system. Built for modern enterprises.
           </p>
           <div className="hero-actions">
-            {user ? (
-              <button 
-                onClick={() => navigate(routes.DASHBOARD)}
-                className="premium-button premium-button-primary"
-              >
-                Go to Dashboard <ArrowRight size={18} />
-              </button>
-            ) : (
-              <button 
-                onClick={() => navigate(routes.REGISTER)}
-                className="premium-button premium-button-primary"
-              >
-                Get Started <ArrowRight size={18} />
-              </button>
-            )}
+            <button 
+              onClick={handleDashboard}
+              className="premium-button premium-button-primary"
+            >
+              {user ? 'Go to Dashboard' : 'Get Started'} <ArrowRight size={18} />
+            </button>
             <button 
               onClick={() => navigate(routes.PRODUCTS)}
               className="premium-button premium-button-secondary"
@@ -115,10 +120,10 @@ const LandingPage = () => {
           <h2>Ready to transform your business?</h2>
           <p>Join thousands of businesses already scaling with our platform.</p>
           <button 
-            onClick={() => navigate(routes.REGISTER)}
+            onClick={handleDashboard}
             className="premium-button premium-button-primary"
           >
-            Create Your Account <ChevronRight size={18} />
+            {user ? 'Go to Dashboard' : 'Create Your Account'} <ChevronRight size={18} />
           </button>
         </div>
       </section>

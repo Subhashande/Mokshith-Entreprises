@@ -6,7 +6,20 @@ import { fetchConfigSuccess } from "../../superAdmin/superAdminSlice";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
-  const { user, loading, error, isAuthenticated } = useSelector((state) => state.auth);
+  const { user: reduxUser, loading, error, isAuthenticated } = useSelector((state) => state.auth);
+
+  const getUser = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  };
+
+  const user = reduxUser || getUser();
 
   const login = useCallback(async (data) => {
     dispatch(loginStart());
@@ -78,5 +91,5 @@ export const useAuth = () => {
     dispatch(loginSuccess({ user: userData, token: localStorage.getItem('token') }));
   }, [dispatch]);
 
-  return { login, logout, updateUserInfo, loading, error, user, isAuthenticated };
+  return { login, logout, updateUserInfo, loading, error, user, isAuthenticated, getUser };
 };

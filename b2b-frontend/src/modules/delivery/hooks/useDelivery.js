@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { deliveryService } from "../services/deliveryService";
-import { io } from "socket.io-client";
-
-const SOCKET_URL = "http://localhost:5000";
+import { socket } from "../../../services/socket";
 
 export const useDelivery = () => {
   const [deliveries, setDeliveries] = useState([]);
@@ -10,27 +8,22 @@ export const useDelivery = () => {
   const [error, setError] = useState(null);
 
   const fetchDeliveries = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const data = await deliveryService.getDeliveries();
-      setDeliveries(data || []);
+      setDeliveries(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Delivery API failed:", err);
-      setError("Unable to sync deliveries at this time.");
+      console.error(err);
       setDeliveries([]);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   const updateDeliveryStatus = async (id, status) => {
     try {
       await deliveryService.updateStatus(id, status);
-      // Real-time update will be handled by socket, but we can optimistically update
-      setDeliveries((prev) =>
-        prev.map((d) => (d._id === id ? { ...d, status } : d))
-      );
+      setDeliveries((prev) => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map((d) => (d._id === id ? { ...d, status } : d));
+      });
     } catch (err) {
       console.error("Update status failed", err);
     }
@@ -38,16 +31,6 @@ export const useDelivery = () => {
 
   useEffect(() => {
     fetchDeliveries();
-    
-    // Setup Socket connection
-    const socket = io("http://localhost:5000", {
-      path: '/socket.io',
-      transports: ['polling', 'websocket'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 2000,
-      withCredentials: true
-    });
 
     socket.on('connect', () => {
       console.log('🔌 Socket connected:', socket.id);
@@ -58,19 +41,24 @@ export const useDelivery = () => {
     });
 
     socket.on('delivery:statusUpdated', (updatedShipment) => {
-      setDeliveries((prev) => 
-        prev.map((d) => d._id === updatedShipment._id ? updatedShipment : d)
-      );
+      setDeliveries((prev) => {
+        if (!Array.isArray(prev)) return [updatedShipment];
+        return prev.map((d) => d._id === updatedShipment._id ? updatedShipment : d);
+      });
     });
 
     socket.on('delivery:locationUpdated', ({ id, location }) => {
-      setDeliveries((prev) => 
-        prev.map((d) => d._id === id ? { ...d, currentLocation: location } : d)
-      );
+      setDeliveries((prev) => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map((d) => d._id === id ? { ...d, currentLocation: location } : d);
+      });
     });
 
     return () => {
-      socket.disconnect();
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('delivery:statusUpdated');
+      socket.off('delivery:locationUpdated');
     };
   }, [fetchDeliveries]);
 

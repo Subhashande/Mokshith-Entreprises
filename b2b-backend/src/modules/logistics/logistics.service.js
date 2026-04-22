@@ -71,7 +71,7 @@ export const getMyAssignments = async (deliveryBoyId) => {
     deliveryPartnerId: deliveryBoyId,
     status: { $ne: 'DELIVERED' }
   };
-  return repo.findAll(filter);
+  return await repo.findAll(filter);
 };
 
 export const updateLocation = async (id, location) => {

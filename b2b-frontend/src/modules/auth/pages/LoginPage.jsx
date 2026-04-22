@@ -19,12 +19,7 @@ const LoginPage = () => {
   const { login, loading, error, user } = useAuth();
   const { config } = useSelector((state) => state.superAdmin);
 
-  // Redirect if already logged in
-  React.useEffect(() => {
-    if (user) {
-      navigate(routes.DASHBOARD);
-    }
-  }, [user, navigate]);
+  // Redirect if already logged in removed for manual control
 
   const [form, setForm] = useState({
     identifier: "",

@@ -22,6 +22,9 @@ const DeliveryPage = () => {
   const { deliveries, loading, error, updateDeliveryStatus, fetchDeliveries } = useDelivery();
   const { user } = useAuth();
 
+  const safeDeliveries = Array.isArray(deliveries) ? deliveries : [];
+  const activeDeliveries = safeDeliveries.filter(d => d.status !== 'DELIVERED');
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'ASSIGNED': return '#64748b'; // gray
@@ -31,8 +34,8 @@ const DeliveryPage = () => {
     }
   };
 
-  const activeCount = deliveries.length;
-  const completedToday = deliveries.filter(d => d.status === 'DELIVERED').length;
+  const activeCount = activeDeliveries.length;
+  const completedToday = safeDeliveries.filter(d => d.status === 'DELIVERED').length;
   const earningsToday = completedToday * 50; // Simple simulation
 
   const handleOpenMaps = (address) => {
@@ -128,7 +131,7 @@ const DeliveryPage = () => {
       )}
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>
-        {deliveries.length === 0 && !loading ? (
+        {activeDeliveries.length === 0 && !loading ? (
           <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'white', borderRadius: '20px', border: '2px dashed #e2e8f0' }}>
             <div style={{ backgroundColor: '#f0fdf4', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#22c55e' }}>
               <CheckCircle2 size={40} />
@@ -137,7 +140,7 @@ const DeliveryPage = () => {
             <p style={{ color: '#64748b', fontSize: '1.125rem', maxWidth: '400px', margin: '0 auto' }}>You've cleared your queue! New assignments will appear here automatically.</p>
           </div>
         ) : (
-          deliveries.map((delivery) => (
+          activeDeliveries.map((delivery) => (
             <Card key={delivery._id} style={{ borderRadius: '16px', overflow: 'hidden', padding: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* Card Header */}
