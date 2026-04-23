@@ -9,11 +9,14 @@ const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [stockValue, setStockValue] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -23,6 +26,21 @@ const AdminProductsPage = () => {
     moq: 1,
     isActive: true
   });
+
+  const resetForm = () => {
+    setForm({ name: '', description: '', price: '', stock: 0, categoryId: '', moq: 1, isActive: true });
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
+    resetForm();
+  };
+
+  const closeStockModal = () => {
+    setShowStockModal(false);
+    setSelectedProduct(null);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -61,6 +79,7 @@ const AdminProductsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setSubmitting(true);
       const payload = {
         ...form,
         price: Number(form.price),
@@ -71,11 +90,12 @@ const AdminProductsPage = () => {
       
       await productService.createProduct(payload);
       alert("Product created successfully!");
-      setShowModal(false);
-      setForm({ name: '', description: '', price: '', stock: 0, categoryId: '', moq: 1, isActive: true });
+      closeModal();
       fetchProducts();
     } catch (err) {
       alert(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -96,6 +116,7 @@ const AdminProductsPage = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      setSubmitting(true);
       const payload = {
         name: form.name,
         description: form.description,
@@ -108,11 +129,12 @@ const AdminProductsPage = () => {
       
       await productService.updateProduct(selectedProduct._id, payload);
       alert("Product updated successfully!");
-      setShowModal(false);
-      setSelectedProduct(null);
+      closeModal();
       fetchProducts();
     } catch (err) {
       alert(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -136,13 +158,15 @@ const AdminProductsPage = () => {
 
   const handleUpdateStock = async () => {
     try {
+      setSubmitting(true);
       await productService.updateStock(selectedProduct._id, Number(stockValue));
       alert("Stock updated successfully!");
-      setShowStockModal(false);
-      setSelectedProduct(null);
+      closeStockModal();
       fetchProducts();
     } catch (err) {
       alert(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -156,7 +180,14 @@ const AdminProductsPage = () => {
     }
   };
 
-  if (loading) return (
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === "" || product.categoryId?._id === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  if (loading && products.length === 0) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)' }}>Loading products...</p>
     </div>
@@ -170,99 +201,115 @@ const AdminProductsPage = () => {
   );
 
   return (
-      <div style={{ padding: '1rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+    <div style={{ padding: '1.5rem' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.875rem', fontWeight: '700', marginBottom: '0.5rem' }}>Product Management</h2>
-            <p style={{ color: 'var(--text-muted)' }}>Manage your platform products and inventory</p>
+            <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Product Inventory</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Monitor stock levels and manage your product catalog</p>
           </div>
-          <Button onClick={() => setShowModal(true)}>Add New Product</Button>
+          <Button onClick={() => setShowModal(true)}>+ Add New Product</Button>
         </div>
 
-        <Card>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <Card style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+              <input 
+                type="text" 
+                placeholder="Search products by name or description..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '2.5rem' }}
+              />
+              <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                🔍
+              </span>
+            </div>
+            <div style={{ width: '200px' }}>
+              <select 
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </Card>
+
+        <Card style={{ padding: 0 }}>
+          <div className="table-container">
+            <table className="premium-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>PRODUCT</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>CATEGORY</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>PRICE</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>STOCK</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>MOQ</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem' }}>STATUS</th>
-                  <th style={{ padding: '1rem', fontSize: '0.875rem', textAlign: 'right' }}>ACTIONS</th>
+                <tr>
+                  <th>PRODUCT DETAILS</th>
+                  <th>CATEGORY</th>
+                  <th>PRICE</th>
+                  <th>STOCK LEVEL</th>
+                  <th>MOQ</th>
+                  <th>STATUS</th>
+                  <th style={{ textAlign: 'right' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {products.length > 0 ? (
-                  products.map((product) => (
-                    <tr key={product._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: '600' }}>{product.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {product.description?.substring(0, 50)}...
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <tr key={product._id}>
+                      <td>
+                        <div style={{ fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.25rem' }}>{product.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '300px' }}>
+                          {product.description?.substring(0, 80)}{product.description?.length > 80 ? '...' : ''}
                         </div>
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        {product.categoryId?.name || 'N/A'}
+                      <td>
+                        <span className="badge" style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
+                          {product.categoryId?.name || 'Uncategorized'}
+                        </span>
                       </td>
-                      <td style={{ padding: '1rem', fontWeight: '600' }}>
+                      <td style={{ fontWeight: '700' }}>
                         ₹{product.price?.toLocaleString()}
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{
-                          color: product.stock > 0 ? 'var(--success)' : 'var(--error)',
-                          fontWeight: '700'
-                        }}>
-                          {product.stock}
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ 
+                            fontWeight: '800', 
+                            color: product.stock > 10 ? 'var(--success)' : product.stock > 0 ? 'var(--warning)' : 'var(--error)' 
+                          }}>
+                            {product.stock}
+                          </span>
+                          {product.stock === 0 && <span className="badge badge-error">OUT</span>}
+                          {product.stock > 0 && product.stock <= 10 && <span className="badge badge-warning">LOW</span>}
+                        </div>
+                      </td>
+                      <td>{product.moq || 1}</td>
+                      <td>
+                        <span 
+                          onClick={() => handleToggleStatus(product)}
+                          className={`badge ${product.isActive ? 'badge-success' : 'badge-muted'}`}
+                          style={{ cursor: 'pointer' }}
+                          title="Click to toggle status"
+                        >
+                          {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        {product.moq || 1}
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: '700',
-                          backgroundColor: product.isActive ? 'var(--success)' : '#f1f5f9',
-                          color: product.isActive ? 'white' : 'var(--text-muted)'
-                        }}>
-                          {product.isActive ? 'ACTIVE' : 'INACTIVE'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+                      <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                          <Button 
-                            size="small" 
-                            variant="secondary"
-                            onClick={() => handleStockClick(product)}
-                          >
+                          <Button size="small" variant="secondary" onClick={() => handleStockClick(product)} title="Update Stock">
                             Stock
                           </Button>
-                          <Button 
-                            size="small" 
-                            variant="secondary"
-                            onClick={() => handleToggleStatus(product)}
-                          >
-                            {product.isActive ? 'Disable' : 'Enable'}
-                          </Button>
-                          <Button 
-                            size="small" 
-                            variant="secondary"
-                            onClick={() => handleEdit(product)}
-                          >
+                          <Button size="small" variant="secondary" onClick={() => handleEdit(product)} title="Edit Product">
                             Edit
                           </Button>
                           <Button 
                             size="small" 
-                            variant="secondary"
-                            style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                            variant="secondary" 
+                            style={{ color: 'var(--error)' }} 
                             onClick={() => handleDelete(product._id)}
+                            title="Delete Product"
                           >
-                            Delete
+                            🗑️
                           </Button>
                         </div>
                       </td>
@@ -270,8 +317,19 @@ const AdminProductsPage = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No products found. Add your first product to get started.
+                    <td colSpan="7" style={{ padding: '5rem 2rem', textAlign: 'center' }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+                      <h3 style={{ fontWeight: '700', color: 'var(--text-main)' }}>No Products Found</h3>
+                      <p style={{ color: 'var(--text-muted)' }}>Try adjusting your search or filters to find what you're looking for.</p>
+                      {searchTerm || filterCategory ? (
+                        <Button variant="secondary" style={{ marginTop: '1rem' }} onClick={() => { setSearchTerm(""); setFilterCategory(""); }}>
+                          Clear All Filters
+                        </Button>
+                      ) : (
+                        <Button style={{ marginTop: '1rem' }} onClick={() => setShowModal(true)}>
+                          Add Your First Product
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 )}
@@ -281,38 +339,30 @@ const AdminProductsPage = () => {
         </Card>
 
         {showModal && (
-          <Modal title={selectedProduct ? "Edit Product" : "Add New Product"} onClose={() => {
-            setShowModal(false);
-            setSelectedProduct(null);
-            setForm({ name: '', description: '', price: '', stock: 0, categoryId: '', moq: 1, isActive: true });
-          }}>
-            <form onSubmit={selectedProduct ? handleUpdate : handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Modal title={selectedProduct ? "Edit Product" : "Create New Product"} onClose={closeModal}>
+            <form onSubmit={selectedProduct ? handleUpdate : handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <Input
                 label="Product Name"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
+                placeholder="e.g. Premium Basmati Rice"
                 required
               />
+              
               <div>
                 <label style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
-                  Description
+                  Product Description
                 </label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1.5px solid var(--border)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.875rem',
-                    minHeight: '80px',
-                    resize: 'vertical'
-                  }}
+                  placeholder="Describe the product features, quality, etc..."
+                  rows="4"
                 />
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <Input
                   label="Price (₹)"
@@ -323,13 +373,14 @@ const AdminProductsPage = () => {
                   required
                 />
                 <Input
-                  label="Stock Quantity"
+                  label="Available Stock"
                   name="stock"
                   type="number"
                   value={form.stock}
                   onChange={handleChange}
                 />
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
@@ -340,14 +391,6 @@ const AdminProductsPage = () => {
                     value={form.categoryId}
                     onChange={handleChange}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1.5px solid var(--border)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '0.875rem',
-                      backgroundColor: 'white'
-                    }}
                   >
                     <option value="">Select Category</option>
                     {categories.map(cat => (
@@ -356,32 +399,31 @@ const AdminProductsPage = () => {
                   </select>
                 </div>
                 <Input
-                  label="MOQ (Min Order Qty)"
+                  label="Minimum Order Quantity"
                   name="moq"
                   type="number"
                   value={form.moq}
                   onChange={handleChange}
                 />
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.5rem 0' }}>
                 <input
                   type="checkbox"
                   name="isActive"
                   checked={form.isActive}
                   onChange={handleChange}
+                  style={{ width: '1.25rem', height: '1.25rem' }}
                 />
-                <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Product Active</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Make product visible on marketplace</span>
               </label>
+
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <Button type="button" variant="secondary" onClick={() => {
-                  setShowModal(false);
-                  setSelectedProduct(null);
-                  setForm({ name: '', description: '', price: '', stock: 0, categoryId: '', moq: 1, isActive: true });
-                }} style={{ flex: 1 }}>
+                <Button type="button" variant="secondary" onClick={closeModal} style={{ flex: 1 }}>
                   Cancel
                 </Button>
-                <Button type="submit" style={{ flex: 1 }}>
-                  {selectedProduct ? 'Update Product' : 'Add Product'}
+                <Button type="submit" loading={submitting} style={{ flex: 1 }}>
+                  {selectedProduct ? 'Save Changes' : 'Create Product'}
                 </Button>
               </div>
             </form>
@@ -389,27 +431,26 @@ const AdminProductsPage = () => {
         )}
 
         {showStockModal && (
-          <Modal title="Update Stock" onClose={() => {
-            setShowStockModal(false);
-            setSelectedProduct(null);
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <p style={{ fontWeight: '600' }}>Product: {selectedProduct?.name}</p>
+          <Modal title="Update Stock Level" onClose={closeStockModal}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ padding: '1rem', backgroundColor: 'var(--primary-light)', borderRadius: 'var(--radius-md)' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '0.25rem' }}>PRODUCT</p>
+                <p style={{ fontSize: '1.125rem', fontWeight: '800' }}>{selectedProduct?.name}</p>
+              </div>
+              
               <Input
-                label="New Stock Quantity"
+                label="Current Quantity in Stock"
                 name="stock"
                 type="number"
                 value={stockValue}
                 onChange={(e) => setStockValue(e.target.value)}
               />
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <Button variant="secondary" onClick={() => {
-                  setShowStockModal(false);
-                  setSelectedProduct(null);
-                }} style={{ flex: 1 }}>
+              
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <Button variant="secondary" onClick={closeStockModal} style={{ flex: 1 }}>
                   Cancel
                 </Button>
-                <Button onClick={handleUpdateStock} style={{ flex: 1 }}>
+                <Button onClick={handleUpdateStock} loading={submitting} style={{ flex: 1 }}>
                   Update Stock
                 </Button>
               </div>

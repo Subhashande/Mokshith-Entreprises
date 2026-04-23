@@ -10,7 +10,7 @@ export const updateShipment = (id, data) =>
   Logistics.findByIdAndUpdate(id, data, { new: true });
 
 export const findById = (id) =>
-  Logistics.findById(id).populate('orderId warehouseId');
+  Logistics.findById(id).populate('orderId warehouseId deliveryPartnerId');
 
 export const findAll = (filter = {}) =>
-  Logistics.find(filter).populate('orderId warehouseId');
+  Logistics.find(filter).populate('orderId warehouseId deliveryPartnerId');

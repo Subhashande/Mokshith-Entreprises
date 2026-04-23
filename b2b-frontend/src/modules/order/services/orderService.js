@@ -9,6 +9,15 @@ export const orderService = {
     }
   },
 
+  async getOrderById(id) {
+    try {
+      const response = await apiClient.get(`/orders/${id}`);
+      return response.data || response;
+    } catch {
+      throw new Error("Failed to fetch order details");
+    }
+  },
+
   async placeOrder(payload) {
     try {
       const response = await apiClient.post("/orders", payload);

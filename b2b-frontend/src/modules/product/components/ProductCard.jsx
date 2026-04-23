@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Eye, Star, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../routes/routeConfig';
@@ -7,6 +7,11 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
   const navigate = useNavigate();
   const minQty = product.minOrderQty || product.moq || 1;
   const [qty, setQty] = useState(minQty);
+
+  // Sync qty with product minQty if product changes
+  useEffect(() => {
+    setQty(product.minOrderQty || product.moq || 1);
+  }, [product]);
 
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) return product.images[0];
@@ -42,12 +47,14 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
 
   const handleDecrease = (e) => {
     e.stopPropagation();
-    if (qty > minQty) setQty(qty - 1);
+    if (qty > minQty) {
+      setQty(prev => prev - 1);
+    }
   };
 
   const handleIncrease = (e) => {
     e.stopPropagation();
-    setQty(qty + 1);
+    setQty(prev => prev + 1);
   };
 
   return (
@@ -100,9 +107,13 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
           </div>
           
           <div className="quantity-selector-inline">
-            <button onClick={handleDecrease} className="qty-btn"><Minus size={14} /></button>
+            <button onClick={handleDecrease} className="qty-btn" title="Decrease">
+              <Minus size={16} strokeWidth={3} />
+            </button>
             <span className="qty-val">{qty}</span>
-            <button onClick={handleIncrease} className="qty-btn"><Plus size={14} /></button>
+            <button onClick={handleIncrease} className="qty-btn" title="Increase">
+              <Plus size={16} strokeWidth={3} />
+            </button>
           </div>
         </div>
 
@@ -294,17 +305,27 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
         }
 
         .qty-btn {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          border: none;
-          background: white;
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          color: var(--text-main);
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+          color: #1e293b;
+          transition: all 0.2s ease;
+        }
+
+        .qty-btn:hover {
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+          color: #2563eb;
+        }
+
+        .qty-btn:active {
+          transform: scale(0.95);
         }
 
         .qty-val {

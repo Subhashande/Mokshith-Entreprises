@@ -1,11 +1,12 @@
 import React from 'react';
 
-const Button = ({ children, variant = 'primary', className = '', loading, ...props }) => {
+const Button = ({ children, variant = 'primary', className = '', loading, fullWidth, ...props }) => {
   const variantClass = variant === 'primary' ? 'premium-button-primary' : 'premium-button-secondary';
+  const widthClass = fullWidth ? 'w-full' : '';
   
   return (
     <button 
-      className={`premium-button ${variantClass} ${className} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+      className={`premium-button ${variantClass} ${widthClass} ${className} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
       disabled={loading || props.disabled}
       {...props}
     >

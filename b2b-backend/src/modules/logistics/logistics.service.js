@@ -4,6 +4,7 @@ import { optimizeRoute } from './routeOptimization.js';
 import Order from '../order/order.model.js';
 import { DELIVERY_STATUS } from '../../constants/deliveryStatus.js';
 import { ORDER_STATUS } from '../../constants/orderStatus.js';
+import mongoose from 'mongoose';
 
 export const createShipment = async (order, warehouses) => {
   if (!order) throw new AppError('Order not found', 404);
@@ -20,6 +21,77 @@ export const createShipment = async (order, warehouses) => {
     status: DELIVERY_STATUS.PENDING,
     estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
   });
+};
+
+export const autoAssignDelivery = async (orderId) => {
+  console.log('Auto-assigning delivery for order:', orderId);
+  
+  const order = await Order.findById(orderId).populate('userId');
+  if (!order) return;
+
+  const User = mongoose.model('User');
+  const Shipment = mongoose.model('Logistics');
+
+  // 1. Find all active delivery partners
+  const activePartners = await User.find({ 
+    role: 'DELIVERY_PARTNER', 
+    status: 'ACTIVE' 
+  });
+
+  if (!activePartners || activePartners.length === 0) {
+    console.warn('No active delivery partners found for auto-assignment');
+    return;
+  }
+
+  // 2. Count active orders for each partner
+  const partnerWorkload = await Promise.all(activePartners.map(async (partner) => {
+    const activeOrdersCount = await Shipment.countDocuments({
+      deliveryPartnerId: partner._id,
+      status: { $in: ['ASSIGNED', 'PICKED', 'OUT_FOR_DELIVERY'] }
+    });
+    return { partner, activeOrdersCount };
+  }));
+
+  // 3. Choose partner with least active orders
+  const chosenPartner = partnerWorkload.sort((a, b) => a.activeOrdersCount - b.activeOrdersCount)[0].partner;
+
+  // 4. Create or update shipment
+  let shipment = await repo.findByOrder(orderId);
+  
+  if (shipment) {
+    shipment.deliveryPartnerId = chosenPartner._id;
+    shipment.status = 'ASSIGNED';
+    await shipment.save();
+  } else {
+    const user = order.userId;
+    const defaultAddress = order.address || user?.addresses?.find(a => a.isDefault) || user?.addresses?.[0] || {};
+    const fullAddress = order.address 
+      ? `${order.address.addressLine}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}`
+      : `${defaultAddress.addressLine || ''}, ${defaultAddress.city || ''}, ${defaultAddress.state || ''} - ${defaultAddress.pincode || ''}`;
+
+    shipment = await repo.createShipment({
+      orderId: order._id,
+      deliveryPartnerId: chosenPartner._id,
+      trackingNumber: `TRK-${Date.now()}`,
+      status: 'ASSIGNED',
+      estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
+      address: fullAddress || 'Address not provided',
+      customerName: user?.name || 'Customer',
+      phone: order.address?.phone || defaultAddress.phone || user?.mobile || 'N/A'
+    });
+  }
+
+  // 5. Emit socket event
+  if (global.io) {
+    global.io.emit('delivery:assigned', {
+      orderId: order._id,
+      deliveryPartnerId: chosenPartner._id,
+      shipmentId: shipment._id
+    });
+  }
+
+  console.log(`Order ${orderId} auto-assigned to ${chosenPartner.name}`);
+  return shipment;
 };
 
 export const updateStatus = async (id, status) => {

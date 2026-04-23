@@ -32,3 +32,16 @@ export const changePassword = asyncHandler(async (req, res) => {
   await service.changePassword(req.user.id, req.body.newPassword);
   successResponse(res, null, 'Password changed successfully');
 });
+
+export const updateProfileImage = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'Please upload a file' });
+  }
+  
+  // In a real app, you'd upload to Cloudinary/S3 here
+  // For now, we'll use the local path
+  const imageUrl = `/uploads/temp/${req.file.filename}`;
+  const user = await service.updateProfile(req.user.id, { profileImage: imageUrl });
+  
+  successResponse(res, user, 'Profile image updated');
+});

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useOrder } from "../hooks/useOrder";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Button from "../../../components/ui/Button";
@@ -6,11 +7,34 @@ import OrderStatusBadge from "../components/OrderStatusBadge";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
 import { ORDER_STATUS } from "../../../utils/constants";
+import { useSocket } from "../../../context/SocketContext";
+import { useNotification } from "../../../context/NotificationContext";
 
 const OrdersPage = () => {
-  const { orders, loading, error } = useOrder(true);
+  const { orders, loading, error, fetchOrders } = useOrder(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { on } = useSocket();
+  const { showToast } = useNotification();
+
+  useEffect(() => {
+    // 📡 Real-time Updates: Payment Success
+    const offPayment = on('payment:success', (data) => {
+      showToast(`Order #${data.orderId} paid successfully!`, 'success');
+      if (fetchOrders) fetchOrders();
+    });
+
+    // 🚚 Real-time Updates: Delivery Assigned
+    const offDelivery = on('delivery:assigned', (data) => {
+      showToast(`Delivery agent assigned for Order #${data.orderId}`, 'info');
+      if (fetchOrders) fetchOrders();
+    });
+
+    return () => {
+      if (offPayment) offPayment();
+      if (offDelivery) offDelivery();
+    };
+  }, [on, showToast, fetchOrders]);
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>

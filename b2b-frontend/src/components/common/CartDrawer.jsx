@@ -115,17 +115,13 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) =
 
             <Button 
               onClick={() => {
-                if (isMoqViolated) {
-                  alert("Please fix MOQ violations before checking out.");
-                  return;
-                }
                 onClose();
                 navigate(routes.CHECKOUT);
               }}
-              style={{ width: '100%', padding: '1rem' }}
-              disabled={isMoqViolated}
+              style={{ width: '100%', padding: '1rem', marginBottom: '0.75rem' }}
+              disabled={cart.length === 0 || isMoqViolated}
             >
-              Proceed to Checkout
+              {isMoqViolated ? 'MOQ Not Met' : 'Proceed to Checkout'}
             </Button>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '1rem' }}>
               Bulk shipping and taxes calculated at checkout

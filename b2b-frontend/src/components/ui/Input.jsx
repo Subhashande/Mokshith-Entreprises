@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Input = ({ label, error, className = '', ...props }) => {
+const Input = ({ label, error, className = '', fullWidth, ...props }) => {
   return (
-    <div className={`input-container ${className}`} style={{ width: '100%', marginBottom: '1rem' }}>
+    <div className={`input-container ${className}`} style={{ width: fullWidth ? '100%' : 'auto', marginBottom: '1rem' }}>
       {label && (
         <label style={{ 
           display: 'block', 

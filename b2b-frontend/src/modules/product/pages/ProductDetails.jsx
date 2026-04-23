@@ -57,11 +57,11 @@ const ProductDetails = () => {
   const handleAddToCart = () => {
     const minQty = product.minOrderQty || product.moq || 1;
     if (qty < minQty) {
-      alert(`Minimum ${minQty} quantity required for this product.`);
+      // Use toast instead if available, or just set error state
       return;
     }
     addToCart({ ...product, quantity: qty });
-    alert(`${product.name} (${qty} ${product.unit || 'units'}) added to cart!`);
+    navigate(routes.CART || '/cart'); // Optional redirect or open drawer
   };
 
   const handleBuyNow = () => {

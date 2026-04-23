@@ -13,7 +13,7 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
 });
 
 export const hybridPayment = asyncHandler(async (req, res) => {
-  const { orderId, useCredit } = req.body;
+  const { orderId, useCredit, totalAmount } = req.body;
 
   // 🔥 ADD: fallback support (VERY IMPORTANT)
   const finalOrderId = orderId || req.params.orderId;
@@ -24,6 +24,7 @@ export const hybridPayment = asyncHandler(async (req, res) => {
     paramsOrderId: req.params.orderId,
     finalOrderId,
     useCredit,
+    totalAmount
   });
 
   // 🔥 ADD: validation
@@ -31,7 +32,7 @@ export const hybridPayment = asyncHandler(async (req, res) => {
     throw new Error('orderId is required for hybrid payment');
   }
 
-  const data = await service.hybridPayment(finalOrderId, req.user.id, useCredit);
+  const data = await service.hybridPayment(finalOrderId, req.user.id, useCredit, totalAmount);
 
   successResponse(res, data, 'Hybrid payment processed');
 });
@@ -52,4 +53,12 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   const payment = await service.verifyPayment(req.body);
 
   successResponse(res, payment, 'Payment successful');
+});
+
+export const razorpayWebhook = asyncHandler(async (req, res) => {
+  const signature = req.headers['x-razorpay-signature'];
+  const rawBody = req.rawBody || JSON.stringify(req.body); // Fallback if rawBody missing
+  
+  const result = await service.handleWebhook(rawBody, signature);
+  successResponse(res, result, 'Webhook processed');
 });

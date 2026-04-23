@@ -48,6 +48,7 @@ export const createOrder = async (userId, data) => {
 
   let totalAmount = 0;
   let totalWeight = 0;
+  let totalQuantity = 0;
   const items = [];
 
   // 🔥 1. Validate + Prepare Items + Check Stock
@@ -67,6 +68,7 @@ export const createOrder = async (userId, data) => {
     const itemTotal = productPrice * item.quantity;
     totalAmount += itemTotal;
     totalWeight += (product.weight || 0) * item.quantity;
+    totalQuantity += item.quantity;
 
     items.push({
       productId: product._id,
@@ -74,6 +76,11 @@ export const createOrder = async (userId, data) => {
       price: productPrice,
       quantity: item.quantity,
     });
+  }
+
+  // 🔥 B2B Rule: No single-item purchase
+  if (totalQuantity <= 1) {
+    throw new AppError('B2B Rule: Minimum total quantity must be greater than 1. No single-item purchases allowed.', 400);
   }
 
   // Add 18% GST
@@ -127,17 +134,19 @@ export const createOrder = async (userId, data) => {
 
   // 🔥 6. Post-Order Processing
   try {
-    // Clear Cart
-    if (!requestItems || requestItems.length === 0) {
-      const cart = await cartRepo.findCartByUser(userId);
-      if (cart) {
-        cart.items = [];
-        await cart.save();
+    // Clear Cart ONLY for COD immediately, others after payment
+    if (paymentMethod.toUpperCase() === 'COD') {
+      if (!requestItems || requestItems.length === 0) {
+        const cart = await cartRepo.findCartByUser(userId);
+        if (cart) {
+          cart.items = [];
+          await cart.save();
+        }
       }
     }
 
     // Generate Invoice & Notification
-    await generateInvoice(order);
+    await generateInvoice(order._id);
     await sendNotification({
       userId,
       title: 'Order Confirmed',
@@ -155,8 +164,10 @@ export const createOrder = async (userId, data) => {
       await order.save();
     }
 
-    // 🔥 Auto-assign Delivery Partner
-    await assignDelivery(order);
+    // 🔥 Auto-assign Delivery Partner ONLY for COD immediately, others after payment
+    if (paymentMethod.toUpperCase() === 'COD') {
+      await assignDelivery(order);
+    }
   } catch (err) {
     console.error('Non-critical post-order error:', err.message);
   }

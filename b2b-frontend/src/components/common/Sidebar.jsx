@@ -54,8 +54,16 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
         </div>
 
         <div className="sidebar-user">
-          <div className="user-avatar">
-            {user?.name?.[0]?.toUpperCase() || 'U'}
+          <div className="user-avatar overflow-hidden">
+            {user?.profileImage ? (
+              <img 
+                src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.profileImage}`} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              user?.name?.[0]?.toUpperCase() || 'U'
+            )}
           </div>
           <div className="user-info">
             <h3>{user?.name}</h3>

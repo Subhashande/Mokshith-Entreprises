@@ -27,7 +27,9 @@ const startServer = async () => {
         methods: ["GET", "POST", "PATCH"],
         credentials: true
       },
-      transports: ['websocket']
+      transports: ['websocket', 'polling'], // Allow polling fallback for stability
+      pingTimeout: 60000,
+      pingInterval: 25000
     });
 
     // Verify IO initialization

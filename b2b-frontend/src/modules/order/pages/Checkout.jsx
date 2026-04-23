@@ -88,14 +88,8 @@ const Checkout = () => {
       const response = await placeOrder(payload);
       const newOrder = response.data || response;
       
-      alert("🎉 Order created! Proceeding to payment.");
-      clearCart();
-      
-      if (paymentMethod === PAYMENT_METHODS.COD) {
-        navigate(routes.ORDERS);
-      } else {
-        navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
-      }
+      // 3. Navigate to Payment
+      navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
     } catch (err) {
       console.error("Checkout Error:", err);
       alert(err.message || "Failed to place order. Please check your connection and try again.");

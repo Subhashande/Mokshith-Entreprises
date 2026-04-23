@@ -70,6 +70,7 @@ export const useOrder = (shouldFetch = false) => {
     removeFromCart, 
     updateQuantity,
     clearCart, 
-    placeOrder 
+    placeOrder,
+    fetchOrders
   };
 };

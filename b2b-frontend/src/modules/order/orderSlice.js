@@ -22,11 +22,13 @@ const orderSlice = createSlice({
     addToCart: (state, action) => {
       const item = action.payload;
       const itemId = item._id || item.id;
+      const quantityToAdd = item.quantity || 1;
       const existingItem = state.cart.find((i) => (i._id || i.id) === itemId);
+      
       if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantityToAdd;
       } else {
-        state.cart.push({ ...item, quantity: 1 });
+        state.cart.push({ ...item, quantity: quantityToAdd });
       }
     },
     removeFromCart: (state, action) => {

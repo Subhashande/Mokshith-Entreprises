@@ -1,88 +1,134 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  CreditCard, 
+  Wallet, 
+  ChevronRight, 
+  CheckCircle, 
+  FileText, 
+  Package, 
+  ShieldCheck,
+  Info,
+  ArrowRight,
+  Truck
+} from 'lucide-react';
 import { paymentService } from '../services/paymentService';
 import { creditService } from '../../credit/services/creditService';
 import { orderService } from '../../order/services/orderService';
+import { invoiceService } from '../../invoice/services/invoiceService';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { routes } from '../../../routes/routeConfig';
 import Button from '../../../components/ui/Button';
-import Card from '../../../components/ui/Card';
+import { useSocket } from '../../../context/SocketContext';
 import Loader from '../../../components/common/Loader';
 
 const PaymentPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { socket } = useSocket();
 
   const [order, setOrder] = useState(null);
+  const [credit, setCredit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [deliveryAssigned, setDeliveryAssigned] = useState(false);
+  const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('online');
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchData = async () => {
       try {
-        // 🔥 IMPROVED: Try direct fetch if available
-        if (orderService.getOrderById) {
-          const res = await orderService.getOrderById(orderId);
-          setOrder(res.data || res);
+        const [orderRes, creditRes] = await Promise.all([
+          orderService.getOrderById(orderId),
+          creditService.getCreditInfo()
+        ]);
+
+        const orderData = orderRes.data || orderRes;
+        const creditData = creditRes.data || creditRes;
+
+        setOrder(orderData);
+        setCredit(creditData);
+
+        // Pre-select payment method
+        if (creditData?.availableCredit >= orderData?.totalAmount) {
+          setPaymentMethod('credit');
+        } else if (creditData?.availableCredit > 0) {
+          setPaymentMethod('hybrid');
         } else {
-          // fallback (your existing logic)
-          const response = await orderService.getOrders();
-          const orders = response.data || response;
-          const foundOrder = orders.find(o => o._id === orderId);
-
-          if (!foundOrder) {
-            alert('Order not found');
-            navigate(routes.ORDERS);
-            return;
-          }
-
-          setOrder(foundOrder);
+          setPaymentMethod('online');
         }
       } catch (err) {
-        console.error('Error fetching order:', err);
-        alert('Failed to load order');
-        navigate(routes.ORDERS);
+        console.error('Error fetching data:', err);
+        setError('Failed to load payment details.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrder();
-  }, [orderId, navigate]);
+    fetchData();
+  }, [orderId]);
 
-  const handleRazorpayPayment = async (useCredit = false) => {
+  useEffect(() => {
+    if (!socket) return;
+    const handleSuccess = (data) => {
+      if (data.orderId === orderId) {
+        setPaymentSuccess(true);
+        setProcessing(false);
+      }
+    };
+    const handleDelivery = (data) => {
+      if (data.orderId === orderId) {
+        setDeliveryAssigned(true);
+      }
+    };
+    socket.on('payment:success', handleSuccess);
+    socket.on('delivery:assigned', handleDelivery);
+    return () => {
+      socket.off('payment:success', handleSuccess);
+      socket.off('delivery:assigned', handleDelivery);
+    };
+  }, [socket, orderId]);
+
+  const calculateBreakdown = () => {
+    const total = order?.totalAmount || 0;
+    const available = credit?.availableCredit || 0;
+
+    if (paymentMethod === 'credit') {
+      return { creditUsed: Math.min(total, available), onlinePayable: 0 };
+    } else if (paymentMethod === 'hybrid') {
+      return { creditUsed: available, onlinePayable: total - available };
+    }
+    return { creditUsed: 0, onlinePayable: total };
+  };
+
+  const { creditUsed, onlinePayable } = calculateBreakdown();
+
+  const handlePayment = async () => {
     setProcessing(true);
+    setError(null);
 
     try {
-      // 🔥 FIXED: correct API call already updated in service
       const { data: hybridRes } = await paymentService.hybridPayment(
         orderId,
-        useCredit
+        paymentMethod !== 'online',
+        order.totalAmount
       );
 
-      // 🔥 CASE 1: Fully paid via credit
       if (hybridRes.paidFullyByCredit) {
-        alert('Payment successful via Credit!');
-        navigate(routes.ORDERS);
+        setPaymentSuccess(true);
         return;
       }
 
-      // 🔥 CASE 2: Razorpay required
-      if (!hybridRes.gateway) {
-        throw new Error('Payment gateway not initialized');
-      }
-
       const rzpOrder = hybridRes.gateway;
-
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: rzpOrder.amount,
-        currency: rzpOrder.currency || 'INR',
+        currency: 'INR',
         name: "Mokshith Enterprises",
-        description: `Payment for Order #${orderId}`,
+        description: `B2B Order #${orderId}`,
         order_id: rzpOrder.gatewayOrderId,
-
         handler: async function (response) {
           try {
             await paymentService.verifyPayment({
@@ -91,95 +137,259 @@ const PaymentPage = () => {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
-
-            alert('Payment Successful!');
-            navigate(routes.ORDERS);
+            setPaymentSuccess(true);
           } catch (err) {
-            console.error('Verification error:', err);
-            alert('Payment verification failed. Please contact support.');
+            setError('Verification failed.');
           }
         },
-
         prefill: {
-          name: user?.name || '',
-          email: user?.email || '',
-          contact: user?.mobile || '',
+          name: user?.name,
+          email: user?.email,
+          contact: user?.mobile,
         },
-
-        theme: {
-          color: "#3399cc",
-        },
+        theme: { color: "#2563eb" },
+        modal: { ondismiss: () => setProcessing(false) }
       };
 
-      // 🔥 SAFETY CHECK
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded');
-      }
-
       const rzp = new window.Razorpay(options);
-
-      rzp.on('payment.failed', function (response) {
-        alert(`Payment failed: ${response.error.description}`);
-      });
-
       rzp.open();
     } catch (err) {
-      console.error('Payment Error:', err);
-      alert(err.message || 'Failed to initiate payment.');
+      setError(err.message || 'Payment failed');
+      setProcessing(false);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    try {
+      setProcessing(true);
+      const res = await invoiceService.getInvoiceByOrderId(orderId);
+      const invoiceData = res.data || res;
+      
+      if (invoiceData?.fileUrl) {
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+        const fileUrl = invoiceData.fileUrl.startsWith('http') 
+          ? invoiceData.fileUrl 
+          : `${baseUrl}${invoiceData.fileUrl}`;
+        window.open(fileUrl, '_blank');
+      } else {
+        const genRes = await invoiceService.generateInvoice(orderId);
+        const genData = genRes.data || genRes;
+        if (genData?.fileUrl) {
+          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+          const fileUrl = genData.fileUrl.startsWith('http') 
+            ? genData.fileUrl 
+            : `${baseUrl}${genData.fileUrl}`;
+          window.open(fileUrl, '_blank');
+        } else {
+          alert('Invoice is being generated. Please try again in a moment.');
+        }
+      }
+    } catch (err) {
+      console.error('Error downloading invoice:', err);
+      alert('Could not download invoice. Please try from the Orders section.');
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleCreditOnlyPayment = async () => {
-    await handleRazorpayPayment(true);
-  };
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader /></div>;
+  
+  if (!order) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center p-4">
+      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+        <Package size={32} />
+      </div>
+      <h2 className="text-xl font-bold text-gray-900">Order Not Found</h2>
+      <p className="text-gray-500 max-w-xs">We couldn't find the order you're looking for.</p>
+      <Button onClick={() => navigate(routes.ORDERS)} variant="secondary">Go to Orders</Button>
+    </div>
+  );
 
-  if (loading) return <Loader />;
-  if (!order) return null;
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-red-100">
+        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Info className="text-red-500" size={40} />
+        </div>
+        <h2 className="text-2xl font-black text-gray-900 mb-2">Oops! Something went wrong</h2>
+        <p className="text-gray-600 mb-8 leading-relaxed">{error}</p>
+        <Button variant="primary" fullWidth onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    </div>
+  );
+
+  if (paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="max-w-xl mx-auto">
+          <div className="bg-white rounded-[2rem] shadow-2xl shadow-blue-100/50 overflow-hidden border border-blue-50">
+            <div className="bg-blue-600 px-8 py-12 text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+              <div className="relative inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-6 shadow-xl">
+                <CheckCircle className="text-blue-600" size={48} />
+              </div>
+              <h2 className="relative text-3xl font-black text-white mb-2 tracking-tight">Order Confirmed!</h2>
+              <p className="relative text-blue-100 text-lg font-medium opacity-90">Order #{orderId.slice(-8).toUpperCase()}</p>
+            </div>
+            <div className="p-8 sm:p-10">
+              <div className="space-y-8">
+                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Payment Status</span>
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-black uppercase tracking-widest">Paid</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Delivery Partner</span>
+                    <div className="flex items-center gap-2">
+                      {deliveryAssigned ? (
+                        <span className="text-blue-600 font-black text-sm flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                          <Truck size={14} /> PARTNER ASSIGNED
+                        </span>
+                      ) : (
+                        <span className="text-orange-500 font-black text-sm flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
+                          ASSIGNING AGENT...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <FileText size={16} className="text-blue-600" /> Order Summary
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Subtotal</span>
+                      <span className="text-gray-900 font-bold">₹{(order.totalAmount / 1.18).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-gray-900 font-black text-lg">Total Amount</span>
+                      <span className="text-2xl font-black text-blue-600">₹{order.totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                  <Button variant="secondary" onClick={handleDownloadInvoice} className="rounded-xl h-14 font-black border-2 border-gray-200">
+                    <FileText size={18} /> INVOICE
+                  </Button>
+                  <Button onClick={() => navigate(routes.ORDERS || '/orders')} className="rounded-xl h-14 font-black bg-blue-600 text-white">
+                    MY ORDERS <ArrowRight size={18} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <Card title={`Complete Payment for Order #${orderId}`}>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="max-w-6xl mx-auto p-4 py-8">
+        <div className="flex items-center gap-2 mb-8 text-sm text-gray-400 font-medium">
+          <span className="hover:text-blue-600 cursor-pointer" onClick={() => navigate('/')}>Home</span>
+          <ChevronRight size={14} />
+          <span className="text-blue-600 font-bold">Payment</span>
+        </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span>Order Total:</span>
-            <span style={{ fontWeight: 'bold' }}>
-              ₹{order.totalAmount.toLocaleString()}
-            </span>
+        <div className="mb-12">
+          <div className="flex items-center justify-between max-w-2xl mx-auto relative">
+            <div className="absolute top-5 left-0 right-0 h-[2px] bg-gray-200 -z-0"></div>
+            {['Cart', 'Checkout', 'Payment', 'Delivery'].map((step, idx) => (
+              <div key={step} className="flex flex-col items-center relative z-10 bg-slate-50 px-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                  idx < 2 ? 'bg-blue-600 border-blue-600 text-white' : idx === 2 ? 'bg-white border-blue-600 text-blue-600 ring-4 ring-blue-50' : 'bg-white border-gray-300 text-gray-400'
+                }`}>
+                  {idx < 2 ? <CheckCircle size={20} /> : <span className="font-bold text-sm">{idx + 1}</span>}
+                </div>
+                <span className="mt-3 text-[10px] font-black uppercase tracking-widest text-blue-900">{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 space-y-8">
+            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-blue-600" /> Payment Methods
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div onClick={() => setPaymentMethod('online')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm'}`}>
+                <div className="flex items-start gap-5">
+                  <div className={`p-4 rounded-2xl ${paymentMethod === 'online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
+                    <CreditCard size={28} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Online Payment</h3>
+                    <p className="text-sm text-gray-500">Cards, UPI, NetBanking & Wallets</p>
+                  </div>
+                </div>
+              </div>
+              {credit?.availableCredit > 0 && (
+                <div onClick={() => setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod !== 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm'}`}>
+                  <div className="flex items-start gap-5">
+                    <div className={`p-4 rounded-2xl ${paymentMethod !== 'online' ? 'bg-blue-600 text-white' : 'bg-green-50 text-green-600'}`}>
+                      <Wallet size={28} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Business Credit</h3>
+                      <p className="text-sm text-gray-500">Available: ₹{credit.availableCredit.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {error && <div className="p-4 bg-red-50 text-red-700 rounded-2xl border-2 border-red-100 flex gap-4"><Info />{error}</div>}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            <span>Items:</span>
-            <span>{order.items.length} items</span>
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+              <div className="bg-slate-900 p-6 text-white">
+                <h2 className="text-xl font-black tracking-tight uppercase">Order Summary</h2>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Order #{orderId.slice(-8).toUpperCase()}</p>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between font-bold text-gray-700">
+                    <span>Subtotal</span>
+                    <span>₹{(order.totalAmount / 1.18).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-bold text-green-600">
+                    <span>Delivery</span>
+                    <span>FREE</span>
+                  </div>
+                </div>
+                <div className="border-t-2 border-dashed border-gray-100 pt-6">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Final Payable</p>
+                      <p className="text-4xl font-black text-slate-900">₹{order.totalAmount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                {paymentMethod !== 'online' && (
+                  <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                    <div className="flex justify-between text-xs font-bold mb-2">
+                      <span className="text-slate-500">Credit Used</span>
+                      <span className="text-purple-600">-₹{creditUsed.toLocaleString()}</span>
+                    </div>
+                    {onlinePayable > 0 && (
+                      <div className="flex justify-between pt-3 border-t text-blue-600 font-black text-lg">
+                        <span>Net Online</span>
+                        <span>₹{onlinePayable.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Button fullWidth onClick={handlePayment} loading={processing} className="h-16 text-xl font-black rounded-2xl bg-blue-600 text-white">
+                  {onlinePayable > 0 ? 'PAY NOW' : 'CONFIRM ORDER'}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <Button
-            onClick={() => handleRazorpayPayment(false)}
-            disabled={processing}
-            style={{ height: '60px', fontSize: '1.1rem' }}
-          >
-            {processing ? 'Processing...' : 'Pay with Razorpay / UPI / Card'}
-          </Button>
-
-          <Button
-            variant="secondary"
-            onClick={handleCreditOnlyPayment}
-            disabled={processing}
-            style={{ height: '60px', fontSize: '1.1rem' }}
-          >
-            {processing ? 'Processing...' : 'Use Business Credit + Razorpay'}
-          </Button>
-        </div>
-
-        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <p>Secure payment processed by Razorpay. GST invoice will be generated automatically.</p>
-        </div>
-
-      </Card>
+      </div>
     </div>
   );
 };

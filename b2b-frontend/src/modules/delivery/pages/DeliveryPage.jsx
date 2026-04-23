@@ -39,16 +39,33 @@ const DeliveryPage = () => {
   const earningsToday = completedToday * 50; // Simple simulation
 
   const handleOpenMaps = (address) => {
-    if (!address) return;
+    if (!address || address === 'Address not provided') {
+      alert("Invalid delivery address");
+      return;
+    }
     const query = encodeURIComponent(address);
-    window.open(`https://www.google.com/maps?q=${query}`, '_blank');
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${query}`;
+    window.open(url, '_blank');
   };
 
-  const handleSimulateNav = (delivery) => {
-    alert(`Order ID: #${delivery.orderId?._id?.slice(-6).toUpperCase()}\nCustomer: ${delivery.customerName}\nDestination: ${delivery.address}\n\nETA: 15 minutes.`);
+  const handleCallCustomer = (phone) => {
+    if (!phone || phone === 'N/A') {
+      alert("Customer phone number not available");
+      return;
+    }
+    window.open(`tel:${phone}`, '_self');
   };
 
-  if (loading && deliveries.length === 0) return (
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await updateDeliveryStatus(id, status);
+      // Success feedback
+    } catch (err) {
+      alert("Failed to update status. Please try again.");
+    }
+  };
+
+  if (loading && safeDeliveries.length === 0) return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <Truck size={48} className="animate-bounce" style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
       <p style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-muted)' }}>Syncing delivery routes...</p>
@@ -174,9 +191,23 @@ const DeliveryPage = () => {
                     <div style={{ marginBottom: '1.25rem' }}>
                       <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Customer Details</p>
                       <h4 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.25rem' }}>{delivery.customerName || 'Customer'}</h4>
-                      <a href={`tel:${delivery.phone || ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', textDecoration: 'none', fontWeight: '600', fontSize: '0.875rem' }}>
-                        <Phone size={14} /> {delivery.phone || 'N/A'}
-                      </a>
+                      <button 
+                        onClick={() => handleCallCustomer(delivery.phone)} 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.5rem', 
+                          color: '#3b82f6', 
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          fontWeight: '700', 
+                          fontSize: '0.9375rem' 
+                        }}
+                      >
+                        <Phone size={16} /> {delivery.phone || 'N/A'}
+                      </button>
                     </div>
                     <div>
                       <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Delivery Items</p>
@@ -224,7 +255,7 @@ const DeliveryPage = () => {
                   {delivery.status === 'ASSIGNED' && (
                     <Button 
                       style={{ flex: 1, backgroundColor: '#3b82f6' }}
-                      onClick={() => updateDeliveryStatus(delivery._id, 'OUT_FOR_DELIVERY')}
+                      onClick={() => handleUpdateStatus(delivery._id, 'OUT_FOR_DELIVERY')}
                     >
                       Start Delivery
                     </Button>
@@ -232,7 +263,7 @@ const DeliveryPage = () => {
                   {delivery.status === 'OUT_FOR_DELIVERY' && (
                     <Button 
                       style={{ flex: 1, backgroundColor: '#22c55e' }}
-                      onClick={() => updateDeliveryStatus(delivery._id, 'DELIVERED')}
+                      onClick={() => handleUpdateStatus(delivery._id, 'DELIVERED')}
                     >
                       Confirm Delivery
                     </Button>

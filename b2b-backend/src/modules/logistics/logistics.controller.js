@@ -15,7 +15,7 @@ export const createShipment = asyncHandler(async (req, res) => {
 
 export const getShipments = asyncHandler(async (req, res) => {
   const shipments = await service.getShipments(req.user);
-  successResponse(res, shipments);
+  successResponse(res, shipments || []);
 });
 
 export const getMyAssignments = asyncHandler(async (req, res) => {
