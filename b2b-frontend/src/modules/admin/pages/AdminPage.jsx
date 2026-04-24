@@ -29,8 +29,10 @@ const AdminPage = () => {
   const quickActions = [
     { icon: <Package size={20} />, label: "Manage Orders", path: routes.ADMIN_ORDERS, color: "blue" },
     { icon: <Plus size={20} />, label: "Add Product", path: routes.ADMIN_PRODUCTS, color: "green" },
-    { icon: <Download size={20} />, label: "Export Report", action: "export", color: "purple" },
+    { icon: <TrendingUp size={20} />, label: "View Analytics", path: routes.ADMIN_ANALYTICS, color: "purple" },
     { icon: <Users size={20} />, label: "User Management", path: routes.ADMIN_USERS, color: "orange" },
+    { icon: <Package size={20} />, label: "Inventory", path: "/admin/inventory", color: "red" },
+    { icon: <Building2 size={20} />, label: "Warehouses", path: "/admin/warehouses", color: "indigo" },
   ];
 
   const handleAction = (action) => {
@@ -112,9 +114,9 @@ const AdminPage = () => {
             </div>
             <div className="approvals-list">
               {approvals?.length > 0 ? (
-                approvals.slice(0, 3).map((approval) => (
+                approvals.slice(0, 3).map((approval, index) => (
                   <ApprovalCard 
-                    key={approval._id} 
+                    key={approval._id || `approval-${index}`} 
                     approval={approval} 
                     onApprove={approve} 
                     onReject={reject} 

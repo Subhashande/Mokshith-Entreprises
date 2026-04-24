@@ -1,6 +1,35 @@
 import * as repo from './promotion.repository.js';
 import AppError from '../../errors/AppError.js';
 
+export const getPromotions = async () => {
+  return repo.findAll();
+};
+
+export const createPromotion = async (data) => {
+  if (!data.code || !data.value) {
+    throw new AppError('Code and value are required', 400);
+  }
+  return repo.create(data);
+};
+
+export const updatePromotion = async (id, data) => {
+  const promo = await repo.update(id, data);
+  if (!promo) throw new AppError('Promotion not found', 404);
+  return promo;
+};
+
+export const deletePromotion = async (id) => {
+  const promo = await repo.findById(id);
+  if (!promo) throw new AppError('Promotion not found', 404);
+  return repo.remove(id);
+};
+
+export const togglePromotion = async (id) => {
+  const promo = await repo.findById(id);
+  if (!promo) throw new AppError('Promotion not found', 404);
+  return repo.update(id, { isActive: !promo.isActive });
+};
+
 export const applyCoupon = async (code, amount) => {
   if (!code) {
     throw new AppError('Coupon code required', 400);

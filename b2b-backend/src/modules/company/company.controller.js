@@ -17,6 +17,16 @@ export const getAllCompanies = asyncHandler(async (req, res) => {
   successResponse(res, companies);
 });
 
+export const getMyCompany = asyncHandler(async (req, res) => {
+  const company = await service.getCompanyByUserId(req.user.id);
+  successResponse(res, company);
+});
+
+export const updateMyCompany = asyncHandler(async (req, res) => {
+  const company = await service.updateCompanyByUserId(req.user.id, req.body);
+  successResponse(res, company, 'Company updated successfully');
+});
+
 export const updateCompany = asyncHandler(async (req, res) => {
   const company = await service.updateCompany(req.params.id, req.body);
   successResponse(res, company, 'Company updated');

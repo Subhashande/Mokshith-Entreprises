@@ -12,6 +12,8 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    let socketInstance = null;
+
     if (!user) {
       if (socket) {
         socket.disconnect();
@@ -23,36 +25,38 @@ export const SocketProvider = ({ children }) => {
 
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
     
-    const newSocket = io(SOCKET_URL, {
+    socketInstance = io(SOCKET_URL, {
       auth: {
         token: localStorage.getItem('token'),
         userId: user._id || user.id
       },
-      transports: ['websocket'], // Use only websocket on frontend
+      transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    newSocket.on('connect', () => {
+    socketInstance.on('connect', () => {
       console.log('✅ Socket connected');
       setIsConnected(true);
-      newSocket.emit('join', user._id || user.id);
+      socketInstance.emit('join', user._id || user.id);
     });
 
-    newSocket.on('disconnect', () => {
+    socketInstance.on('disconnect', () => {
       console.log('❌ Socket disconnected');
       setIsConnected(false);
     });
 
-    newSocket.on('connect_error', (err) => {
+    socketInstance.on('connect_error', (err) => {
       console.error('❌ Socket connection error:', err.message);
     });
 
-    setSocket(newSocket);
+    setSocket(socketInstance);
 
     return () => {
-      newSocket.disconnect();
+      if (socketInstance) {
+        socketInstance.disconnect();
+      }
     };
   }, [user]);
 

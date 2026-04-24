@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Eye, Star, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Eye, Star, Plus, Minus, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../routes/routeConfig';
+import { useWishlist } from '../../../modules/wishlist/hooks/useWishlist';
 
 const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
   const navigate = useNavigate();
   const minQty = product.minOrderQty || product.moq || 1;
   const [qty, setQty] = useState(minQty);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(product._id || product.id);
 
   // Sync qty with product minQty if product changes
   useEffect(() => {
@@ -57,6 +60,23 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
     setQty(prev => prev + 1);
   };
 
+  const handleWishlistToggle = async (e) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate(routes.LOGIN, { state: { from: window.location.pathname } });
+      return;
+    }
+    try {
+      if (inWishlist) {
+        await removeFromWishlist(product._id || product.id);
+      } else {
+        await addToWishlist(product._id || product.id);
+      }
+    } catch (err) {
+      console.error('Wishlist error:', err);
+    }
+  };
+
   return (
     <div 
       className="product-card premium-card"
@@ -75,6 +95,12 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
             onClick={(e) => { e.stopPropagation(); navigate(`${routes.PRODUCTS}/${product._id || product.id}`); }}
           >
             <Eye size={18} />
+          </button>
+          <button 
+            className={`overlay-button ${inWishlist ? 'wishlist-active' : ''}`}
+            onClick={handleWishlistToggle}
+          >
+            <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
           </button>
         </div>
         {product.isNew && <span className="badge-new">New</span>}
@@ -198,6 +224,22 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
           cursor: pointer;
           color: var(--text-main);
           box-shadow: var(--shadow-md);
+          transition: all 0.2s ease;
+        }
+
+        .overlay-button:hover {
+          transform: scale(1.1);
+          background: var(--primary);
+          color: white;
+        }
+
+        .wishlist-active {
+          color: #ef4444;
+        }
+
+        .wishlist-active:hover {
+          background: #ef4444;
+          color: white;
         }
 
         .badge-new {

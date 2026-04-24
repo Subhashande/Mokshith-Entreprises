@@ -17,4 +17,18 @@ router.post(
 
 router.get('/', protect, controller.getWarehouses);
 
+router.put(
+  '/:id',
+  protect,
+  authorize('ADMIN'),
+  controller.updateWarehouse
+);
+
+router.delete(
+  '/:id',
+  protect,
+  authorize('ADMIN'),
+  controller.deleteWarehouse
+);
+
 export default router;

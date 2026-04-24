@@ -94,29 +94,40 @@ export const autoAssignDelivery = async (orderId) => {
   return shipment;
 };
 
-export const updateStatus = async (id, status) => {
-  const shipment = await repo.updateShipment(id, { status });
+export const getDeliveryQueue = async (user) => {
+  if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    return repo.findAllActive();
+  }
+  return repo.findByPartner(user._id, ['PENDING', 'ASSIGNED', 'ACCEPTED', 'OUT_FOR_DELIVERY']);
+};
+
+export const getDeliveryHistory = async (user) => {
+  if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    return repo.findAllDelivered();
+  }
+  return repo.findByPartner(user._id, ['DELIVERED', 'CANCELLED']);
+};
+
+export const updateStatus = async (id, status, userId) => {
+  const update = { status };
+  if (status === 'ACCEPTED') {
+    update.deliveryPartnerId = userId;
+  }
+  if (status === 'DELIVERED') {
+    update.deliveredAt = new Date();
+  }
+  
+  const shipment = await repo.updateShipment(id, update);
   if (!shipment) throw new AppError('Shipment not found', 404);
 
-  // 🔥 Sync with Order Status
-  const order = await Order.findById(shipment.orderId);
-  if (order) {
-    if (status === DELIVERY_STATUS.PICKED) {
-      order.status = ORDER_STATUS.PACKED;
-    } else if (status === DELIVERY_STATUS.OUT_FOR_DELIVERY) {
-      order.status = ORDER_STATUS.OUT_FOR_DELIVERY;
-    } else if (status === DELIVERY_STATUS.DELIVERED) {
-      order.status = ORDER_STATUS.DELIVERED;
-      order.paymentStatus = 'PAID'; // If it was COD
-    }
-    await order.save();
+  // Update order status as well
+  if (status === 'OUT_FOR_DELIVERY') {
+    await Order.findByIdAndUpdate(shipment.orderId, { status: ORDER_STATUS.SHIPPED });
+  } else if (status === 'DELIVERED') {
+    await Order.findByIdAndUpdate(shipment.orderId, { status: ORDER_STATUS.DELIVERED });
   }
 
   return shipment;
-};
-
-export const assignDeliveryPartner = async (id, partnerId) => {
-  return repo.updateShipment(id, { deliveryPartnerId: partnerId });
 };
 
 export const getShipments = async (user) => {

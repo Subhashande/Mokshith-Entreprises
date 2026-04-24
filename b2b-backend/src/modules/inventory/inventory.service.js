@@ -19,9 +19,46 @@ export const addStock = async ({ productId, warehouseId, stock }) => {
   return inventory.save();
 };
 
+export const getLowStockItems = async () => {
+  return repo.findLowStock();
+};
+
+export const getInventoryStats = async () => {
+  const stats = await repo.getStats();
+  return {
+    ...stats,
+    productCount: stats.uniqueProducts.length
+  };
+};
+
 // 📦 Get All Inventory
 export const getInventory = async () => {
   return repo.findAll();
+};
+
+// 🔄 Update Stock
+export const updateStock = async ({ productId, warehouseId, stock, type = 'SET' }) => {
+  let inventory = await repo.findInventory(productId, warehouseId);
+
+  if (!inventory) {
+    if (type === 'SET') {
+      return repo.createInventory({ productId, warehouseId, stock });
+    }
+    throw new AppError('Inventory record not found', 404);
+  }
+
+  if (type === 'ADD') {
+    inventory.stock += stock;
+  } else if (type === 'SUBTRACT') {
+    if (inventory.stock < stock) {
+      throw new AppError('Insufficient stock', 400);
+    }
+    inventory.stock -= stock;
+  } else {
+    inventory.stock = stock;
+  }
+
+  return inventory.save();
 };
 
 // ✅ Check Stock Availability

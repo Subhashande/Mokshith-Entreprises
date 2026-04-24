@@ -1,27 +1,52 @@
-import { useState, useEffect, useCallback } from "react";
-import { analyticsService } from "../services/analyticsService";
+import { useState, useEffect, useCallback } from 'react';
+import { analyticsService } from '../services/analyticsService';
 
 export const useAnalytics = () => {
-  const [data, setData] = useState({ kpis: [] });
-  const [filters, setFilters] = useState({ range: "7d" });
+  const [dashboard, setDashboard] = useState(null);
+  const [salesData, setSalesData] = useState([]);
+  const [orderTrends, setOrderTrends] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchAnalytics = useCallback(async () => {
+  const fetchDashboard = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await analyticsService.getAnalytics(filters);
-      setData(res);
+      const response = await analyticsService.getDashboard();
+      const data = response?.data?.data || response?.data || response;
+      
+      if (data) {
+        setDashboard(data.dashboard || data);
+        if (data.salesData) setSalesData(data.salesData);
+        if (data.orderTrends) setOrderTrends(data.orderTrends);
+        if (data.categoryData) setCategoryData(data.categoryData);
+        if (data.topProducts) setTopProducts(data.topProducts);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, []);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    fetchDashboard();
+  }, [fetchDashboard]);
 
-  return { data, filters, setFilters, loading, error };
+  return {
+    dashboard,
+    salesData,
+    orderTrends,
+    categoryData,
+    topProducts,
+    loading,
+    error,
+    fetchDashboard,
+    fetchSalesData,
+    fetchOrderTrends,
+    fetchCategoryDistribution,
+    fetchTopProducts
+  };
 };

@@ -33,3 +33,15 @@ export const updateShipmentStatus = async (id, status) => {
 
   return shipment.save();
 };
+
+export const getShipmentById = async (id) => {
+  const shipment = await repo.findById(id);
+  if (!shipment) throw new AppError('Shipment not found', 404);
+  return shipment;
+};
+
+export const getShipmentByOrderId = async (orderId) => {
+  const shipment = await repo.findByOrderId(orderId);
+  if (!shipment) throw new AppError('Shipment not found for this order', 404);
+  return shipment;
+};

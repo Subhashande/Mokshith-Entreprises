@@ -36,4 +36,15 @@ router.get(
   logisticsController.getShipments
 );
 
+router.get('/order/:orderId', protect, controller.getShipmentByOrder);
+
+router.get('/:id', protect, controller.getShipmentById);
+
+router.patch(
+  '/:id/status',
+  protect,
+  authorize('ADMIN', 'DELIVERY_PARTNER'),
+  controller.updateShipmentStatus
+);
+
 export default router;

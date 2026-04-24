@@ -13,7 +13,16 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  BarChart3
+  BarChart3,
+  Boxes,
+  Warehouse,
+  Tag,
+  Truck,
+  Heart,
+  History,
+  Settings as SettingsIcon,
+  Package as PackageIcon,
+  MapPin
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
@@ -23,22 +32,54 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
 
   const adminLinks = [
     { icon: <LayoutDashboard size={18} />, label: "Dashboard", path: routes.ADMIN },
+    { icon: <BarChart3 size={18} />, label: "Analytics", path: routes.ADMIN_ANALYTICS },
     { icon: <Users size={18} />, label: "Manage Users", path: routes.ADMIN_USERS },
-    { icon: <Package size={18} />, label: "Products", path: routes.ADMIN_PRODUCTS },
-    { icon: <Package size={18} />, label: "Orders", path: routes.ADMIN_ORDERS },
+    { icon: <PackageIcon size={18} />, label: "Products", path: routes.ADMIN_PRODUCTS },
+    { icon: <PackageIcon size={18} />, label: "Orders", path: routes.ADMIN_ORDERS },
     { icon: <Building2 size={18} />, label: "Vendors", path: routes.ADMIN_VENDORS },
-    { icon: <BarChart3 size={18} />, label: "Analytics", path: routes.SUPER_ADMIN },
+    { icon: <Boxes size={18} />, label: "Inventory", path: routes.ADMIN_INVENTORY },
+    { icon: <Warehouse size={18} />, label: "Warehouse", path: routes.ADMIN_WAREHOUSE },
+    { icon: <Tag size={18} />, label: "Promotions", path: routes.ADMIN_PROMOTIONS },
+  ];
+
+  const vendorLinks = [
+    { icon: <LayoutDashboard size={18} />, label: "Dashboard", path: routes.ADMIN },
+    { icon: <Building2 size={18} />, label: "Company Profile", path: routes.VENDOR_COMPANY },
+    { icon: <Boxes size={18} />, label: "Inventory", path: routes.VENDOR_INVENTORY },
+    { icon: <PackageIcon size={18} />, label: "Orders", path: routes.ADMIN_ORDERS },
+  ];
+
+  const deliveryLinks = [
+    { icon: <LayoutDashboard size={18} />, label: "Logistics Dashboard", path: routes.DELIVERY_DASHBOARD },
+    { icon: <Truck size={18} />, label: "My Shipments", path: routes.DELIVERY_SHIPMENTS },
+    { icon: <History size={18} />, label: "History", path: routes.DELIVERY },
   ];
 
   const customerLinks = [
+    { icon: <LayoutDashboard size={18} />, label: "Dashboard", path: routes.DASHBOARD },
     { icon: <User size={18} />, label: "My Profile", path: routes.PROFILE },
-    { icon: <Package size={18} />, label: "My Orders", path: routes.ORDERS },
+    { icon: <PackageIcon size={18} />, label: "My Orders", path: routes.ORDERS },
+    { icon: <Heart size={18} />, label: "Wishlist", path: routes.WISHLIST },
     { icon: <CreditCard size={18} />, label: "Credit Balance", path: routes.CREDIT },
     { icon: <Shield size={18} />, label: "Security", path: routes.SECURITY },
     { icon: <HelpCircle size={18} />, label: "Help & Support", path: routes.HELP },
   ];
 
-  const links = (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") ? adminLinks : customerLinks;
+  const getLinksByRole = () => {
+    switch (user?.role) {
+      case "SUPER_ADMIN":
+      case "ADMIN":
+        return adminLinks;
+      case "VENDOR":
+        return vendorLinks;
+      case "DELIVERY_PARTNER":
+        return deliveryLinks;
+      default:
+        return customerLinks;
+    }
+  };
+
+  const links = getLinksByRole();
 
   return (
     <div className="sidebar-overlay" onClick={onClose}>

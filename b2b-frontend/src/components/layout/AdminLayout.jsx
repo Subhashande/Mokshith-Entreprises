@@ -10,7 +10,12 @@ import {
   X,
   Bell,
   Search,
-  User
+  User,
+  TrendingUp,
+  Building2,
+  Boxes,
+  Warehouse,
+  Tag
 } from 'lucide-react';
 import { routes } from '../../routes/routeConfig';
 import { useAuth } from '../../modules/auth/hooks/useAuth';
@@ -33,6 +38,10 @@ const AdminLayout = ({ children, title = "Admin Panel" }) => {
     { icon: <Package size={20} />, label: "Orders", path: routes.ADMIN_ORDERS },
     { icon: <Package size={20} />, label: "Products", path: routes.ADMIN_PRODUCTS },
     { icon: <ShieldCheck size={20} />, label: "Approvals", path: routes.ADMIN_APPROVALS },
+    { icon: <TrendingUp size={20} />, label: "Analytics", path: routes.ADMIN_ANALYTICS },
+    { icon: <Boxes size={20} />, label: "Inventory", path: routes.ADMIN_INVENTORY },
+    { icon: <Warehouse size={20} />, label: "Warehouse", path: routes.ADMIN_WAREHOUSE },
+    { icon: <Tag size={20} />, label: "Promotions", path: routes.ADMIN_PROMOTIONS },
   ];
 
   const handleLogout = () => {

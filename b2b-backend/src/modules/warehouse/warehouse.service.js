@@ -20,3 +20,15 @@ export const getWarehouseById = async (id) => {
 
   return warehouse;
 };
+
+export const updateWarehouse = async (id, data) => {
+  const warehouse = await repo.updateWarehouse(id, data);
+  if (!warehouse) throw new AppError('Warehouse not found', 404);
+  return warehouse;
+};
+
+export const deleteWarehouse = async (id) => {
+  const warehouse = await repo.findById(id);
+  if (!warehouse) throw new AppError('Warehouse not found', 404);
+  return repo.deleteWarehouse(id);
+};
