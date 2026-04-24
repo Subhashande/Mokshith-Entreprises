@@ -23,7 +23,7 @@ export const routes = {
   SHIPMENT_TRACKING: "/shipment/:id",
   WISHLIST: "/wishlist",
   SUPER_ADMIN: "/super-admin/dashboard",
-  DELIVERY: "/delivery/dashboard",
+  DELIVERY_HISTORY: "/delivery/history",
   CREDIT: "/credit",
   CHECKOUT: "/checkout",
   ORDERS: "/orders",

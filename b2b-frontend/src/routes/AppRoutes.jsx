@@ -3,8 +3,8 @@ import { routes } from "./routeConfig";
 
 // Components
 import ProtectedRoute from "../components/common/ProtectedRoute";
-import RoleBasedRoute from "../components/common/RoleBasedRoute";
 import RoleGuard from "../components/common/RoleGuard";
+import RoleBasedRoute from "../components/common/RoleBasedRoute";
 
 // Layouts
 import MainLayout from "../components/layout/MainLayout";
@@ -45,6 +45,7 @@ import ShipmentTrackingPage from "../modules/shipment/pages/ShipmentTrackingPage
 import WarehousePage from "../modules/warehouse/pages/WarehousePage";
 import PromotionPage from "../modules/promotion/pages/PromotionPage";
 import WishlistPage from "../modules/wishlist/pages/WishlistPage";
+import SettingsPage from "../modules/settings/SettingsPage";
 
 const AppRoutes = () => {
   return (
@@ -61,112 +62,135 @@ const AppRoutes = () => {
         {/* B2C & B2B HOME */}
         <Route path={routes.HOME} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
+            <RoleGuard allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
               <MainLayout><ProductPage /></MainLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 
         {/* B2B ROUTES */}
         <Route path={routes.DASHBOARD} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
+            <RoleGuard allowedRoles={["B2B_CUSTOMER"]}>
               <MainLayout><Dashboard /></MainLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.CREDIT} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["B2B_CUSTOMER"]}>
+            <RoleGuard allowedRoles={["B2B_CUSTOMER"]}>
               <MainLayout><CreditPage /></MainLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 
         {/* ADMIN ROUTES */}
         <Route path={routes.ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="Overview"><AdminPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_USERS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="User Management"><AdminUsersPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_PRODUCTS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="Product Inventory"><AdminProductsPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_ORDERS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="Order Fulfillment"><AdminOrdersPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_VENDORS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="Vendor Control"><AdminVendorsPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_APPROVALS} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["ADMIN"]}>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <AdminLayout title="New Approvals"><AdminApprovalsPage /></AdminLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 
         {/* NEW MODULE ROUTES */}
         <Route path={routes.ADMIN_ANALYTICS} element={
-          <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-            <AdminLayout title="Analytics"><AnalyticsPage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminLayout title="Analytics"><AnalyticsPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_INVENTORY} element={
-          <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-            <AdminLayout title="Inventory Management"><InventoryPage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminLayout title="Inventory Management"><InventoryPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_WAREHOUSE} element={
-          <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-            <AdminLayout title="Warehouse Management"><WarehousePage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminLayout title="Warehouse Management"><WarehousePage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.ADMIN_PROMOTIONS} element={
-          <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-            <AdminLayout title="Promotions"><PromotionPage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+              <AdminLayout title="Promotions"><PromotionPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.ADMIN_SETTINGS} element={
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "VENDOR"]}>
+              <AdminLayout title="Settings"><SettingsPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.VENDOR_INVENTORY} element={
-          <RoleGuard allowedRoles={["VENDOR"]}>
-            <AdminLayout title="My Inventory"><InventoryPage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["VENDOR", "SUPER_ADMIN", "ADMIN"]}>
+              <AdminLayout title="My Inventory"><InventoryPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.VENDOR_COMPANY} element={
-          <RoleGuard allowedRoles={["VENDOR"]}>
-            <AdminLayout title="Company Profile"><CompanyPage /></AdminLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["VENDOR", "SUPER_ADMIN", "ADMIN"]}>
+              <AdminLayout title="Company Profile"><CompanyPage /></AdminLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.DELIVERY_DASHBOARD} element={
-          <RoleGuard allowedRoles={["DELIVERY_PARTNER"]}>
-            <DeliveryLayout title="Logistics"><LogisticsPage /></DeliveryLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["DELIVERY_PARTNER", "SUPER_ADMIN", "ADMIN"]}>
+              <DeliveryLayout title="Logistics"><LogisticsPage /></DeliveryLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.DELIVERY_SHIPMENTS} element={
-          <RoleGuard allowedRoles={["DELIVERY_PARTNER"]}>
-            <DeliveryLayout title="My Deliveries"><LogisticsPage /></DeliveryLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["DELIVERY_PARTNER", "SUPER_ADMIN", "ADMIN"]}>
+              <DeliveryLayout title="My Deliveries"><LogisticsPage /></DeliveryLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
         <Route path={routes.SHIPMENT_TRACKING} element={
           <ProtectedRoute>
@@ -174,26 +198,28 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path={routes.WISHLIST} element={
-          <RoleGuard allowedRoles={["B2B_CUSTOMER", "B2C_CUSTOMER"]}>
-            <MainLayout><WishlistPage /></MainLayout>
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["B2B_CUSTOMER", "B2C_CUSTOMER", "SUPER_ADMIN", "ADMIN"]}>
+              <MainLayout><WishlistPage /></MainLayout>
+            </RoleGuard>
+          </ProtectedRoute>
         } />
 
         {/* SUPER ADMIN ROUTES */}
         <Route path={routes.SUPER_ADMIN} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["SUPER_ADMIN"]}>
+            <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
               <SuperAdminPage />
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 
         {/* DELIVERY ROUTES */}
-        <Route path={routes.DELIVERY} element={
+        <Route path={routes.DELIVERY_HISTORY} element={
           <ProtectedRoute>
-            <RoleBasedRoute allowedRoles={["DELIVERY_PARTNER"]}>
+            <RoleGuard allowedRoles={["DELIVERY_PARTNER", "SUPER_ADMIN", "ADMIN"]}>
               <DeliveryLayout><DeliveryPage /></DeliveryLayout>
-            </RoleBasedRoute>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 

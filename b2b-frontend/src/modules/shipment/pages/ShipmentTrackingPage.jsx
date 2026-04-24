@@ -161,7 +161,11 @@ const ShipmentTrackingPage = () => {
               <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Shipping To</p>
                 <p className="text-sm font-medium text-gray-900 mt-1">{shipment.customerName}</p>
-                <p className="text-sm text-gray-600 mt-1">{shipment.shippingAddress}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {typeof shipment.shippingAddress === 'object' 
+                    ? `${shipment.shippingAddress.street || ''} ${shipment.shippingAddress.city || ''}, ${shipment.shippingAddress.state || ''}`.trim() || 'N/A'
+                    : shipment.shippingAddress || 'N/A'}
+                </p>
               </div>
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Carrier</p>

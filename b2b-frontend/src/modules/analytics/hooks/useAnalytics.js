@@ -31,6 +31,23 @@ export const useAnalytics = () => {
     }
   }, []);
 
+  const fetchSalesData = useCallback(async () => {
+    // Already handled by fetchDashboard, but keep for compatibility
+    await fetchDashboard();
+  }, [fetchDashboard]);
+
+  const fetchOrderTrends = useCallback(async () => {
+    await fetchDashboard();
+  }, [fetchDashboard]);
+
+  const fetchCategoryDistribution = useCallback(async () => {
+    await fetchDashboard();
+  }, [fetchDashboard]);
+
+  const fetchTopProducts = useCallback(async () => {
+    await fetchDashboard();
+  }, [fetchDashboard]);
+
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);

@@ -40,6 +40,7 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
     { icon: <Boxes size={18} />, label: "Inventory", path: routes.ADMIN_INVENTORY },
     { icon: <Warehouse size={18} />, label: "Warehouse", path: routes.ADMIN_WAREHOUSE },
     { icon: <Tag size={18} />, label: "Promotions", path: routes.ADMIN_PROMOTIONS },
+    { icon: <SettingsIcon size={18} />, label: "Settings", path: routes.ADMIN_SETTINGS },
   ];
 
   const vendorLinks = [
@@ -47,20 +48,30 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
     { icon: <Building2 size={18} />, label: "Company Profile", path: routes.VENDOR_COMPANY },
     { icon: <Boxes size={18} />, label: "Inventory", path: routes.VENDOR_INVENTORY },
     { icon: <PackageIcon size={18} />, label: "Orders", path: routes.ADMIN_ORDERS },
+    { icon: <SettingsIcon size={18} />, label: "Settings", path: routes.ADMIN_SETTINGS },
   ];
 
   const deliveryLinks = [
     { icon: <LayoutDashboard size={18} />, label: "Logistics Dashboard", path: routes.DELIVERY_DASHBOARD },
     { icon: <Truck size={18} />, label: "My Shipments", path: routes.DELIVERY_SHIPMENTS },
-    { icon: <History size={18} />, label: "History", path: routes.DELIVERY },
+    { icon: <History size={18} />, label: "History", path: routes.DELIVERY_HISTORY },
   ];
 
-  const customerLinks = [
+  const b2bCustomerLinks = [
     { icon: <LayoutDashboard size={18} />, label: "Dashboard", path: routes.DASHBOARD },
     { icon: <User size={18} />, label: "My Profile", path: routes.PROFILE },
     { icon: <PackageIcon size={18} />, label: "My Orders", path: routes.ORDERS },
     { icon: <Heart size={18} />, label: "Wishlist", path: routes.WISHLIST },
     { icon: <CreditCard size={18} />, label: "Credit Balance", path: routes.CREDIT },
+    { icon: <Shield size={18} />, label: "Security", path: routes.SECURITY },
+    { icon: <HelpCircle size={18} />, label: "Help & Support", path: routes.HELP },
+  ];
+
+  const b2cCustomerLinks = [
+    { icon: <LayoutDashboard size={18} />, label: "Home", path: routes.HOME },
+    { icon: <User size={18} />, label: "My Profile", path: routes.PROFILE },
+    { icon: <PackageIcon size={18} />, label: "My Orders", path: routes.ORDERS },
+    { icon: <Heart size={18} />, label: "Wishlist", path: routes.WISHLIST },
     { icon: <Shield size={18} />, label: "Security", path: routes.SECURITY },
     { icon: <HelpCircle size={18} />, label: "Help & Support", path: routes.HELP },
   ];
@@ -74,28 +85,47 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
         return vendorLinks;
       case "DELIVERY_PARTNER":
         return deliveryLinks;
+      case "B2B_CUSTOMER":
+        return b2bCustomerLinks;
+      case "B2C_CUSTOMER":
+        return b2cCustomerLinks;
       default:
-        return customerLinks;
+        return b2cCustomerLinks;
     }
   };
 
   const links = getLinksByRole();
 
   return (
-    <div className="sidebar-overlay" onClick={onClose}>
-      <div className="sidebar-drawer" onClick={(e) => e.stopPropagation()}>
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <span className="logo-text">Mokshith</span>
-            <span className="logo-badge">B2B</span>
+    <div 
+      className={`fixed inset-0 z-[1000] flex justify-end transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+
+      {/* Drawer */}
+      <div 
+        className={`relative w-[320px] h-full bg-white shadow-2xl flex flex-col transition-transform duration-500 ease-out transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-8 py-6 flex justify-between items-center border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-gray-900 tracking-tight">Mokshith</span>
+            <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-md tracking-widest uppercase">B2B</span>
           </div>
-          <button className="close-button" onClick={onClose}>
+          <button 
+            className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-900 transition-all" 
+            onClick={onClose}
+          >
             <X size={20} />
           </button>
         </div>
 
-        <div className="sidebar-user">
-          <div className="user-avatar overflow-hidden">
+        {/* User Profile Section */}
+        <div className="p-8 flex items-center gap-5 bg-gray-50/50">
+          <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-blue-200 overflow-hidden shrink-0">
             {user?.profileImage ? (
               <img 
                 src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.profileImage}`} 
@@ -106,234 +136,43 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
               user?.name?.[0]?.toUpperCase() || 'U'
             )}
           </div>
-          <div className="user-info">
-            <h3>{user?.name}</h3>
-            <p>{user?.email}</p>
-            <span className="user-role-badge">{user?.role?.replace('_', ' ')}</span>
+          <div className="min-w-0">
+            <h3 className="font-black text-gray-900 truncate leading-tight">{user?.name}</h3>
+            <p className="text-xs text-gray-500 truncate mb-2">{user?.email}</p>
+            <span className="px-2.5 py-1 bg-white border border-gray-200 text-[10px] font-black text-gray-400 uppercase tracking-widest rounded-lg">
+              {user?.role?.replace('_', ' ')}
+            </span>
           </div>
         </div>
 
-        <nav className="sidebar-nav">
-          <div className="nav-section">
-            <p className="nav-section-title">Navigation</p>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-8 px-4 custom-scrollbar">
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Navigation</p>
             {links.map((link, index) => (
               <button 
                 key={index}
-                className="nav-item"
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all group"
                 onClick={() => { navigate(link.path); onClose(); }}
               >
-                <span className="nav-icon">{link.icon}</span>
-                <span className="nav-label">{link.label}</span>
+                <span className="group-hover:scale-110 transition-transform">{link.icon}</span>
+                <span className="font-bold tracking-tight text-sm">{link.label}</span>
               </button>
             ))}
           </div>
         </nav>
 
-        <div className="sidebar-footer">
-          <button className="logout-button" onClick={onLogout}>
-            <LogOut size={18} />
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-100">
+          <button 
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-50 text-red-600 font-black text-sm uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all group" 
+            onClick={onLogout}
+          >
+            <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
             <span>Sign Out</span>
           </button>
         </div>
       </div>
-
-      <style>{`
-        .sidebar-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 1000;
-          background-color: rgba(15, 23, 42, 0.4);
-          backdrop-filter: blur(4px);
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .sidebar-drawer {
-          width: 320px;
-          height: 100%;
-          background: white;
-          box-shadow: var(--shadow-xl);
-          display: flex;
-          flex-direction: column;
-          animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-
-        .sidebar-header {
-          padding: 1.5rem 2rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .sidebar-logo {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .logo-text {
-          font-size: 1.25rem;
-          font-weight: 800;
-          color: var(--text-main);
-        }
-
-        .logo-badge {
-          background-color: var(--primary);
-          color: white;
-          font-size: 0.65rem;
-          font-weight: 700;
-          padding: 0.125rem 0.4rem;
-          border-radius: var(--radius-sm);
-        }
-
-        .close-button {
-          background: none;
-          border: none;
-          color: var(--text-muted);
-          cursor: pointer;
-          padding: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          transition: var(--transition-fast);
-        }
-
-        .close-button:hover {
-          background-color: var(--background);
-          color: var(--text-main);
-        }
-
-        .sidebar-user {
-          padding: 2rem;
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-          background-color: var(--primary-light);
-          margin: 1.5rem 1.5rem 0.5rem;
-          border-radius: var(--radius-lg);
-        }
-
-        .user-avatar {
-          width: 3.5rem;
-          height: 3.5rem;
-          border-radius: 50%;
-          background-color: white;
-          color: var(--primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 1.25rem;
-          box-shadow: var(--shadow-sm);
-        }
-
-        .user-info h3 {
-          font-size: 1rem;
-          font-weight: 700;
-          color: var(--text-main);
-          margin-bottom: 0.125rem;
-        }
-
-        .user-info p {
-          font-size: 0.8125rem;
-          color: var(--text-muted);
-          margin-bottom: 0.5rem;
-          word-break: break-all;
-        }
-
-        .user-role-badge {
-          display: inline-block;
-          font-size: 0.625rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          background-color: var(--primary);
-          color: white;
-          padding: 0.125rem 0.5rem;
-          border-radius: 9999px;
-          letter-spacing: 0.05em;
-        }
-
-        .sidebar-nav {
-          padding: 1.5rem;
-          flex: 1;
-          overflow-y: auto;
-        }
-
-        .nav-section-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #94a3b8;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin-bottom: 1rem;
-          padding-left: 0.5rem;
-        }
-
-        .nav-item {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 0.875rem 1rem;
-          background: none;
-          border: none;
-          border-radius: var(--radius-md);
-          color: var(--text-muted);
-          font-weight: 600;
-          font-size: 0.9375rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-align: left;
-        }
-
-        .nav-item:hover {
-          background-color: var(--background);
-          color: var(--primary);
-        }
-
-        .nav-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: inherit;
-        }
-
-        .sidebar-footer {
-          padding: 1.5rem;
-          border-top: 1px solid var(--border);
-        }
-
-        .logout-button {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.75rem;
-          padding: 0.875rem;
-          background-color: #fef2f2;
-          border: 1px solid #fee2e2;
-          border-radius: var(--radius-md);
-          color: var(--error);
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .logout-button:hover {
-          background-color: #fee2e2;
-          transform: translateY(-1px);
-        }
-      `}</style>
     </div>
   );
 };

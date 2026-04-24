@@ -11,8 +11,16 @@ export const useWishlist = () => {
     setError(null);
     try {
       const response = await wishlistService.getWishlist();
-      const data = response?.data?.data || response?.data || response || {};
-      setWishlist({ items: data.items || [] });
+      const data = response?.data?.data || response?.data || response;
+      
+      // Handle various response formats
+      if (data && data.items && Array.isArray(data.items)) {
+        setWishlist({ items: data.items });
+      } else if (Array.isArray(data)) {
+        setWishlist({ items: data });
+      } else {
+        setWishlist({ items: [] });
+      }
     } catch (err) {
       setError(err.message);
       setWishlist({ items: [] });
@@ -25,8 +33,11 @@ export const useWishlist = () => {
     try {
       const response = await wishlistService.addToWishlist(productId);
       const data = response?.data?.data || response?.data || response;
-      if (data && data.items) {
+      
+      if (data && data.items && Array.isArray(data.items)) {
         setWishlist({ items: data.items });
+      } else if (Array.isArray(data)) {
+        setWishlist({ items: data });
       } else {
         await fetchWishlist();
       }
@@ -52,6 +63,16 @@ export const useWishlist = () => {
     }
   };
 
+  const clearWishlist = async () => {
+    try {
+      await wishlistService.clearWishlist();
+      setWishlist({ items: [] });
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const isInWishlist = (productId) => {
     return (wishlist?.items || []).some(item => 
       item.product?._id === productId || 
@@ -71,6 +92,7 @@ export const useWishlist = () => {
     fetchWishlist,
     addToWishlist,
     removeFromWishlist,
+    clearWishlist,
     isInWishlist
   };
 };

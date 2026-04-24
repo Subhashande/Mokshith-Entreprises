@@ -51,8 +51,23 @@ export const getTopCategories = async () => {
     { $unwind: '$product' },
     {
       $group: {
-        _id: '$product.category',
+        _id: '$product.categoryId',
         value: { $sum: '$items.quantity' }
+      }
+    },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'category'
+      }
+    },
+    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: { $ifNull: ['$category.name', 'Uncategorized'] },
+        value: 1
       }
     },
     { $sort: { value: -1 } },
@@ -77,9 +92,28 @@ export const getTopProducts = async () => {
         _id: '$items.productId',
         name: { $first: '$product.name' },
         image: { $first: '$product.image' },
-        category: { $first: '$product.category' },
+        categoryId: { $first: '$product.categoryId' },
         sales: { $sum: '$items.quantity' },
         revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+      }
+    },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'categoryId',
+        foreignField: '_id',
+        as: 'category'
+      }
+    },
+    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        image: 1,
+        category: { $ifNull: ['$category.name', 'Uncategorized'] },
+        sales: 1,
+        revenue: 1
       }
     },
     { $sort: { sales: -1 } },

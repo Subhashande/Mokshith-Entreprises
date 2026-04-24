@@ -24,6 +24,9 @@ import { fetchSetting } from '../settings/settings.service.js';
 import { ORDER_STATUS } from '../../constants/orderStatus.js';
 import { PAYMENT_STATUS } from '../../constants/paymentStatus.js';
 
+import mongoose from 'mongoose';
+import { getTransactionSupport } from '../../config/db.js';
+
 export const createOrder = async (userId, data) => {
   const { paymentMethod = 'COD', shippingAddress, items: requestItems } = data;
 
@@ -51,7 +54,7 @@ export const createOrder = async (userId, data) => {
   let totalQuantity = 0;
   const items = [];
 
-  // 🔥 1. Validate + Prepare Items + Check Stock
+  // 🔥 1. Validate + Prepare Items + Check Stock (Pre-check)
   for (const item of finalItems) {
     const product = await Product.findById(item.productId || item.id || item.productId?._id);
     if (!product) throw new AppError(`Product not found`, 404);
@@ -104,30 +107,44 @@ export const createOrder = async (userId, data) => {
   // 🔥 4. Status Mapping based on Payment Method (Strict Flow)
   if (paymentMethod.toUpperCase() === 'COD') {
     orderData.status = ORDER_STATUS.CONFIRMED;
-  } else if (paymentMethod.toUpperCase() === 'CREDIT') {
-    // For credit, we keep it pending until creditService.useCredit is called from frontend
-    // Or we can keep existing logic if it's already working, but user wants strict flow.
-    // User's Part 3 says: if (paymentMethod === "CREDIT") { await creditService.useCredit(order._id); }
-    // This implies credit deduction should happen AFTER order creation.
-    orderData.paymentStatus = PAYMENT_STATUS.PENDING;
-    orderData.status = ORDER_STATUS.PENDING;
   } else {
-    // For RAZORPAY, ONLINE, etc.
     orderData.paymentStatus = PAYMENT_STATUS.PENDING;
     orderData.status = ORDER_STATUS.PENDING;
   }
 
-  // 🔥 5. Atomic Order Creation + Stock Deduction
+  // 🔥 5. Atomic Order Creation + Stock Deduction using Transactions if supported
+  const supportsTransactions = getTransactionSupport();
+  let session = null;
   let order;
+
   try {
-    order = await orderRepo.createOrder(orderData);
+    if (supportsTransactions) {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    }
+
+    // Create order
+    order = await orderRepo.createOrder(orderData, { session });
     
+    // Deduct stock
     for (const item of items) {
-      await reduceStock(item.productId, item.quantity);
+      await reduceStock(item.productId, item.quantity, { session });
+    }
+
+    if (supportsTransactions) {
+      await session.commitTransaction();
+      session.endSession();
     }
   } catch (err) {
-    // 🔥 Rollback Logic
-    if (order) await Order.findByIdAndDelete(order._id);
+    if (supportsTransactions && session) {
+      await session.abortTransaction();
+      session.endSession();
+    } else {
+      // Manual rollback if transactions not supported
+      if (order) await Order.findByIdAndDelete(order._id);
+      // Note: Rolling back stock manually is complex without transactions, 
+      // which is why replica sets are recommended for production.
+    }
     
     throw new AppError(err.message || 'Order placement failed', err.statusCode || 500);
   }

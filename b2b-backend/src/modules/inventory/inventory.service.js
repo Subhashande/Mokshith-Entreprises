@@ -96,7 +96,9 @@ export const checkStock = async (productId, quantity) => {
 };
 
 // 🔥 NEW — Deduct Stock (IMPORTANT FOR ORDER FLOW)
-export const reduceStock = async (productId, quantity) => {
+export const reduceStock = async (productId, quantity, options = {}) => {
+  const { session } = options;
+  
   if (quantity <= 0) {
     throw new AppError('Quantity must be greater than 0', 400);
   }
@@ -110,17 +112,17 @@ export const reduceStock = async (productId, quantity) => {
 
     if (item.stock >= remaining) {
       item.stock -= remaining;
-      await item.save();
+      await item.save({ session });
       remaining = 0;
     } else {
       remaining -= item.stock;
       item.stock = 0;
-      await item.save();
+      await item.save({ session });
     }
   }
 
   if (remaining > 0) {
-    throw new AppError('Stock deduction failed', 500);
+    throw new AppError(`Insufficient total stock for product: ${productId}`, 400);
   }
 
   return true;

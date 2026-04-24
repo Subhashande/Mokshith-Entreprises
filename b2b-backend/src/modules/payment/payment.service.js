@@ -31,8 +31,6 @@ export const createRazorpayOrder = async (amount, userId) => {
 };
 
 export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => {
-  console.log('Hybrid payment request:', { orderId, userId, useCredit, totalAmount });
-
   const supportsTransactions = getTransactionSupport();
   let session = null;
   let isTransactionStarted = false;
@@ -199,85 +197,113 @@ export const initiatePayment = async (orderId, userId) => {
 export const verifyPayment = async (payload) => {
   const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = payload;
 
-  // 1. Idempotency Check: check if this payment was already processed
-  const existingPayment = await repo.findByRazorpayPaymentId(razorpay_payment_id);
-  if (existingPayment && existingPayment.status === 'SUCCESS') {
-    return existingPayment;
-  }
+  const supportsTransactions = getTransactionSupport();
+  let session = null;
+  let isTransactionStarted = false;
 
-  // 2. Signature verification
-  const isValid = await gateway.verifyPayment({
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-  });
+  try {
+    // 1. Idempotency Check: check if this payment was already processed
+    const existingPayment = await repo.findByRazorpayPaymentId(razorpay_payment_id);
+    if (existingPayment && existingPayment.status === 'SUCCESS') {
+      return existingPayment;
+    }
 
-  if (!isValid) throw new AppError('Payment verification failed', 400);
+    // 2. Signature verification
+    const isValid = await gateway.verifyPayment({
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    });
 
-  // 3. Find payment record (using transactionId which stores RZP order ID initially)
-  let payment = await repo.findByTransactionId(razorpay_order_id);
-  
-  if (!payment) {
-    // fallback to orderId if not found by transactionId
-    payment = await repo.findByOrderId(orderId);
-  }
+    if (!isValid) throw new AppError('Payment verification failed', 400);
 
-  if (!payment) throw new AppError('Payment record not found', 404);
+    if (supportsTransactions) {
+      session = await mongoose.startSession();
+      session.startTransaction();
+      isTransactionStarted = true;
+    }
 
-  if (payment.status === 'SUCCESS') return payment;
+    // 3. Find payment record (using transactionId which stores RZP order ID initially)
+    let payment = await repo.findByTransactionId(razorpay_order_id);
+    
+    if (!payment) {
+      // fallback to orderId if not found by transactionId
+      payment = await repo.findByOrderId(orderId);
+    }
 
-  // 4. Update payment record atomically
-  payment.status = 'SUCCESS';
-  payment.razorpayPaymentId = razorpay_payment_id;
-  // keep transactionId as the gateway order ID or update to payment ID? 
-  // Let's store payment ID in razorpayPaymentId for clarity.
-  await payment.save();
+    if (!payment) throw new AppError('Payment record not found', 404);
 
-  // 5. Update order record
-  const order = await Order.findById(orderId);
-  if (!order) throw new AppError('Order not found', 404);
+    if (payment.status === 'SUCCESS') {
+      if (isTransactionStarted) {
+        await session.commitTransaction();
+        session.endSession();
+      }
+      return payment;
+    }
 
-  if (order.paymentStatus !== 'PAID') {
-    order.paymentStatus = 'PAID';
-    order.status = 'CONFIRMED';
-    await order.save();
+    // 4. Update payment record atomically
+    payment.status = 'SUCCESS';
+    payment.razorpayPaymentId = razorpay_payment_id;
+    await payment.save({ session: isTransactionStarted ? session : null });
 
-    // Emit socket event
-    if (global.io) {
-      global.io.emit('payment:success', { 
-        orderId: order._id, 
-        userId: order.userId,
-        amount: order.totalAmount,
-        method: payment.paymentMethod 
+    // 5. Update order record
+    const order = await Order.findById(orderId).session(isTransactionStarted ? session : null);
+    if (!order) throw new AppError('Order not found', 404);
+
+    if (order.paymentStatus !== 'PAID') {
+      order.paymentStatus = 'PAID';
+      order.status = 'CONFIRMED';
+      await order.save({ session: isTransactionStarted ? session : null });
+
+      // Emit targeted socket event
+      if (global.io) {
+        global.io.to(order.userId.toString()).emit('payment:success', { 
+          orderId: order._id, 
+          userId: order.userId,
+          amount: order.totalAmount,
+          method: payment.paymentMethod 
+        });
+      }
+
+      // Clear cart
+      const { findCartByUser } = await import('../cart/cart.repository.js');
+      const cart = await findCartByUser(order.userId);
+      if (cart) {
+        cart.items = [];
+        await cart.save({ session: isTransactionStarted ? session : null });
+      }
+
+      // Generate invoice and trigger delivery (non-blocking)
+      setImmediate(async () => {
+        try {
+          await generateInvoice(order._id);
+          const { autoAssignDelivery } = await import('../logistics/logistics.service.js');
+          await autoAssignDelivery(order._id);
+        } catch (err) {
+          console.error('Post-payment actions failed:', err.message);
+        }
       });
     }
 
-    // 6. Post-payment triggers (Invoice + Logistics + Clear Cart)
-    setImmediate(async () => {
-      try {
-        // Clear User Cart
-        const cart = await mongoose.model('Cart').findOne({ userId: order.userId });
-        if (cart) {
-          cart.items = [];
-          await cart.save();
-        }
+    if (isTransactionStarted) {
+      await session.commitTransaction();
+      session.endSession();
+    }
 
-        await generateInvoice(order._id);
-        const { autoAssignDelivery } = await import('../logistics/logistics.service.js');
-        await autoAssignDelivery(order._id);
-      } catch (err) {
-        console.error('Post-payment triggers failed:', err.message);
-      }
+    // 7. Send notification
+    await sendNotification({
+      userId: order.userId,
+      ...TEMPLATES.PAYMENT_SUCCESS(order.totalAmount),
     });
+
+    return payment;
+  } catch (error) {
+    if (isTransactionStarted) {
+      await session.abortTransaction();
+      session.endSession();
+    }
+    throw error;
   }
-
-  // 7. Send notification
-  await sendNotification({
-    userId: order.userId,
-    ...TEMPLATES.PAYMENT_SUCCESS(order.totalAmount),
-  });
-
-  return payment;
 };
 
 export const handleWebhook = async (rawBody, signature) => {

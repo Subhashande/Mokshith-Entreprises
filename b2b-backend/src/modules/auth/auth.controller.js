@@ -15,7 +15,8 @@ export const login = asyncHandler(async (req, res) => {
 export const sendOTP = asyncHandler(async (req, res) => {
   const otp = await authService.sendOTP(req.body.identifier);
 
-  successResponse(res, { otp }, 'OTP sent'); // ⚠️ dev only
+  // 🔥 SECURITY FIX: Never expose OTP in response (even in dev)
+  successResponse(res, { message: 'OTP sent to your email/SMS' }, 'OTP sent successfully');
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {

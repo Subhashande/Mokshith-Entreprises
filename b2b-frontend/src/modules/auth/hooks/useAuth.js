@@ -30,14 +30,16 @@ export const useAuth = () => {
 
     try {
       const res = await authService.login(data);
-      const { user, accessToken, refreshToken, config } = res;
+      // Extract user and tokens from response
+      const responseData = res.data || res;
+      const user = responseData.user || res.user;
+      const accessToken = responseData.accessToken || res.accessToken;
 
-      if (!accessToken) {
-        throw new Error("No access token received from server");
+      if (!accessToken || !user) {
+        throw new Error("Invalid response format: missing token or user data");
       }
 
       // Check for Admin Approval
-      // Admins and Super Admins bypass approval check as they are created by root/system
       if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
         if (user.status === "pending" || user.isApproved === false) {
           throw new Error("Your account is pending admin approval. Please wait for an administrator to review your registration.");
@@ -50,8 +52,8 @@ export const useAuth = () => {
       dispatch(loginSuccess({ user, token: accessToken }));
       
       // Update global config in store if available
-      if (config) {
-        dispatch(fetchConfigSuccess(config));
+      if (responseData.config || res.config) {
+        dispatch(fetchConfigSuccess(responseData.config || res.config));
       }
       
       // Redirect based on role
@@ -75,7 +77,8 @@ export const useAuth = () => {
 
       return res;
     } catch (err) {
-      dispatch(loginFailure(err.message));
+      const errorMsg = err.message || err.response?.data?.message || "Login failed";
+      dispatch(loginFailure(errorMsg));
       throw err;
     }
   }, [dispatch]);

@@ -116,7 +116,11 @@ const LogisticsPage = () => {
                           <MapPin size={18} className="text-red-500 mt-1 shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-gray-900">Delivery Address</p>
-                            <p className="text-sm text-gray-600">{delivery.shippingAddress}</p>
+                            <p className="text-sm text-gray-600">
+                              {typeof delivery.shippingAddress === 'object' 
+                                ? `${delivery.shippingAddress.street || ''} ${delivery.shippingAddress.city || ''}, ${delivery.shippingAddress.state || ''}`.trim() || 'N/A'
+                                : delivery.shippingAddress || 'N/A'}
+                            </p>
                           </div>
                         </div>
                         

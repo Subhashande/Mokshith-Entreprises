@@ -30,9 +30,9 @@ const MainLayout = ({ children }) => {
   }, [on, showToast]);
 
   return (
-    <div className="main-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="main-layout flex flex-col min-h-screen bg-gray-50/30">
       <Navbar />
-      <main style={{ flex: 1 }}>
+      <main className="flex-1">
         {children}
       </main>
       <Footer />

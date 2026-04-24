@@ -66,7 +66,8 @@ export const usePromotion = () => {
 
   const toggleStatus = async (id) => {
     try {
-      const data = await promotionService.togglePromotionStatus(id);
+      const response = await promotionService.togglePromotionStatus(id);
+      const data = response?.data?.data || response?.data || response;
       setPromotions(prev => prev.map(p => p._id === id ? data : p));
       return data;
     } catch (err) {
