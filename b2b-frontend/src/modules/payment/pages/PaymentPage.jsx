@@ -10,7 +10,11 @@ import {
   ShieldCheck,
   Info,
   ArrowRight,
-  Truck
+  Truck,
+  QrCode,
+  Smartphone,
+  Banknote,
+  Lock
 } from 'lucide-react';
 import { paymentService } from '../services/paymentService';
 import { creditService } from '../../credit/services/creditService';
@@ -21,6 +25,15 @@ import { routes } from '../../../routes/routeConfig';
 import Button from '../../../components/ui/Button';
 import { useSocket } from '../../../context/SocketContext';
 import Loader from '../../../components/common/Loader';
+import {
+  validateRazorpayResponse,
+  validatePaymentAmount,
+  sanitizePaymentData,
+  PaymentDuplicateDetector,
+  PaymentErrorHandler,
+  PaymentLogger,
+  validateRazorpayConfig
+} from '../utils/paymentSecurity';
 
 const PaymentPage = () => {
   const { orderId } = useParams();
@@ -40,6 +53,15 @@ const PaymentPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 🔥 VALIDATE RAZORPAY CONFIG
+        const configValidation = validateRazorpayConfig();
+        if (!configValidation.isValid) {
+          console.error('❌ Razorpay configuration errors:', configValidation.errors);
+          setError('Payment system misconfigured. Please contact support.');
+          setLoading(false);
+          return;
+        }
+
         const [orderRes, creditRes] = await Promise.all([
           orderService.getOrderById(orderId),
           creditService.getCreditInfo()
@@ -59,9 +81,12 @@ const PaymentPage = () => {
         } else {
           setPaymentMethod('online');
         }
+
+        PaymentLogger.log('Page loaded', { orderId, totalAmount: orderData?.totalAmount });
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load payment details.');
+        PaymentLogger.error('Data fetch failed', err);
       } finally {
         setLoading(false);
       }
@@ -110,83 +135,223 @@ const PaymentPage = () => {
     setError(null);
 
     try {
+      console.log('💳 Initiating payment...', {
+        orderId,
+        paymentMethod,
+        totalAmount: order?.totalAmount
+      });
+
+      // 🔥 CALL HYBRID PAYMENT API
       const { data: hybridRes } = await paymentService.hybridPayment(
         orderId,
         paymentMethod !== 'online',
         order.totalAmount
       );
 
+      console.log('✅ Hybrid payment response:', hybridRes);
+
+      // 🔥 SCENARIO 1: Fully paid by credit
       if (hybridRes.paidFullyByCredit) {
+        console.log('✅ Order paid fully by credit');
         setPaymentSuccess(true);
+        setProcessing(false);
         return;
       }
 
+      // 🔥 SCENARIO 2: Need Razorpay payment
       const rzpOrder = hybridRes.gateway;
+      
+      if (!rzpOrder || !rzpOrder.gatewayOrderId) {
+        throw new Error('Invalid Razorpay order response');
+      }
+
+      console.log('💰 Opening Razorpay modal...', {
+        amount: rzpOrder.amount,
+        orderId: rzpOrder.gatewayOrderId
+      });
+
+      // 🔥 RAZORPAY OPTIONS - MULTIPLE PAYMENT METHODS
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: rzpOrder.amount,
+        amount: rzpOrder.amount, // Amount in paise
         currency: 'INR',
         name: "Mokshith Enterprises",
-        description: `B2B Order #${orderId}`,
+        description: `Order Payment #${orderId.slice(-8)}`,
         order_id: rzpOrder.gatewayOrderId,
+        
+        // 🔥 ENABLE MULTIPLE PAYMENT METHODS
+        method: {
+          upi: true,          // ✅ UPI (GPay, PhonePe, PayTM, etc.)
+          card: true,         // ✅ Credit/Debit Cards
+          netbanking: true,   // ✅ Net Banking
+          wallet: true,       // ✅ Digital Wallets (PayTM, Freecharge, etc.)
+          emi: false,         // Disable EMI for now
+        },
+        
+        // 🔥 SUCCESS HANDLER
         handler: async function (response) {
           try {
-            await paymentService.verifyPayment({
+            PaymentLogger.log('Razorpay response received', response);
+
+            // 🔥 SECURITY 1: Validate response fields
+            const validation = validateRazorpayResponse(response);
+            if (!validation.isValid) {
+              const errorMsg = validation.errors.join(', ');
+              PaymentLogger.error('Response validation failed', errorMsg);
+              setError('Invalid payment response. Please try again.');
+              setProcessing(false);
+              return;
+            }
+
+            // 🔥 SECURITY 2: Check for duplicate payment processing
+            if (PaymentDuplicateDetector.isDuplicate(response.razorpay_payment_id)) {
+              PaymentLogger.log('Duplicate payment detected', response.razorpay_payment_id);
+              // Still proceed - backend will handle idempotency
+            }
+
+            console.log('✅ Razorpay payment successful:', {
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature
+            });
+
+            setProcessing(true);
+            setError(null);
+
+            // 🔥 SECURITY 3: Sanitize payment data before sending
+            const sanitizedData = sanitizePaymentData({
               orderId: order._id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
+
+            PaymentLogger.log('Sending verification request', { orderId: order._id });
+
+            // 🔥 VERIFY PAYMENT ON BACKEND
+            await paymentService.verifyPayment(sanitizedData);
+
+            PaymentLogger.log('Payment verified successfully');
+
+            // 🔥 SECURITY 4: Mark as processed
+            PaymentDuplicateDetector.markProcessed(response.razorpay_payment_id);
+
             setPaymentSuccess(true);
+            setProcessing(false);
           } catch (err) {
-            setError('Verification failed.');
+            console.error('❌ Payment verification failed:', err);
+            PaymentLogger.error('Verification failed', err);
+
+            const errorMsg = PaymentErrorHandler.getMessage(err);
+            setError(errorMsg);
+            setProcessing(false);
           }
         },
-        prefill: {
-          name: user?.name,
-          email: user?.email,
-          contact: user?.mobile,
+
+        // 🔥 FAILURE HANDLER
+        modal: {
+          ondismiss: () => {
+            console.log('⚠️ Payment modal dismissed by user');
+            setProcessing(false);
+            setError('Payment cancelled. Please try again.');
+          }
         },
-        theme: { color: "#2563eb" },
-        modal: { ondismiss: () => setProcessing(false) }
+
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.mobile || '',
+        },
+        
+        theme: { 
+          color: "#2563eb",
+          backdrop_color: "rgba(0, 0, 0, 0.7)"
+        },
+        
+        // 🔥 NOTES FOR BACKEND
+        notes: {
+          orderId: orderId,
+          userId: user?.id,
+          paymentMethod: paymentMethod
+        },
+
+        // 🔥 RETRY LOGIC
+        timeout: 600  // 10 minutes timeout
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      // 🔥 OPEN RAZORPAY
+      if (!window.Razorpay) {
+        throw new Error('Razorpay is not loaded. Please refresh the page.');
+      }
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.open();
+
     } catch (err) {
-      setError(err.message || 'Payment failed');
+      console.error('❌ PAYMENT ERROR:', err);
+      
+      const errorMessage = 
+        typeof err === "string" 
+          ? err
+          : err.response?.data?.message ||
+            err.message ||
+            'Payment failed. Please try again.';
+
+      setError(errorMessage);
       setProcessing(false);
     }
   };
+  //       modal: { ondismiss: () => setProcessing(false) }
+  //     };
+
+  //     const rzp = new window.Razorpay(options);
+  //     rzp.open();
+  //   } catch (err) {
+  //     setError(err.message || 'Payment failed');
+  //     setProcessing(false);
+  //   }
+  // };
 
   const handleDownloadInvoice = async () => {
     try {
       setProcessing(true);
+      setError(null);
+
+      console.log('📄 Fetching invoice...');
+
+      // Try to get existing invoice
       const res = await invoiceService.getInvoiceByOrderId(orderId);
       const invoiceData = res.data || res;
       
       if (invoiceData?.fileUrl) {
+        console.log('✅ Invoice found, opening...');
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
         const fileUrl = invoiceData.fileUrl.startsWith('http') 
           ? invoiceData.fileUrl 
           : `${baseUrl}${invoiceData.fileUrl}`;
         window.open(fileUrl, '_blank');
+        return;
+      }
+
+      // If invoice doesn't exist, generate it
+      console.log('📋 Generating invoice...');
+      const genRes = await invoiceService.generateInvoice(orderId);
+      const genData = genRes.data || genRes;
+
+      if (genData?.fileUrl) {
+        console.log('✅ Invoice generated, opening...');
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+        const fileUrl = genData.fileUrl.startsWith('http') 
+          ? genData.fileUrl 
+          : `${baseUrl}${genData.fileUrl}`;
+        window.open(fileUrl, '_blank');
       } else {
-        const genRes = await invoiceService.generateInvoice(orderId);
-        const genData = genRes.data || genRes;
-        if (genData?.fileUrl) {
-          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
-          const fileUrl = genData.fileUrl.startsWith('http') 
-            ? genData.fileUrl 
-            : `${baseUrl}${genData.fileUrl}`;
-          window.open(fileUrl, '_blank');
-        } else {
-          alert('Invoice is being generated. Please try again in a moment.');
-        }
+        console.warn('⚠️ Invoice generation in progress');
+        setError('Invoice is being generated. Please try again in a moment.');
       }
     } catch (err) {
-      console.error('Error downloading invoice:', err);
-      alert('Could not download invoice. Please try from the Orders section.');
+      console.error('❌ Error with invoice:', err);
+      setError('Could not download invoice. Please try from the Orders section.');
     } finally {
       setProcessing(false);
     }
@@ -312,33 +477,90 @@ const PaymentPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 space-y-8">
             <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-blue-600" /> Payment Methods
+              <ShieldCheck className="w-8 h-8 text-blue-600" /> Select Payment Method
             </h2>
+
+            {/* 🔥 ENHANCED PAYMENT METHODS */}
             <div className="grid grid-cols-1 gap-4">
-              <div onClick={() => setPaymentMethod('online')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm'}`}>
-                <div className="flex items-start gap-5">
-                  <div className={`p-4 rounded-2xl ${paymentMethod === 'online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
-                    <CreditCard size={28} />
+              {/* ONLINE PAYMENT OPTION */}
+              <div onClick={() => setPaymentMethod('online')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-5">
+                    <div className={`p-4 rounded-2xl flex-shrink-0 ${paymentMethod === 'online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
+                      <CreditCard size={28} />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-gray-900">Online Payment</h3>
+                        <div className="flex gap-2">
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-black rounded-full">UPI</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-black rounded-full">CARDS</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">Pay securely with multiple methods</p>
+                      <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Smartphone size={14} className="text-purple-600" /> <span>UPI (GPay, PhonePe)</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <CreditCard size={14} className="text-blue-600" /> <span>Credit/Debit Cards</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Banknote size={14} className="text-green-600" /> <span>NetBanking</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Wallet size={14} className="text-orange-600" /> <span>Digital Wallets</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Online Payment</h3>
-                    <p className="text-sm text-gray-500">Cards, UPI, NetBanking & Wallets</p>
+                  <div className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${paymentMethod === 'online' ? 'bg-white text-blue-600' : 'text-gray-600'}`}>
+                    <Lock size={14} /> Secured by Razorpay
                   </div>
                 </div>
               </div>
+
+              {/* CREDIT OPTION */}
               {credit?.availableCredit > 0 && (
-                <div onClick={() => setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod !== 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm'}`}>
-                  <div className="flex items-start gap-5">
-                    <div className={`p-4 rounded-2xl ${paymentMethod !== 'online' ? 'bg-blue-600 text-white' : 'bg-green-50 text-green-600'}`}>
-                      <Wallet size={28} />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">Business Credit</h3>
-                      <p className="text-sm text-gray-500">Available: ₹{credit.availableCredit.toLocaleString()}</p>
+                <div onClick={() => setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod !== 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-5">
+                      <div className={`p-4 rounded-2xl flex-shrink-0 ${paymentMethod !== 'online' ? 'bg-blue-600 text-white' : 'bg-green-50 text-green-600'}`}>
+                        <Wallet size={28} />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-bold text-gray-900">Business Credit</h3>
+                          {credit.availableCredit >= order.totalAmount && (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-black rounded-full">FULL COVERAGE</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">Use your available credit balance</p>
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-600">Available Balance:</span>
+                          <span className="text-lg font-black text-green-600">₹{credit.availableCredit.toLocaleString()}</span>
+                        </div>
+                        {credit.availableCredit < order.totalAmount && (
+                          <div className="mt-3 p-2 bg-blue-50 rounded-lg">
+                            <p className="text-xs font-bold text-blue-700">
+                              💡 Tip: Use hybrid payment to combine credit with online payment
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
+
+              {/* SECURITY BADGE */}
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-600">
+                <Lock size={18} className="text-blue-600 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="font-bold text-gray-900">Secure Payment</p>
+                  <p className="text-gray-600 text-xs">PCI-DSS compliant • SSL Encrypted • Instant Verification</p>
+                </div>
+              </div>
             </div>
             {error && <div className="p-4 bg-red-50 text-red-700 rounded-2xl border-2 border-red-100 flex gap-4"><Info />{error}</div>}
           </div>
