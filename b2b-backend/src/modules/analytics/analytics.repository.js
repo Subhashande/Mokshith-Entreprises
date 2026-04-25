@@ -97,6 +97,49 @@ export const getTopProducts = async () => {
         revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
       }
     },
+    { $sort: { revenue: -1 } },
+    { $limit: 5 }
+  ]);
+};
+
+export const getActiveCustomersCount = async () => {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const result = await Order.distinct('userId', {
+    createdAt: { $gte: thirtyDaysAgo }
+  });
+  return result.length;
+};
+
+export const getPendingDeliveriesCount = async () => {
+  return Order.countDocuments({
+    status: { $in: ['CONFIRMED', 'PROCESSING', 'PACKED', 'OUT_FOR_DELIVERY'] }
+  });
+};
+
+export const getTopProductsDetailed = async () => {
+  return Order.aggregate([
+    { $unwind: '$items' },
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'items.productId',
+        foreignField: '_id',
+        as: 'product'
+      }
+    },
+    { $unwind: '$product' },
+    {
+      $group: {
+        _id: '$items.productId',
+        name: { $first: '$product.name' },
+        image: { $first: '$product.image' },
+        categoryId: { $first: '$product.categoryId' },
+        sales: { $sum: '$items.quantity' },
+        revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+      }
+    },
     {
       $lookup: {
         from: 'categories',

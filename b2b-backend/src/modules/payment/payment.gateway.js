@@ -2,6 +2,41 @@ import { razorpay } from '../../config/razorpay.js';
 import crypto from 'crypto';
 import { env } from '../../config/env.js';
 
+// 🔥 Circuit Breaker State
+const circuitBreaker = {
+  failures: 0,
+  lastFailure: null,
+  threshold: 5,
+  cooldown: 60000, // 1 minute
+  isOpen: false
+};
+
+const checkCircuit = () => {
+  if (circuitBreaker.isOpen) {
+    const now = Date.now();
+    if (now - circuitBreaker.lastFailure > circuitBreaker.cooldown) {
+      circuitBreaker.isOpen = false;
+      circuitBreaker.failures = 0;
+      return true;
+    }
+    return false;
+  }
+  return true;
+};
+
+const recordFailure = () => {
+  circuitBreaker.failures++;
+  circuitBreaker.lastFailure = Date.now();
+  if (circuitBreaker.failures >= circuitBreaker.threshold) {
+    circuitBreaker.isOpen = true;
+  }
+};
+
+const recordSuccess = () => {
+  circuitBreaker.failures = 0;
+  circuitBreaker.isOpen = false;
+};
+
 /**
  * Creates a Razorpay order for payment processing
  * @param {Object} params - Payment parameters
@@ -11,6 +46,9 @@ import { env } from '../../config/env.js';
  * @returns {Promise<Object>} Razorpay order with required fields
  */
 export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) => {
+  if (!checkCircuit()) {
+    throw new Error('Payment gateway is temporarily unavailable (Circuit Breaker). Please try again in a minute.');
+  }
   // 🔥 VALIDATION: Ensure amount is valid
   const numericAmount = Number(amount);
   if (isNaN(numericAmount) || numericAmount < 0) {
@@ -42,6 +80,7 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
     });
 
     const order = await razorpay.orders.create(options);
+    recordSuccess();
     
     console.log('✅ Razorpay order created successfully:', {
       orderId: order.id,
@@ -59,6 +98,7 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
       status: order.status
     };
   } catch (error) {
+    recordFailure();
     console.error('❌ RAZORPAY ERROR:', {
       message: error.message,
       code: error.code,

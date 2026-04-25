@@ -32,9 +32,11 @@ const PromotionPage = () => {
   const [localError, setLocalError] = useState(null);
   const [formData, setFormData] = useState({
     code: '',
-    discount: 0,
-    expiryDate: '',
-    status: 'ACTIVE'
+    discountType: 'PERCENTAGE',
+    value: 0,
+    maxDiscount: '',
+    expiresAt: '',
+    isActive: true
   });
 
   const handleOpenModal = (promo = null) => {
@@ -43,13 +45,15 @@ const PromotionPage = () => {
       setSelectedPromo(promo);
       setFormData({
         code: promo.code,
-        discount: promo.discount,
-        expiryDate: promo.expiryDate ? new Date(promo.expiryDate).toISOString().split('T')[0] : '',
-        status: promo.status
+        discountType: promo.discountType || 'PERCENTAGE',
+        value: promo.value || 0,
+        maxDiscount: promo.maxDiscount || '',
+        expiresAt: promo.expiresAt ? new Date(promo.expiresAt).toISOString().split('T')[0] : '',
+        isActive: promo.isActive ?? true
       });
     } else {
       setSelectedPromo(null);
-      setFormData({ code: '', discount: 0, expiryDate: '', status: 'ACTIVE' });
+      setFormData({ code: '', discountType: 'PERCENTAGE', value: 0, maxDiscount: '', expiresAt: '', isActive: true });
     }
     setIsModalOpen(true);
   };
@@ -171,22 +175,30 @@ const PromotionPage = () => {
                 <TableCell>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5 font-black text-2xl text-green-600">
-                      <span>{promo.discount}</span>
-                      <Percent size={20} strokeWidth={3} />
+                      <span>{promo.value}</span>
+                      {promo.discountType === 'PERCENTAGE' ? (
+                        <Percent size={20} strokeWidth={3} />
+                      ) : (
+                        <span className="text-lg ml-1">₹</span>
+                      )}
                       <span className="text-sm uppercase tracking-widest ml-1">Off</span>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Direct Discount</span>
+                    {promo.maxDiscount && (
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                        Up to ₹{promo.maxDiscount}
+                      </span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 text-sm font-black text-gray-700">
                       <Calendar size={16} className="text-blue-400" />
-                      <span>{promo.expiryDate ? new Date(promo.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Lifetime'}</span>
+                      <span>{promo.expiresAt ? new Date(promo.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Lifetime'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                       <Clock size={12} />
-                      <span>{promo.expiryDate && new Date(promo.expiryDate) < new Date() ? 'Campaign Expired' : 'Active Timeline'}</span>
+                      <span>{promo.expiresAt && new Date(promo.expiresAt) < new Date() ? 'Campaign Expired' : 'Active Timeline'}</span>
                     </div>
                   </div>
                 </TableCell>
@@ -194,12 +206,12 @@ const PromotionPage = () => {
                   <button 
                     onClick={() => toggleStatus(promo._id)}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all border ${
-                      promo.status === 'ACTIVE' 
+                      promo.isActive 
                         ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100' 
                         : 'bg-red-50 text-red-700 border-red-100 hover:bg-red-100'
                     }`}
                   >
-                    {promo.status === 'ACTIVE' ? (
+                    {promo.isActive ? (
                       <><CheckCircle size={14} strokeWidth={3} /> Active</>
                     ) : (
                       <><XCircle size={14} strokeWidth={3} /> Inactive</>

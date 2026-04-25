@@ -20,8 +20,13 @@ const connectDB = async () => {
     logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
 
     // Check if connected to a replica set
-    const status = await mongoose.connection.db.admin().serverStatus();
-    isReplicaSet = !!status.repl;
+    try {
+      const status = await mongoose.connection.db.admin().serverStatus();
+      isReplicaSet = !!status.repl;
+    } catch (err) {
+      logger.warn('Could not detect replica set status, defaulting to standalone mode');
+      isReplicaSet = false;
+    }
 
     if (isReplicaSet) {
       logger.info('🔄 MongoDB Transaction support enabled (Replica Set detected)');

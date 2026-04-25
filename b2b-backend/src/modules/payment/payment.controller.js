@@ -40,6 +40,12 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   successResponse(res, payment, 'Payment successful');
 });
 
+export const failPayment = asyncHandler(async (req, res) => {
+  const { orderId, reason } = req.body;
+  const result = await service.failPayment(orderId, reason);
+  successResponse(res, result, 'Payment failure recorded');
+});
+
 export const razorpayWebhook = asyncHandler(async (req, res) => {
   const signature = req.headers['x-razorpay-signature'];
   const rawBody = req.rawBody || JSON.stringify(req.body); // Fallback if rawBody missing

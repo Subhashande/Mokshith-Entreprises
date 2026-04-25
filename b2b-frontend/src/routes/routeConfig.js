@@ -25,6 +25,7 @@ export const routes = {
   SUPER_ADMIN: "/super-admin/dashboard",
   DELIVERY_HISTORY: "/delivery/history",
   CREDIT: "/credit",
+  CART: "/cart",
   CHECKOUT: "/checkout",
   ORDERS: "/orders",
   PAYMENT: "/payment/:orderId",

@@ -42,7 +42,10 @@ router.post(
 // 4. /webhook (Razorpay Webhook)
 router.post('/webhook', paymentLimiter, controller.razorpayWebhook);
 
-// 5. /:orderId (MUST BE LAST)
+// 5. /fail
+router.post('/fail', paymentLimiter, protect, controller.failPayment);
+
+// 6. /:orderId (MUST BE LAST)
 router.post('/:orderId', paymentLimiter, protect, controller.initiatePayment);
 
 export default router;

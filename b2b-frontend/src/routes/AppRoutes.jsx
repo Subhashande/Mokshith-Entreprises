@@ -29,6 +29,8 @@ import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
 import CreditPage from "../modules/credit/pages/CreditPage";
 import CheckoutPage from "../modules/order/pages/Checkout";
 import OrdersPage from "../modules/order/pages/OrdersPage";
+import OrderDetails from "../modules/order/pages/OrderDetails";
+import CartPage from "../modules/order/pages/Cart";
 import PaymentPage from "../modules/payment/pages/PaymentPage";
 import ProfilePage from "../modules/user/pages/Profile";
 import SecurityPage from "../modules/user/pages/Security";
@@ -227,6 +229,16 @@ const AppRoutes = () => {
         <Route path={routes.ORDERS} element={
           <ProtectedRoute>
             <MainLayout><OrdersPage /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={`${routes.ORDERS}/:id`} element={
+          <ProtectedRoute>
+            <MainLayout><OrderDetails /></MainLayout>
+          </ProtectedRoute>
+        } />
+        <Route path={routes.CART} element={
+          <ProtectedRoute>
+            <MainLayout><CartPage /></MainLayout>
           </ProtectedRoute>
         } />
         <Route path={routes.PAYMENT} element={

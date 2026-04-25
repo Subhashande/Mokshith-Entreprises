@@ -25,6 +25,8 @@ import { routes } from '../../../routes/routeConfig';
 import Button from '../../../components/ui/Button';
 import { useSocket } from '../../../context/SocketContext';
 import Loader from '../../../components/common/Loader';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../../order/orderSlice';
 import {
   validateRazorpayResponse,
   validatePaymentAmount,
@@ -32,12 +34,14 @@ import {
   PaymentDuplicateDetector,
   PaymentErrorHandler,
   PaymentLogger,
-  validateRazorpayConfig
+  validateRazorpayConfig,
+  ensureRazorpayLoaded
 } from '../utils/paymentSecurity';
 
 const PaymentPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useAuth();
   const { socket } = useSocket();
 
@@ -50,48 +54,66 @@ const PaymentPage = () => {
   const [error, setError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('online');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 🔥 VALIDATE RAZORPAY CONFIG
-        const configValidation = validateRazorpayConfig();
-        if (!configValidation.isValid) {
-          console.error('❌ Razorpay configuration errors:', configValidation.errors);
-          setError('Payment system misconfigured. Please contact support.');
-          setLoading(false);
-          return;
-        }
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const [orderRes, creditRes] = await Promise.all([
-          orderService.getOrderById(orderId),
-          creditService.getCreditInfo()
-        ]);
-
-        const orderData = orderRes.data || orderRes;
-        const creditData = creditRes.data || creditRes;
-
-        setOrder(orderData);
-        setCredit(creditData);
-
-        // Pre-select payment method
-        if (creditData?.availableCredit >= orderData?.totalAmount) {
-          setPaymentMethod('credit');
-        } else if (creditData?.availableCredit > 0) {
-          setPaymentMethod('hybrid');
-        } else {
-          setPaymentMethod('online');
-        }
-
-        PaymentLogger.log('Page loaded', { orderId, totalAmount: orderData?.totalAmount });
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load payment details.');
-        PaymentLogger.error('Data fetch failed', err);
-      } finally {
-        setLoading(false);
+      // 🔥 WAIT FOR RAZORPAY SDK
+      const isSdkLoaded = await ensureRazorpayLoaded();
+      
+      // 🔥 VALIDATE CONFIG
+      const configValidation = validateRazorpayConfig();
+      const errors = [...configValidation.errors];
+      
+      if (!isSdkLoaded) {
+        errors.push('Razorpay SDK failed to load. Please check your internet connection or disable ad-blockers.');
       }
-    };
 
+      if (errors.length > 0) {
+        const errorMsg = errors.join(' | ');
+        console.error('❌ Razorpay configuration errors:', errors);
+        setError(`Payment configuration error: ${errorMsg}`);
+        setLoading(false);
+        return;
+      }
+
+      const [orderRes, creditRes] = await Promise.all([
+        orderService.getOrderById(orderId),
+        creditService.getCreditInfo()
+      ]);
+
+      const orderData = orderRes.data || orderRes;
+      const creditData = creditRes.data || creditRes;
+
+      if (!orderData) {
+        setError('Order not found.');
+        return;
+      }
+
+      setOrder(orderData);
+      setCredit(creditData);
+
+      // Pre-select payment method
+      if (creditData?.availableCredit >= orderData?.totalAmount) {
+        setPaymentMethod('credit');
+      } else if (creditData?.availableCredit > 0) {
+        setPaymentMethod('hybrid');
+      } else {
+        setPaymentMethod('online');
+      }
+
+      PaymentLogger.log('Page loaded', { orderId, totalAmount: orderData?.totalAmount });
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load payment details.');
+      PaymentLogger.error('Data fetch failed', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [orderId]);
 
@@ -151,23 +173,26 @@ const PaymentPage = () => {
       console.log('✅ Hybrid payment response:', hybridRes);
 
       // 🔥 SCENARIO 1: Fully paid by credit
-      if (hybridRes.paidFullyByCredit) {
+      if (hybridRes.paidFullyByCredit || hybridRes.data?.paidFullyByCredit) {
         console.log('✅ Order paid fully by credit');
+        dispatch(clearCart());
         setPaymentSuccess(true);
         setProcessing(false);
         return;
       }
 
       // 🔥 SCENARIO 2: Need Razorpay payment
-      const rzpOrder = hybridRes.gateway;
+      const rzpOrder = hybridRes.gateway || hybridRes.data?.gateway;
       
-      if (!rzpOrder || !rzpOrder.gatewayOrderId) {
+      if (!rzpOrder || (!rzpOrder.gatewayOrderId && !rzpOrder.id)) {
         throw new Error('Invalid Razorpay order response');
       }
 
+      const gatewayOrderId = rzpOrder.gatewayOrderId || rzpOrder.id;
+
       console.log('💰 Opening Razorpay modal...', {
         amount: rzpOrder.amount,
-        orderId: rzpOrder.gatewayOrderId
+        orderId: gatewayOrderId
       });
 
       // 🔥 RAZORPAY OPTIONS - MULTIPLE PAYMENT METHODS
@@ -177,7 +202,7 @@ const PaymentPage = () => {
         currency: 'INR',
         name: "Mokshith Enterprises",
         description: `Order Payment #${orderId.slice(-8)}`,
-        order_id: rzpOrder.gatewayOrderId,
+        order_id: gatewayOrderId,
         
         // 🔥 ENABLE MULTIPLE PAYMENT METHODS
         method: {
@@ -191,7 +216,10 @@ const PaymentPage = () => {
         // 🔥 SUCCESS HANDLER
         handler: async function (response) {
           try {
-            PaymentLogger.log('Razorpay response received', response);
+            // Remove sensitive logging of full response in production
+            if (import.meta.env.DEV) {
+              PaymentLogger.log('Razorpay response received', response);
+            }
 
             // 🔥 SECURITY 1: Validate response fields
             const validation = validateRazorpayResponse(response);
@@ -206,14 +234,7 @@ const PaymentPage = () => {
             // 🔥 SECURITY 2: Check for duplicate payment processing
             if (PaymentDuplicateDetector.isDuplicate(response.razorpay_payment_id)) {
               PaymentLogger.log('Duplicate payment detected', response.razorpay_payment_id);
-              // Still proceed - backend will handle idempotency
             }
-
-            console.log('✅ Razorpay payment successful:', {
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature
-            });
 
             setProcessing(true);
             setError(null);
@@ -226,20 +247,17 @@ const PaymentPage = () => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            PaymentLogger.log('Sending verification request', { orderId: order._id });
-
             // 🔥 VERIFY PAYMENT ON BACKEND
             await paymentService.verifyPayment(sanitizedData);
-
-            PaymentLogger.log('Payment verified successfully');
 
             // 🔥 SECURITY 4: Mark as processed
             PaymentDuplicateDetector.markProcessed(response.razorpay_payment_id);
 
+            dispatch(clearCart());
             setPaymentSuccess(true);
             setProcessing(false);
           } catch (err) {
-            console.error('❌ Payment verification failed:', err);
+            console.error('❌ Payment verification failed');
             PaymentLogger.error('Verification failed', err);
 
             const errorMsg = PaymentErrorHandler.getMessage(err);
@@ -248,15 +266,18 @@ const PaymentPage = () => {
           }
         },
 
-        // 🔥 FAILURE HANDLER
+        // 🔥 MODAL OPTIONS
         modal: {
-          ondismiss: () => {
-            console.log('⚠️ Payment modal dismissed by user');
+          ondismiss: async function() {
+            console.log('❌ Razorpay modal closed by user');
             setProcessing(false);
-            setError('Payment cancelled. Please try again.');
+            setError('Payment cancelled. You can retry whenever you are ready.');
+            
+            // We DON'T mark as failed immediately on dismiss to allow retries.
+            // The order remains in PENDING_PAYMENT status.
           }
         },
-
+        
         prefill: {
           name: user?.name || '',
           email: user?.email || '',
@@ -285,6 +306,21 @@ const PaymentPage = () => {
       }
 
       const razorpayInstance = new window.Razorpay(options);
+
+      // 🔥 HANDLE FAILED PAYMENTS (INSUFFICIENT FUNDS, ETC)
+      razorpayInstance.on('payment.failed', async function (response) {
+        console.error('❌ Razorpay payment failed:', response.error);
+        PaymentLogger.error('Razorpay payment failed', response.error);
+        setError(`Payment failed: ${response.error.description}`);
+        setProcessing(false);
+
+        try {
+          await orderService.markOrderAsFailed(orderId);
+        } catch (err) {
+          console.error('Failed to mark order as failed:', err);
+        }
+      });
+
       razorpayInstance.open();
 
     } catch (err) {
@@ -378,7 +414,10 @@ const PaymentPage = () => {
         </div>
         <h2 className="text-2xl font-black text-gray-900 mb-2">Oops! Something went wrong</h2>
         <p className="text-gray-600 mb-8 leading-relaxed">{error}</p>
-        <Button variant="primary" fullWidth onClick={() => window.location.reload()}>Try Again</Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button variant="secondary" fullWidth onClick={() => navigate(routes.ORDERS)}>Orders</Button>
+          <Button variant="primary" fullWidth onClick={() => fetchData()}>Retry</Button>
+        </div>
       </div>
     </div>
   );

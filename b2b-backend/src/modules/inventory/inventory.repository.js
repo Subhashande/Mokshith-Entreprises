@@ -22,11 +22,20 @@ export const findLowStock = (threshold = 10) =>
 export const getStats = async () => {
   const stats = await Inventory.aggregate([
     {
+      $lookup: {
+        from: 'products',
+        localField: 'productId',
+        foreignField: '_id',
+        as: 'product'
+      }
+    },
+    { $unwind: '$product' },
+    {
       $group: {
         _id: null,
         totalStock: { $sum: "$stock" },
         uniqueProducts: { $addToSet: "$productId" },
-        totalValue: { $sum: { $multiply: ["$stock", 100] } } // Mock price for now or lookup
+        totalValue: { $sum: { $multiply: ["$stock", "$product.price"] } }
       }
     }
   ]);

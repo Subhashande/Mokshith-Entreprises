@@ -1,6 +1,25 @@
 import axios from "axios";
+import { store } from "../app/store";
+import { updateToken, logout } from "../modules/auth/authSlice";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/v1` : "http://localhost:5000/api/v1";
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  
+  // If the URL already ends with /api/v1, use it as is
+  if (envUrl.endsWith('/api/v1')) {
+    return envUrl;
+  }
+  
+  // If it ends with /api, just append /v1
+  if (envUrl.endsWith('/api')) {
+    return `${envUrl}/v1`;
+  }
+  
+  // Otherwise append /api/v1
+  return `${envUrl.replace(/\/$/, '')}/api/v1`;
+};
+
+const API_BASE_URL = getBaseURL();
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -48,6 +67,13 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // If the request was to refresh token itself, don't retry!
+      if (originalRequest.url.includes('/auth/refresh-token')) {
+        store.dispatch(logout());
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
       // If token refresh is already in progress, queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -69,9 +95,7 @@ apiClient.interceptors.response.use(
 
       if (!refreshToken) {
         // No refresh token, clear auth and redirect
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
+        store.dispatch(logout());
         window.location.href = "/login";
         return Promise.reject(error);
       }
@@ -81,9 +105,9 @@ apiClient.interceptors.response.use(
         .post("/auth/refresh-token", { token: refreshToken })
         .then((response) => {
           const newAccessToken = response.data?.accessToken || response.accessToken;
+
           if (newAccessToken) {
-            localStorage.setItem("token", newAccessToken);
-            apiClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+            store.dispatch(updateToken(newAccessToken));
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             processQueue(null, newAccessToken);
             return apiClient(originalRequest);
@@ -93,9 +117,7 @@ apiClient.interceptors.response.use(
         })
         .catch((err) => {
           processQueue(err, null);
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("user");
+          store.dispatch(logout());
           window.location.href = "/login";
           return Promise.reject(err);
         })

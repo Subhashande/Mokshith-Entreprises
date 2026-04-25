@@ -55,14 +55,12 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete }) => {
         </div>
         <div className="min-w-0">
           <h3 className="text-xl font-black text-gray-900 truncate leading-tight">
-            {typeof warehouse.name === 'object' ? (warehouse.name?.label || warehouse.name?.name || 'Unnamed') : (warehouse.name || 'Unnamed')}
+            {warehouse.name}
           </h3>
           <div className="flex items-center gap-1.5 text-sm font-bold text-gray-500 mt-0.5">
             <MapPin size={14} className="text-blue-400" />
             <span className="truncate">
-              {typeof warehouse.location === 'object' 
-                ? `${warehouse.location.city || ''}${warehouse.location.city && warehouse.location.state ? ', ' : ''}${warehouse.location.state || ''}`.trim() || 'Location N/A'
-                : warehouse.location || 'Location N/A'}
+              {warehouse.city}, {warehouse.state} - {warehouse.pincode}
             </span>
           </div>
         </div>

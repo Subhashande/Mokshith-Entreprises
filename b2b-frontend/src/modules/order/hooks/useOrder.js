@@ -46,7 +46,8 @@ export const useOrder = (shouldFetch = false) => {
     dispatch(fetchStart());
     try {
       const newOrder = await orderService.placeOrder(orderData);
-      dispatch(clearCartAction());
+      // 🔥 CART SHOULD ONLY BE CLEARED AFTER SUCCESSFUL PAYMENT
+      // dispatch(clearCartAction()); 
       await fetchOrders();
       return newOrder;
     } catch (err) {

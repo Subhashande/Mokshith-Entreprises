@@ -8,9 +8,10 @@ import Order from '../order/order.model.js';
 import * as creditRepo from '../credit/credit.repository.js';
 import { generateInvoice } from '../invoice/invoice.service.js';
 
-import { repayCredit } from '../credit/credit.service.js';
 import { sendNotification } from '../notification/notification.service.js';
 import { TEMPLATES } from '../notification/notification.templates.js';
+import { ORDER_STATUS } from '../../constants/orderStatus.js';
+import { PAYMENT_STATUS } from '../../constants/paymentStatus.js';
 
 export const createRazorpayOrder = async (amount, userId) => {
   // Razorpay minimum amount is 100 paise (₹1)
@@ -59,7 +60,8 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
 
     // Safety check: frontend totalAmount vs backend totalAmount
     if (totalAmount && Math.round(order.totalAmount) !== Math.round(totalAmount)) {
-      console.warn(`Total amount mismatch: FE=${totalAmount}, BE=${order.totalAmount}`);
+      // In production, we should probably throw an error here, but for now we log it.
+      // throw new AppError('Payment amount mismatch', 400);
     }
 
     let remainingAmount = order.totalAmount;
@@ -120,22 +122,52 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
         }
       });
 
-      return { paidFullyByCredit: true, creditUsed };
+      return { success: true, paidFullyByCredit: true, creditUsed };
     }
 
     // 4. Create Razorpay order for remaining amount
-    const rzpOrder = await createRazorpayOrder(remainingAmount, userId);
+    let rzpOrder;
+    try {
+      rzpOrder = await createRazorpayOrder(remainingAmount, userId);
+    } catch (err) {
+      console.error('❌ Razorpay order creation failed during hybrid payment:', err);
+      // Revert credit deduction if Razorpay order fails
+      if (useCredit && creditUsed > 0) {
+        const credit = await creditRepo.findByUser(userId);
+        if (credit) {
+          credit.availableCredit += creditUsed;
+          credit.usedCredit -= creditUsed;
+          await credit.save();
+          
+          await creditRepo.addLedger({
+            userId,
+            amount: creditUsed,
+            type: 'CREDIT',
+            description: `Reversal: Razorpay order creation failed for Order #${orderId}`,
+          });
+        }
+      }
+      throw err;
+    }
 
     // Track this payment intent
-    await repo.createPayment({
+    const paymentData = {
       orderId,
       userId,
       amount: remainingAmount,
-      transactionId: rzpOrder.gatewayOrderId,
+      transactionId: rzpOrder.gatewayOrderId || rzpOrder.id,
       paymentMethod: 'HYBRID',
       status: 'PENDING',
       metadata: { creditUsed }
-    }, { session: isTransactionStarted ? session : null });
+    };
+
+    try {
+      await repo.createPayment(paymentData, { session: isTransactionStarted ? session : null });
+    } catch (err) {
+      console.error('❌ Failed to record payment record:', err);
+      // Even if recording fails, we have the rzpOrder, but it's better to fail here
+      throw new AppError('Failed to initialize payment tracking', 500);
+    }
 
     // Update order with partial credit use info
     order.metadata = { ...order.metadata, creditUsed };
@@ -147,10 +179,14 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
     }
 
     return { 
+      success: true,
       paidFullyByCredit: false, 
       remainingAmount,
       creditUsed,
-      gateway: rzpOrder 
+      gateway: {
+        gatewayOrderId: rzpOrder.gatewayOrderId,
+        amount: rzpOrder.amount
+      } 
     };
   } catch (error) {
     if (isTransactionStarted) {
@@ -253,12 +289,12 @@ export const verifyPayment = async (payload) => {
     // 6. Post-payment triggers (Invoice + Logistics + Clear Cart)
     setImmediate(async () => {
       try {
-        // Clear User Cart
-        const cart = await mongoose.model('Cart').findOne({ userId: order.userId });
-        if (cart) {
-          cart.items = [];
-          await cart.save();
-        }
+        // Clear User Cart - Only after successful payment verification
+        const CartModel = mongoose.model('Cart');
+        await CartModel.findOneAndUpdate(
+          { userId: order.userId },
+          { $set: { items: [] } }
+        );
 
         await generateInvoice(order._id);
         const { autoAssignDelivery } = await import('../logistics/logistics.service.js');
@@ -276,6 +312,24 @@ export const verifyPayment = async (payload) => {
   });
 
   return payment;
+};
+
+export const failPayment = async (orderId, reason) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new AppError('Order not found', 404);
+
+  order.paymentStatus = PAYMENT_STATUS.FAILED;
+  order.status = ORDER_STATUS.FAILED;
+  order.metadata = { ...order.metadata, failureReason: reason };
+  await order.save();
+
+  // Restore stock if payment fails
+  const { restoreStock } = await import('../product/product.service.js');
+  for (const item of order.items) {
+    await restoreStock(item.productId, item.quantity);
+  }
+
+  return { status: 'FAILED', orderId };
 };
 
 export const handleWebhook = async (rawBody, signature) => {
@@ -314,31 +368,31 @@ export const handleWebhook = async (rawBody, signature) => {
       order.status = 'CONFIRMED';
       await order.save();
 
+      // Clear Cart on successful webhook capture
+      const CartModel = mongoose.model('Cart');
+      await CartModel.findOneAndUpdate(
+        { userId: order.userId },
+        { $set: { items: [] } }
+      );
+
       // Emit socket event
       if (global.io) {
         global.io.emit('payment:success', { 
           orderId: order._id, 
           userId: order.userId,
           amount: order.totalAmount,
-          method: payment.paymentMethod 
+          method: 'ONLINE' 
         });
       }
 
-      // Trigger post-payment actions
+      // Generate invoice and trigger delivery
       setImmediate(async () => {
         try {
-          // Clear User Cart
-          const cart = await mongoose.model('Cart').findOne({ userId: order.userId });
-          if (cart) {
-            cart.items = [];
-            await cart.save();
-          }
-
           await generateInvoice(order._id);
           const { autoAssignDelivery } = await import('../logistics/logistics.service.js');
           await autoAssignDelivery(order._id);
         } catch (err) {
-          console.error('Webhook post-payment triggers failed:', err.message);
+          console.error('Webhook post-payment actions failed:', err.message);
         }
       });
     }

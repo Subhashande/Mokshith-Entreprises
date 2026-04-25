@@ -4,21 +4,18 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { routes } from "../../../routes/routeConfig";
 import AdminStats from "../components/AdminStats";
-import ApprovalCard from "../components/ApprovalCard";
+import Button from "../../../components/ui/Button";
 import { 
   Users, 
   Package, 
   ShoppingCart, 
   Building2, 
-  FileText, 
-  Settings, 
   Bell, 
-  Search,
   Plus,
   ArrowUpRight,
   TrendingUp,
-  Download,
-  ShieldCheck
+  ShieldCheck,
+  X
 } from 'lucide-react';
 
 const AdminPage = () => {
@@ -27,280 +24,114 @@ const AdminPage = () => {
   const navigate = useNavigate();
 
   const quickActions = [
-    { icon: <Package size={20} />, label: "Manage Orders", path: routes.ADMIN_ORDERS, color: "blue" },
-    { icon: <Plus size={20} />, label: "Add Product", path: routes.ADMIN_PRODUCTS, color: "green" },
-    { icon: <TrendingUp size={20} />, label: "View Analytics", path: routes.ADMIN_ANALYTICS, color: "purple" },
-    { icon: <Users size={20} />, label: "User Management", path: routes.ADMIN_USERS, color: "orange" },
-    { icon: <Package size={20} />, label: "Inventory", path: "/admin/inventory", color: "red" },
-    { icon: <Building2 size={20} />, label: "Warehouses", path: "/admin/warehouses", color: "indigo" },
+    { icon: <ShoppingCart size={20} />, label: "Orders", path: routes.ADMIN_ORDERS, color: "blue", count: stats?.totalOrders },
+    { icon: <Package size={20} />, label: "Inventory", path: "/admin/inventory", color: "orange", count: "8 Low" },
+    { icon: <Users size={20} />, label: "Customers", path: routes.ADMIN_USERS, color: "indigo", count: stats?.totalUsers },
+    { icon: <Building2 size={20} />, label: "Warehouses", path: "/admin/warehouses", color: "emerald", count: "4 Active" },
+    { icon: <TrendingUp size={20} />, label: "Analytics", path: routes.ADMIN_ANALYTICS, color: "purple", count: "Live" },
+    { icon: <ShieldCheck size={20} />, label: "Approvals", path: routes.ADMIN_APPROVALS, color: "amber", count: approvals?.length },
   ];
 
-  const handleAction = (action) => {
-    if (action.path) {
-      navigate(action.path);
-    } else if (action.action === "export") {
-      handleExportReport();
-    }
-  };
-
-  const handleExportReport = () => {
-    const reportData = {
-      generatedAt: new Date().toISOString(),
-      stats: stats,
-      approvals: approvals
-    };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `sales_report_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
-
   if (loading) return (
-    <div className="loading-screen">
-      <div className="loader"></div>
-      <p>Loading administration panel...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="font-black text-gray-900 uppercase tracking-widest text-xs">Initializing Admin Console</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="dashboard-container">
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>Overview</h1>
-            <p>Welcome back, {user?.name}. Here's what's happening today.</p>
-          </div>
-          <div className="header-right">
-            <button className="premium-button premium-button-secondary">
-              <Bell size={18} />
-            </button>
-            <button className="premium-button premium-button-primary" onClick={() => navigate(routes.ADMIN_PRODUCTS)}>
-              <Plus size={18} /> <span>New Product</span>
-            </button>
-          </div>
-        </header>
-
-        {/* Stats Grid */}
-        <section className="stats-section">
-          <AdminStats stats={stats} />
-        </section>
-
-        <div className="dashboard-grid">
-          {/* Quick Actions */}
-          <section className="actions-section">
-            <h2 className="section-title">Quick Actions</h2>
-            <div className="actions-grid">
-              {quickActions.map((action, index) => (
-                <button 
-                  key={index} 
-                  className={`action-card color-${action.color}`}
-                  onClick={() => handleAction(action)}
-                >
-                  <div className="action-icon">{action.icon}</div>
-                  <span className="action-label">{action.label}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Pending Approvals */}
-          <section className="approvals-section">
-            <div className="section-header">
-              <h2 className="section-title">Pending Approvals</h2>
-              <Link to={routes.ADMIN_APPROVALS} className="view-all">View All <ArrowUpRight size={16} /></Link>
-            </div>
-            <div className="approvals-list">
-              {approvals?.length > 0 ? (
-                approvals.slice(0, 3).map((approval, index) => (
-                  <ApprovalCard 
-                    key={approval._id || `approval-${index}`} 
-                    approval={approval} 
-                    onApprove={approve} 
-                    onReject={reject} 
-                  />
-                ))
-              ) : (
-                <div className="empty-approvals">
-                  <ShieldCheck size={40} />
-                  <p>All clear! No pending approvals.</p>
-                </div>
-              )}
-            </div>
-          </section>
+    <div className="p-8 bg-gray-50/50 min-h-screen">
+      <header className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+            Control <span className="text-blue-600">Center</span>
+          </h1>
+          <p className="text-gray-500 font-bold mt-2 flex items-center gap-2">
+            <ShieldCheck size={18} className="text-blue-400" />
+            Welcome back, {user?.name}. Operational systems are stable.
+          </p>
         </div>
-      </main>
+        <div className="flex gap-3">
+          <button className="p-4 bg-white border border-gray-200 rounded-2xl text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm">
+            <Bell size={20} />
+          </button>
+          <Button onClick={() => navigate(routes.ADMIN_PRODUCTS)} className="shadow-xl shadow-blue-200 h-14 px-8 text-lg rounded-2xl flex items-center gap-3">
+            <Plus size={24} strokeWidth={3} />
+            Add Product
+          </Button>
+        </div>
+      </header>
 
-      <style>{`
-        .dashboard-container {
-          background-color: var(--background);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
+      {/* Stats Section */}
+      <AdminStats stats={stats} />
 
-        .dashboard-main {
-          max-width: 1400px;
-          width: 100%;
-          margin: 0 auto;
-          padding: 3rem 2rem;
-          flex: 1;
-        }
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Quick Actions - 7 cols */}
+        <div className="lg:col-span-7">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Quick Operations</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            {quickActions.map((action, index) => (
+              <button 
+                key={index} 
+                onClick={() => navigate(action.path)}
+                className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all group text-left relative overflow-hidden"
+              >
+                <div className={`p-4 rounded-2xl bg-${action.color}-50 text-${action.color}-600 mb-4 inline-block group-hover:scale-110 transition-transform`}>
+                  {action.icon}
+                </div>
+                <h3 className="font-black text-gray-900 block">{action.label}</h3>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 block">{action.count || 'View All'}</span>
+                <ArrowUpRight size={16} className="absolute top-6 right-6 text-gray-200 group-hover:text-blue-400 transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
 
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 3rem;
-        }
-
-        .header-left h1 {
-          font-size: 2.25rem;
-          font-weight: 800;
-          color: #000000;
-          letter-spacing: -0.02em;
-          margin-bottom: 0.5rem;
-        }
-
-        .header-left p {
-          color: #4b5563;
-          font-size: 1.125rem;
-        }
-
-        .header-right {
-          display: flex;
-          gap: 1rem;
-        }
-
-        .stats-section {
-          margin-bottom: 3rem;
-        }
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: 1fr 1.5fr;
-          gap: 3rem;
-        }
-
-        .section-title {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #000000;
-          margin-bottom: 1.5rem;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.5rem;
-        }
-
-        .view-all {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: var(--primary);
-          font-weight: 600;
-          font-size: 0.875rem;
-          text-decoration: none;
-        }
-
-        .actions-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
-        }
-
-        .action-card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          padding: 2rem;
-          background: var(--surface);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-lg);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .action-card:hover {
-          transform: translateY(-4px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--primary);
-        }
-
-        .action-icon {
-          width: 3rem;
-          height: 3rem;
-          border-radius: var(--radius-md);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .color-blue .action-icon { background: #eff6ff; color: #2563eb; }
-        .color-green .action-icon { background: #f0fdf4; color: #16a34a; }
-        .color-purple .action-icon { background: #faf5ff; color: #9333ea; }
-        .color-orange .action-icon { background: #fff7ed; color: #ea580c; }
-
-        .action-label {
-          font-weight: 600;
-          color: var(--text-main);
-          font-size: 0.9375rem;
-        }
-
-        .approvals-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .empty-approvals {
-          padding: 4rem;
-          background: var(--surface);
-          border: 1.5px dashed var(--border);
-          border-radius: var(--radius-lg);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1rem;
-          color: var(--text-muted);
-        }
-
-        .loading-screen {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-        }
-
-        .loader {
-          width: 48px;
-          height: 48px;
-          border: 4px solid var(--primary-light);
-          border-top: 4px solid var(--primary);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1.5rem;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 1024px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
+        {/* Pending Approvals - 5 cols */}
+        <div className="lg:col-span-5">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Verification Queue</h2>
+            <Link to={routes.ADMIN_APPROVALS} className="text-xs font-black text-blue-600 uppercase tracking-widest hover:underline">View All Queue</Link>
+          </div>
+          <div className="space-y-4">
+            {approvals?.length > 0 ? (
+              approvals.slice(0, 4).map((approval, index) => (
+                <div key={approval._id || index} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group hover:border-amber-100 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 font-black">
+                      {approval.title?.[0] || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-black text-gray-900 leading-tight">{approval.title}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{approval.type}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => approve(approval.id)} className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-all">
+                      <ShieldCheck size={16} />
+                    </button>
+                    <button onClick={() => reject(approval.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all">
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white border-2 border-dashed border-gray-200 rounded-[2rem] p-10 text-center">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck size={32} className="text-gray-200" />
+                </div>
+                <h3 className="font-black text-gray-900">Queue is Empty</h3>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">All verifications completed</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

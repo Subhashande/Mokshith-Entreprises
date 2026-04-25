@@ -219,18 +219,43 @@ export const PaymentLogger = {
 export const validateRazorpayConfig = () => {
   const errors = [];
 
-  if (!window.Razorpay) {
-    errors.push('Razorpay SDK not loaded. Ensure script is included in HTML.');
-  }
-
-  if (!import.meta.env.VITE_RAZORPAY_KEY_ID) {
-    errors.push('Razorpay Key ID not configured. Set VITE_RAZORPAY_KEY_ID environment variable.');
+  // Check if Key ID is present
+  const keyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+  if (!keyId) {
+    errors.push('Razorpay Key ID is missing from environment variables (VITE_RAZORPAY_KEY_ID).');
+  } else if (keyId.includes('YOUR_') || keyId === 'undefined') {
+    errors.push('Razorpay Key ID appears to be a placeholder or undefined.');
   }
 
   return {
     isValid: errors.length === 0,
     errors
   };
+};
+
+/**
+ * Ensure Razorpay SDK is loaded
+ * @param {number} timeout - Max time to wait in ms
+ * @returns {Promise<boolean>}
+ */
+export const ensureRazorpayLoaded = (timeout = 5000) => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      if (window.Razorpay) {
+        clearInterval(interval);
+        resolve(true);
+      } else if (Date.now() - startTime > timeout) {
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, 100);
+  });
 };
 
 export default {

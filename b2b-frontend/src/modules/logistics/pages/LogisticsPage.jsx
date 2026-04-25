@@ -41,12 +41,14 @@ const LogisticsPage = () => {
     markDelivered 
   } = useLogistics();
 
+  const safeQueue = Array.isArray(deliveryQueue) ? deliveryQueue : [];
+
   const handleOpenMap = (address) => {
     const query = encodeURIComponent(address);
     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
   };
 
-  if (loading && !deliveryQueue.length) {
+  if (loading && !safeQueue.length) {
     return (
       <div className="p-6">
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
@@ -92,14 +94,14 @@ const LogisticsPage = () => {
           </h2>
           
           <div className="space-y-4">
-            {deliveryQueue.length === 0 ? (
+            {safeQueue.length === 0 ? (
               <Card className="text-center py-12">
                 <Truck size={48} className="mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No active deliveries</h3>
                 <p className="text-gray-500">Your delivery queue is currently empty.</p>
               </Card>
             ) : (
-              deliveryQueue.map((delivery) => (
+              safeQueue.map((delivery) => (
                 <Card key={delivery._id} className="hover:shadow-lg transition-shadow">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
@@ -182,25 +184,31 @@ const LogisticsPage = () => {
           </h2>
           <Card>
             <div className="space-y-4">
-              {history.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No recent history</p>
-              ) : (
-                history.slice(0, 5).map((item) => (
-                  <div key={item._id} className="flex items-center gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center shrink-0">
-                      <CheckCircle size={20} className="text-green-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">Order #{item.orderId?.slice(-6).toUpperCase()}</p>
-                      <p className="text-xs text-gray-500">{new Date(item.deliveredAt).toLocaleDateString()}</p>
-                    </div>
-                    <ArrowRight size={16} className="text-gray-300" />
-                  </div>
-                ))
-              )}
-              {history.length > 5 && (
-                <Button variant="secondary" className="w-full text-sm">View All History</Button>
-              )}
+              {(() => {
+                const safeHistory = Array.isArray(history) ? history : [];
+                if (safeHistory.length === 0) {
+                  return <p className="text-center text-gray-500 py-4">No recent history</p>;
+                }
+                return (
+                  <>
+                    {safeHistory.slice(0, 5).map((item) => (
+                      <div key={item._id} className="flex items-center gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                        <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center shrink-0">
+                          <CheckCircle size={20} className="text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">Order #{item.orderId?.slice(-6).toUpperCase()}</p>
+                          <p className="text-xs text-gray-500">{new Date(item.deliveredAt).toLocaleDateString()}</p>
+                        </div>
+                        <ArrowRight size={16} className="text-gray-300" />
+                      </div>
+                    ))}
+                    {safeHistory.length > 5 && (
+                      <Button variant="secondary" className="w-full text-sm">View All History</Button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </Card>
 

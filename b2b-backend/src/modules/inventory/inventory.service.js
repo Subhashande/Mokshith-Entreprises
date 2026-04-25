@@ -110,15 +110,28 @@ export const reduceStock = async (productId, quantity, options = {}) => {
   for (const item of items) {
     if (remaining <= 0) break;
 
-    if (item.stock >= remaining) {
-      item.stock -= remaining;
-      await item.save({ session });
-      remaining = 0;
-    } else {
-      remaining -= item.stock;
-      item.stock = 0;
-      await item.save({ session });
+    const deductAmount = Math.min(item.stock, remaining);
+    if (deductAmount <= 0) continue;
+
+    // 🔥 Optimistic Locking Update
+    const updated = await mongoose.model('Inventory').findOneAndUpdate(
+      { 
+        _id: item._id, 
+        stock: { $gte: deductAmount },
+        version: item.version 
+      },
+      { 
+        $inc: { stock: -deductAmount, version: 1 } 
+      },
+      { new: true, session }
+    );
+
+    if (!updated) {
+      // Version mismatch or stock changed since read
+      throw new AppError(`Inventory update conflict for ${productId}. Please retry.`, 409);
     }
+
+    remaining -= deductAmount;
   }
 
   if (remaining > 0) {

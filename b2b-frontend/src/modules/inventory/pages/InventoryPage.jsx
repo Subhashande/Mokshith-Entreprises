@@ -189,53 +189,57 @@ const InventoryPage = () => {
             </TableRow>
           ) : (
             inventory.map((item) => {
-              const status = getStockStatus(item);
-              const badge = getStatusBadge(status);
               return (
                 <TableRow key={item._id} className="group transition-colors hover:bg-gray-50/50">
                   <TableCell>
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-white transition-colors">
-                        {item.product?.images?.[0] ? (
-                          <img src={item.product.images[0]} alt="" className="w-full h-full rounded-2xl object-cover" />
-                        ) : (
-                          <Package size={24} className="text-gray-300" />
-                        )}
+                      <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center">
+                        <Package size={20} className="text-gray-400" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-black text-gray-900 truncate leading-tight">{item.product?.name || 'Unknown Product'}</p>
-                        <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">{item.product?.sku || 'SKU N/A'}</p>
+                      <div>
+                        <p className="font-black text-gray-900 leading-tight">
+                          {item.productId?.name || 'Unknown Product'}
+                        </p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                          SKU: {item.productId?.sku || 'N/A'}
+                        </p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="text-lg font-black text-gray-900">{(item.stock || 0).toLocaleString()}</span>
+                    <div className="font-black text-gray-900 text-lg">
+                      {item.stock}
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <span className="font-bold text-gray-500">{(item.reserved || 0).toLocaleString()}</span>
+                    <div className="font-bold text-amber-600">
+                      {item.reserved || 0}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-black text-blue-600 text-lg">
+                      {item.stock - (item.reserved || 0)}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span className={`text-lg font-black ${item.available < 10 ? 'text-red-600' : 'text-blue-600'}`}>
-                        {(item.available || 0).toLocaleString()}
-                      </span>
-                      {item.available < 10 && <TrendingUp size={14} className="text-red-400 rotate-180" />}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-gray-600 font-bold">
-                      <Warehouse size={16} className="text-gray-400" />
-                      <span className="truncate max-w-[150px]">
-                        {typeof item.warehouse === 'object' 
-                          ? (item.warehouse?.name || item.warehouse?.city || 'N/A')
-                          : (item.warehouse || 'N/A')}
+                      <Warehouse size={14} className="text-gray-400" />
+                      <span className="text-xs font-bold text-gray-600 uppercase">
+                        {item.warehouseId?.name || 'Main Warehouse'}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${badge.bg} ${badge.text} ${badge.border}`}>
-                      {badge.label}
-                    </span>
+                    {(() => {
+                      const available = item.stock - (item.reserved || 0);
+                      const status = available <= 0 ? 'out-of-stock' : available < 10 ? 'low' : 'in-stock';
+                      const badge = getStatusBadge(status);
+                      return (
+                        <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ${badge.bg} ${badge.text} ${badge.border}`}>
+                          {badge.label}
+                        </span>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button 
