@@ -21,6 +21,11 @@ const inventorySchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+
+    version: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

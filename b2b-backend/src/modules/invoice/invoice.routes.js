@@ -13,4 +13,10 @@ router.post(
   controller.generateInvoice
 );
 
+router.get(
+  '/:orderId',
+  protect,
+  controller.getInvoiceByOrderId
+);
+
 export default router;

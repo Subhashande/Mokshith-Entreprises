@@ -73,6 +73,11 @@ const productSchema = new mongoose.Schema(
       min: 1,
     },
 
+    gst: {
+      type: Number,
+      default: 18, // 18% standard GST
+    },
+
     bulkPricing: [
       {
         minQuantity: Number,

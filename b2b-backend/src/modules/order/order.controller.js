@@ -21,6 +21,16 @@ export const getOrderById = asyncHandler(async (req, res) => {
   successResponse(res, order);
 });
 
+export const downloadInvoice = asyncHandler(async (req, res) => {
+  const { filePath, fileName } = await service.downloadInvoice(req.params.id);
+  res.download(filePath, fileName);
+});
+
+export const markOrderAsFailed = asyncHandler(async (req, res) => {
+  const order = await service.markOrderAsFailed(req.params.id);
+  successResponse(res, order, 'Order marked as failed');
+});
+
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await service.updateOrderStatus(
     req.params.id,

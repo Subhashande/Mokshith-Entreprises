@@ -10,7 +10,19 @@ export const updateShipment = (id, data) =>
   Logistics.findByIdAndUpdate(id, data, { new: true });
 
 export const findById = (id) =>
-  Logistics.findById(id).populate('orderId warehouseId');
+  Logistics.findById(id).populate('orderId warehouseId deliveryPartnerId');
 
 export const findAll = (filter = {}) =>
-  Logistics.find(filter).populate('orderId warehouseId');
+  Logistics.find(filter).populate('orderId warehouseId deliveryPartnerId');
+
+export const findAllActive = () =>
+  Logistics.find({ status: { $ne: 'DELIVERED' } }).populate('orderId warehouseId deliveryPartnerId');
+
+export const findAllDelivered = () =>
+  Logistics.find({ status: 'DELIVERED' }).populate('orderId warehouseId deliveryPartnerId');
+
+export const findByPartner = (partnerId, statuses) =>
+  Logistics.find({
+    deliveryPartnerId: partnerId,
+    status: { $in: statuses }
+  }).populate('orderId warehouseId deliveryPartnerId');

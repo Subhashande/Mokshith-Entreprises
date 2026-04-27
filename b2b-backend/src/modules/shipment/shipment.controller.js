@@ -19,3 +19,13 @@ export const updateShipmentStatus = asyncHandler(async (req, res) => {
 
   successResponse(res, data, 'Shipment updated');
 });
+
+export const getShipmentById = asyncHandler(async (req, res) => {
+  const data = await service.getShipmentById(req.params.id);
+  successResponse(res, data);
+});
+
+export const getShipmentByOrder = asyncHandler(async (req, res) => {
+  const data = await service.getShipmentByOrderId(req.params.orderId);
+  successResponse(res, data);
+});

@@ -18,14 +18,14 @@ export const paymentService = {
   },
 
   // 🔥 FIXED CORRECTLY (IMPORTANT)
-  async hybridPayment(orderId, useCredit) {
+  async hybridPayment(orderId, useCredit, totalAmount) {
     try {
       // 🔥 ADD DEBUG
-      console.log("Calling Hybrid API:", { orderId, useCredit });
+      console.log("Calling Hybrid API:", { orderId, useCredit, totalAmount });
 
       const response = await apiClient.post(
         "/payments/hybrid", // ✅ CORRECT ENDPOINT
-        { orderId, useCredit } // ✅ send both
+        { orderId, useCredit, totalAmount } // ✅ send all three
       );
 
       return response;

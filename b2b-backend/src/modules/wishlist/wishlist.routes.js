@@ -6,15 +6,9 @@ import { addToWishlistSchema } from './wishlist.validation.js';
 
 const router = express.Router();
 
-router.post(
-  '/',
-  protect,
-  validate(addToWishlistSchema),
-  controller.addToWishlist
-);
-
 router.get('/', protect, controller.getWishlist);
-
-router.delete('/:productId', protect, controller.removeFromWishlist);
+router.post('/add', protect, validate(addToWishlistSchema), controller.addToWishlist);
+router.delete('/remove/:productId', protect, controller.removeFromWishlist);
+router.delete('/clear', protect, controller.clearWishlist);
 
 export default router;

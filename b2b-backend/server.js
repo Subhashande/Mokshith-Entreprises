@@ -27,7 +27,9 @@ const startServer = async () => {
         methods: ["GET", "POST", "PATCH"],
         credentials: true
       },
-      transports: ['websocket']
+      transports: ['websocket', 'polling'], // Allow polling fallback for stability
+      pingTimeout: 60000,
+      pingInterval: 25000
     });
 
     // Verify IO initialization
@@ -41,6 +43,14 @@ const startServer = async () => {
 
     io.on('connection', (socket) => {
       logger.info(`🔌 New socket connection: ${socket.id}`);
+
+      // 🔥 Join personal room for targeted events
+      socket.on('join', (userId) => {
+        if (userId) {
+          socket.join(userId);
+          logger.info(`👤 User ${userId} joined room ${userId}`);
+        }
+      });
 
       socket.on('disconnect', () => {
         logger.info(`🔌 Socket disconnected: ${socket.id}`);

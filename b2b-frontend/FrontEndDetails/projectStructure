@@ -79,8 +79,70 @@ b2b-frontend/
 │
 │ │ ├── analytics/
 │ │ │ ├── components/
-│ │ │ │ ├── KPIWidget.jsx # NEW
-│ │ │ │ └── Filters.jsx # NEW
+│ │ │ │ ├── KPIWidget.jsx
+│ │ │ │ └── Filters.jsx
+│ │ │ ├── hooks/
+│ │ │ │ └── useAnalytics.js
+│ │ │ ├── pages/
+│ │ │ │ └── AnalyticsPage.jsx
+│ │ │ └── services/
+│ │ │   └── analyticsService.js
+│ │
+│ │ ├── company/
+│ │ │ ├── hooks/
+│ │ │ │ └── useCompany.js
+│ │ │ ├── pages/
+│ │ │ │ └── CompanyPage.jsx
+│ │ │ └── services/
+│ │ │   └── companyService.js
+│ │
+│ │ ├── inventory/
+│ │ │ ├── hooks/
+│ │ │ │ └── useInventory.js
+│ │ │ ├── pages/
+│ │ │ │ └── InventoryPage.jsx
+│ │ │ └── services/
+│ │ │   └── inventoryService.js
+│ │
+│ │ ├── logistics/
+│ │ │ ├── hooks/
+│ │ │ │ └── useLogistics.js
+│ │ │ ├── pages/
+│ │ │ │ └── LogisticsPage.jsx
+│ │ │ └── services/
+│ │ │   └── logisticsService.js
+│ │
+│ │ ├── shipment/
+│ │ │ ├── hooks/
+│ │ │ │ └── useShipment.js
+│ │ │ ├── pages/
+│ │ │ │ └── ShipmentTrackingPage.jsx
+│ │ │ └── services/
+│ │ │   └── shipmentService.js
+│ │
+│ │ ├── warehouse/
+│ │ │ ├── hooks/
+│ │ │ │ └── useWarehouse.js
+│ │ │ ├── pages/
+│ │ │ │ └── WarehousePage.jsx
+│ │ │ └── services/
+│ │ │   └── warehouseService.js
+│ │
+│ │ ├── promotion/
+│ │ │ ├── hooks/
+│ │ │ │ └── usePromotion.js
+│ │ │ ├── pages/
+│ │ │ │ └── PromotionPage.jsx
+│ │ │ └── services/
+│ │ │   └── promotionService.js
+│ │
+│ │ ├── wishlist/
+│ │ │ ├── hooks/
+│ │ │ │ └── useWishlist.js
+│ │ │ ├── pages/
+│ │ │ │ └── WishlistPage.jsx
+│ │ │ └── services/
+│ │ │   └── wishlistService.js
 │
 │ │ ├── notification/
 │ │ │ ├── components/

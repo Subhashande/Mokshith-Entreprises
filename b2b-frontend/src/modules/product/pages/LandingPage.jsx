@@ -82,16 +82,32 @@ const LandingPage = () => {
   ];
 
   const handleDashboard = () => {
-    if (!user) {
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+
+    if (!token || !savedUser) {
       navigate(routes.LOGIN);
-    } else {
-      const rolePath = user.role.toLowerCase().replace('_', '-');
-      // Special case for customers who go to /home or /dashboard
-      if (user.role === 'B2B_CUSTOMER' || user.role === 'B2C_CUSTOMER') {
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      const role = parsedUser.role;
+
+      if (role === 'B2B_CUSTOMER' || role === 'B2C_CUSTOMER') {
         navigate(routes.DASHBOARD);
+      } else if (role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (role === 'SUPER_ADMIN') {
+        navigate('/super-admin/dashboard');
+      } else if (role === 'DELIVERY_PARTNER') {
+        navigate('/delivery/dashboard');
       } else {
-        navigate(`/${rolePath}/dashboard`);
+        navigate(routes.PRODUCTS);
       }
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      navigate(routes.LOGIN);
     }
   };
 

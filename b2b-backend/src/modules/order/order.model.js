@@ -72,6 +72,13 @@ const orderSchema = new mongoose.Schema(
       default: ORDER_STATUS.PENDING,
       required: true,
     },
+
+    idempotencyKey: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );

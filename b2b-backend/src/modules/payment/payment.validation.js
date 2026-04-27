@@ -27,6 +27,7 @@ export const verifyPaymentStrictSchema = Joi.object({
 export const hybridPaymentSchema = Joi.object({
   body: Joi.object({
     orderId: objectId.required(),
+    totalAmount: Joi.number().required(),
     useCredit: Joi.boolean().optional(),
   }),
 });

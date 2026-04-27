@@ -24,3 +24,8 @@ export const removeFromWishlist = asyncHandler(async (req, res) => {
 
   successResponse(res, data, 'Removed from wishlist');
 });
+
+export const clearWishlist = asyncHandler(async (req, res) => {
+  await service.clearWishlist(req.user.id);
+  successResponse(res, null, 'Wishlist cleared');
+});

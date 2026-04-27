@@ -6,10 +6,13 @@ export const findProducts = (filter, options) => {
   const { skip, limit } = options;
 
   return Product.find(filter)
+    .select('name price stock description categoryId images unit minOrderQty moq gst') // 🔥 Field Optimization
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 })
-    .populate('categoryId vendorId companyId');
+    .populate('categoryId', 'name') // 🔥 Populating only necessary fields
+    .populate('vendorId', 'name')
+    .populate('companyId', 'name');
 };
 
 export const findById = (id) =>

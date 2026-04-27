@@ -20,6 +20,10 @@ router.post(
 
 router.get('/', protect, controller.getAllCompanies);
 
+router.get('/me', protect, controller.getMyCompany);
+
+router.put('/update', protect, authorize('ADMIN', 'VENDOR'), controller.updateMyCompany);
+
 router.get('/:id', protect, controller.getCompany);
 
 router.put(

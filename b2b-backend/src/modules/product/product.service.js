@@ -2,6 +2,13 @@ import * as repo from './product.repository.js';
 import AppError from '../../errors/AppError.js';
 import { buildProductFilter } from './product.utils.js';
 
+// 🔥 Simple In-Memory Cache
+const productCache = {
+  data: null,
+  lastFetched: null,
+  ttl: 300000 // 5 minutes
+};
+
 // 🔥 EVENTS
 import { onProductCreated } from './product.events.js';
 
@@ -11,6 +18,9 @@ export const createProduct = async (data) => {
   }
 
   const product = await repo.createProduct(data);
+  
+  // 🔥 Invalidate Cache
+  productCache.data = null;
 
   // 🔥 EVENT (non-blocking)
   try {
@@ -25,14 +35,27 @@ export const createProduct = async (data) => {
 export const getProducts = async (query) => {
   const { page = 1, limit = 10, categoryId, search } = query;
 
+  // 🔥 Caching for default product list
+  const isDefaultQuery = page === 1 && limit === 10 && !categoryId && !search;
+  if (isDefaultQuery && productCache.data && (Date.now() - productCache.lastFetched < productCache.ttl)) {
+    return productCache.data;
+  }
+
   const skip = (page - 1) * limit;
 
   const filter = buildProductFilter({ categoryId, search });
 
-  return repo.findProducts(filter, {
+  const result = await repo.findProducts(filter, {
     skip,
     limit: Number(limit),
   });
+
+  if (isDefaultQuery) {
+    productCache.data = result;
+    productCache.lastFetched = Date.now();
+  }
+
+  return result;
 };
 
 export const getProductById = async (id) => {

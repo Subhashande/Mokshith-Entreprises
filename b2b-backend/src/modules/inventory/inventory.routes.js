@@ -16,5 +16,14 @@ router.post(
 );
 
 router.get('/', protect, controller.getInventory);
+router.get('/low-stock', protect, authorize('ADMIN'), controller.getLowStockItems);
+router.get('/stats', protect, authorize('ADMIN'), controller.getInventoryStats);
+
+router.patch(
+  '/update',
+  protect,
+  authorize('ADMIN', 'VENDOR'),
+  controller.updateStock
+);
 
 export default router;

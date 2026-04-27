@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { logger } from './logger.js';
 
 let isConnected = false;
+let isReplicaSet = false;
 
 const connectDB = async () => {
   if (isConnected) {
@@ -16,9 +17,24 @@ const connectDB = async () => {
     });
 
     isConnected = true;
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+    // Check if connected to a replica set
+    try {
+      const status = await mongoose.connection.db.admin().serverStatus();
+      isReplicaSet = !!status.repl;
+    } catch (err) {
+      logger.warn('Could not detect replica set status, defaulting to standalone mode');
+      isReplicaSet = false;
+    }
+
+    if (isReplicaSet) {
+      logger.info('🔄 MongoDB Transaction support enabled (Replica Set detected)');
+    } else {
+      logger.warn('⚠️ MongoDB Transactions disabled (Standalone mode detected)');
+    }
   } catch (error) {
-    logger.error('MongoDB connection failed', error);
+    logger.error('❌ MongoDB connection failed', error);
     process.exit(1);
   }
 };
@@ -35,5 +51,7 @@ mongoose.connection.on("disconnected", () => {
 mongoose.connection.on("error", (err) => {
   logger.error(`MongoDB connection error: ${err}`);
 });
+
+export const getTransactionSupport = () => isReplicaSet;
 
 export default connectDB;

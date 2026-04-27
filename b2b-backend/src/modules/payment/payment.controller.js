@@ -5,33 +5,22 @@ import { successResponse } from '../../utils/responseHandler.js';
 export const createRazorpayOrder = asyncHandler(async (req, res) => {
   const { amount } = req.body;
 
-  // 🔥 ADD: debug log
-  console.log('Create Razorpay Order:', { amount, user: req.user?.id });
-
   const data = await service.createRazorpayOrder(amount, req.user.id);
   successResponse(res, data, 'Razorpay order created');
 });
 
 export const hybridPayment = asyncHandler(async (req, res) => {
-  const { orderId, useCredit } = req.body;
+  const { orderId, useCredit, totalAmount } = req.body;
 
-  // 🔥 ADD: fallback support (VERY IMPORTANT)
+  // Fallback support for both body and params
   const finalOrderId = orderId || req.params.orderId;
 
-  // 🔥 ADD: debug log
-  console.log('Hybrid Controller Input:', {
-    bodyOrderId: orderId,
-    paramsOrderId: req.params.orderId,
-    finalOrderId,
-    useCredit,
-  });
-
-  // 🔥 ADD: validation
+  // Validation
   if (!finalOrderId) {
     throw new Error('orderId is required for hybrid payment');
   }
 
-  const data = await service.hybridPayment(finalOrderId, req.user.id, useCredit);
+  const data = await service.hybridPayment(finalOrderId, req.user.id, useCredit, totalAmount);
 
   successResponse(res, data, 'Hybrid payment processed');
 });
@@ -46,10 +35,21 @@ export const initiatePayment = asyncHandler(async (req, res) => {
 });
 
 export const verifyPayment = asyncHandler(async (req, res) => {
-  // 🔥 ADD: debug log
-  console.log('Verify Payment Payload:', req.body);
-
   const payment = await service.verifyPayment(req.body);
 
   successResponse(res, payment, 'Payment successful');
+});
+
+export const failPayment = asyncHandler(async (req, res) => {
+  const { orderId, reason } = req.body;
+  const result = await service.failPayment(orderId, reason);
+  successResponse(res, result, 'Payment failure recorded');
+});
+
+export const razorpayWebhook = asyncHandler(async (req, res) => {
+  const signature = req.headers['x-razorpay-signature'];
+  const rawBody = req.rawBody || JSON.stringify(req.body); // Fallback if rawBody missing
+  
+  const result = await service.handleWebhook(rawBody, signature);
+  successResponse(res, result, 'Webhook processed');
 });

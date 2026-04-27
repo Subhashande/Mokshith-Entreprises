@@ -15,3 +15,29 @@ export const findAll = () =>
 // 🔥 NEW (IMPORTANT)
 export const findByProduct = (productId) =>
   Inventory.find({ productId });
+
+export const findLowStock = (threshold = 10) =>
+  Inventory.find({ stock: { $lte: threshold } }).populate('productId warehouseId');
+
+export const getStats = async () => {
+  const stats = await Inventory.aggregate([
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'productId',
+        foreignField: '_id',
+        as: 'product'
+      }
+    },
+    { $unwind: '$product' },
+    {
+      $group: {
+        _id: null,
+        totalStock: { $sum: "$stock" },
+        uniqueProducts: { $addToSet: "$productId" },
+        totalValue: { $sum: { $multiply: ["$stock", "$product.price"] } }
+      }
+    }
+  ]);
+  return stats[0] || { totalStock: 0, uniqueProducts: [], totalValue: 0 };
+};

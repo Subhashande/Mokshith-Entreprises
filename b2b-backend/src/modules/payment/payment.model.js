@@ -21,13 +21,13 @@ const paymentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['INITIATED', 'SUCCESS', 'FAILED'],
+      enum: ['INITIATED', 'PENDING', 'SUCCESS', 'FAILED'],
       default: 'INITIATED',
     },
 
     paymentMethod: {
       type: String,
-      enum: ['ONLINE', 'COD', 'CREDIT'],
+      enum: ['ONLINE', 'COD', 'CREDIT', 'HYBRID'],
       default: 'ONLINE',
     },
 
@@ -35,6 +35,17 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       index: true,
     },
+
+    razorpayPaymentId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    
+    metadata: {
+      type: Object,
+      default: {}
+    }
   },
   { timestamps: true }
 );

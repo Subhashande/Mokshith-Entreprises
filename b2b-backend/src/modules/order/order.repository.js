@@ -1,6 +1,9 @@
 import Order from './order.model.js';
 
-export const createOrder = (data) => Order.create(data);
+export const createOrder = async (data, options = {}) => {
+  const [order] = await Order.create([data], options);
+  return order;
+};
 
 export const findOrders = (filter) =>
   Order.find(filter).populate('userId', 'name email phone').sort({ createdAt: -1 });

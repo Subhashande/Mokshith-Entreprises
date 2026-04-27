@@ -1,8 +1,13 @@
 import * as repo from './wishlist.repository.js';
 import Product from '../product/product.model.js';
 import AppError from '../../errors/AppError.js';
+import mongoose from 'mongoose';
 
 export const addToWishlist = async (userId, productId) => {
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new AppError('Invalid product ID', 400);
+  }
+  
   let wishlist = await repo.findByUser(userId);
 
   const product = await Product.findById(productId);
@@ -20,16 +25,21 @@ export const addToWishlist = async (userId, productId) => {
   );
 
   if (exists) {
-    throw new AppError('Product already in wishlist', 400);
+    return wishlist;
   }
 
   wishlist.items.push({ productId });
 
-  return wishlist.save();
+  await wishlist.save();
+  return repo.findByUser(userId);
 };
 
 export const getWishlist = async (userId) => {
-  return repo.findByUser(userId);
+  const wishlist = await repo.findByUser(userId);
+  if (!wishlist) {
+    return { items: [] };
+  }
+  return wishlist;
 };
 
 export const removeFromWishlist = async (userId, productId) => {
@@ -41,5 +51,15 @@ export const removeFromWishlist = async (userId, productId) => {
     (item) => item.productId._id.toString() !== productId
   );
 
-  return wishlist.save();
+  await wishlist.save();
+  return repo.findByUser(userId);
+};
+
+export const clearWishlist = async (userId) => {
+  const wishlist = await repo.findByUser(userId);
+  if (!wishlist) throw new AppError('Wishlist not found', 404);
+  
+  wishlist.items = [];
+  await wishlist.save();
+  return repo.findByUser(userId);
 };

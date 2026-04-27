@@ -7,10 +7,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes/routeConfig";
 import { PAYMENT_METHODS } from "../../../utils/constants";
+import { 
+  CreditCard, 
+  Truck, 
+  MapPin, 
+  Package, 
+  ShieldCheck, 
+  ArrowRight,
+  Info,
+  ChevronRight,
+  Wallet
+} from "lucide-react";
 
 const Checkout = () => {
-  const { cart, placeOrder, clearCart } = useOrder();
-  const { user, updateUserInfo } = useAuth();
+  const { cart, placeOrder } = useOrder();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.COD);
@@ -23,7 +34,7 @@ const Checkout = () => {
     pincode: ""
   });
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0);
   const tax = subtotal * 0.18; // 18% GST
   const total = subtotal + tax;
 
@@ -46,7 +57,6 @@ const Checkout = () => {
       return false;
     }
 
-    // 🔥 Wholesale MOQ validation
     const moqViolations = cart.filter(item => {
       const minQty = item.minOrderQty || item.moq || 1;
       return item.quantity < minQty;
@@ -88,14 +98,7 @@ const Checkout = () => {
       const response = await placeOrder(payload);
       const newOrder = response.data || response;
       
-      alert("🎉 Order created! Proceeding to payment.");
-      clearCart();
-      
-      if (paymentMethod === PAYMENT_METHODS.COD) {
-        navigate(routes.ORDERS);
-      } else {
-        navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
-      }
+      navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
     } catch (err) {
       console.error("Checkout Error:", err);
       alert(err.message || "Failed to place order. Please check your connection and try again.");
@@ -106,146 +109,224 @@ const Checkout = () => {
 
   if (cart.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <h2 style={{ marginBottom: '1rem' }}>Your cart is empty</h2>
-        <Button onClick={() => navigate(routes.PRODUCTS)}>Back to Catalog</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-300 shadow-inner">
+          <Package size={48} />
+        </div>
+        <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Your cart is empty</h2>
+        <p className="text-gray-500 font-bold mb-8">Add some products to get started!</p>
+        <Button 
+          onClick={() => navigate(routes.PRODUCTS)}
+          className="h-14 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-100 transition-all transform hover:-translate-y-1"
+        >
+          Back to Catalog
+        </Button>
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: 'var(--background)', minHeight: '100vh', padding: '2rem' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '2rem' }}>Complete Your Order</h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+    <div className="bg-gray-50/50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <Card style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Business Shipping Details</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <Input label="Full Name / Business Name" name="name" value={address.name} onChange={handleAddressChange} required />
-                <Input label="Phone" name="phone" placeholder="+91 XXXXX XXXXX" value={address.phone} onChange={handleAddressChange} required />
+            <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
+              Finalize <span className="text-blue-600">Checkout</span>
+            </h1>
+            <p className="text-gray-500 font-bold mt-3 flex items-center gap-2 text-lg">
+              <ShieldCheck size={22} className="text-emerald-500" />
+              Secure Business Transaction
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm font-black text-gray-400 uppercase tracking-widest bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-50">
+            <span>Cart</span>
+            <ChevronRight size={16} />
+            <span className="text-blue-600">Checkout</span>
+            <ChevronRight size={16} />
+            <span>Payment</span>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2 space-y-8">
+            <Card className="p-10 rounded-[3rem] border-none shadow-sm bg-white border border-gray-50">
+              <div className="flex items-center gap-4 mb-10">
+                <div className="p-4 bg-blue-50 rounded-2xl text-blue-600 shadow-inner">
+                  <MapPin size={24} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 tracking-tight">Shipping Details</h3>
+                  <p className="text-sm font-bold text-gray-400">Where should we deliver your order?</p>
+                </div>
               </div>
-              <Input label="Address Line" name="addressLine" value={address.addressLine} onChange={handleAddressChange} required />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                <Input label="City" name="city" value={address.city} onChange={handleAddressChange} required />
-                <Input label="State" name="state" value={address.state} onChange={handleAddressChange} required />
-                <Input label="Pincode" name="pincode" value={address.pincode} onChange={handleAddressChange} required />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <Input 
+                  label="Business / Contact Name" 
+                  name="name" 
+                  value={address.name} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
+                <Input 
+                  label="Contact Phone" 
+                  name="phone" 
+                  placeholder="+91 XXXXX XXXXX" 
+                  value={address.phone} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
+              </div>
+              
+              <div className="mb-8">
+                <Input 
+                  label="Detailed Address Line" 
+                  name="addressLine" 
+                  value={address.addressLine} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Input 
+                  label="City" 
+                  name="city" 
+                  value={address.city} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
+                <Input 
+                  label="State" 
+                  name="state" 
+                  value={address.state} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
+                <Input 
+                  label="Pincode" 
+                  name="pincode" 
+                  value={address.pincode} 
+                  onChange={handleAddressChange} 
+                  required 
+                  className="rounded-2xl border-gray-100 focus:border-blue-500"
+                />
               </div>
             </Card>
 
-            <Card>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Order Items</h3>
-              {cart.map((item, index) => (
-                <div key={item._id || item.id || index} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
-                  <div>
-                    <p style={{ fontWeight: '600' }}>{item.name}</p>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Quantity: {item.quantity}</p>
-                  </div>
-                  <p style={{ fontWeight: '700' }}>₹{(item.price * item.quantity).toLocaleString()}</p>
+            <Card className="p-10 rounded-[3rem] border-none shadow-sm bg-white border border-gray-50">
+              <div className="flex items-center gap-4 mb-10">
+                <div className="p-4 bg-emerald-50 rounded-2xl text-emerald-600 shadow-inner">
+                  <Package size={24} />
                 </div>
-              ))}
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 tracking-tight">Order Items</h3>
+                  <p className="text-sm font-bold text-gray-400">Review your wholesale selection</p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-gray-50">
+                {cart.map((item, index) => (
+                  <div key={item._id || item.id || index} className="flex items-center justify-between py-6 group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 border border-gray-100 overflow-hidden">
+                        <img 
+                          src={item.image || "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=100&q=80"} 
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-black text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">{item.name}</p>
+                        <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Qty: {item.quantity} units</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">₹{item.price}/unit</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
 
-          <div>
-            <Card style={{ position: 'sticky', top: '2rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>Order Summary</h3>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
-                <span>₹{subtotal.toLocaleString()}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>GST (18%)</span>
-                <span>₹{tax.toLocaleString()}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid var(--border)', paddingTop: '1rem', marginBottom: '2rem' }}>
-                <span style={{ fontWeight: '700', fontSize: '1.125rem' }}>Total Amount</span>
-                <span style={{ fontWeight: '800', fontSize: '1.25rem', color: 'var(--primary)' }}>₹{total.toLocaleString()}</span>
+          <div className="space-y-8">
+            <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white border border-gray-50 sticky top-8">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight mb-8">Order Summary</h3>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Subtotal</span>
+                  <span className="text-lg font-black text-gray-900">₹{subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Tax (18% GST)</span>
+                  <span className="text-lg font-black text-gray-900">₹{tax.toLocaleString()}</span>
+                </div>
+                <div className="pt-6 border-t-2 border-dashed border-gray-100 flex justify-between items-center">
+                  <span className="text-base font-black text-gray-900 uppercase tracking-widest">Total Amount</span>
+                  <span className="text-3xl font-black text-blue-600 tracking-tighter">₹{total.toLocaleString()}</span>
+                </div>
               </div>
               
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <p style={{ fontSize: '0.875rem', fontWeight: '600' }}>Payment Method</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '700' }}>
-                    Credit: ₹{user?.availableCredit?.toLocaleString() || '0'}
-                  </p>
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Payment Method</p>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 rounded-lg">
+                    <Wallet size={12} className="text-blue-600" />
+                    <span className="text-[10px] font-black text-blue-700">₹{user?.availableCredit?.toLocaleString() || '0'} Credit</span>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <label 
-                    style={{ 
-                      flex: 1, 
-                      border: paymentMethod === PAYMENT_METHODS.COD ? '1px solid var(--primary)' : '1px solid var(--border)', 
-                      padding: '0.75rem', 
-                      borderRadius: 'var(--radius-md)', 
-                      textAlign: 'center', 
-                      cursor: 'pointer', 
-                      backgroundColor: paymentMethod === PAYMENT_METHODS.COD ? 'var(--primary-light)' : 'transparent' 
-                    }}
-                    onClick={() => setPaymentMethod(PAYMENT_METHODS.COD)}
-                  >
-                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.COD} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>COD</span>
-                  </label>
-                  <label 
-                    style={{ 
-                      flex: 1, 
-                      border: paymentMethod === PAYMENT_METHODS.CREDIT ? '1px solid var(--primary)' : '1px solid var(--border)', 
-                      padding: '0.75rem', 
-                      borderRadius: 'var(--radius-md)', 
-                      textAlign: 'center', 
-                      cursor: 'pointer',
-                      backgroundColor: paymentMethod === PAYMENT_METHODS.CREDIT ? 'var(--primary-light)' : 'transparent',
-                      opacity: user?.availableCredit < total ? 0.5 : 1
-                    }}
-                    onClick={() => {
-                      if (user?.availableCredit < total) return alert("Insufficient credit balance");
-                      setPaymentMethod(PAYMENT_METHODS.CREDIT);
-                    }}
-                  >
-                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.CREDIT} onChange={() => {}} style={{ marginRight: '0.5rem' }} disabled={user?.availableCredit < total} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Credit</span>
-                  </label>
-                  <label 
-                    style={{ 
-                      flex: 1, 
-                      border: paymentMethod === PAYMENT_METHODS.RAZORPAY ? '1px solid var(--primary)' : '1px solid var(--border)', 
-                      padding: '0.75rem', 
-                      borderRadius: 'var(--radius-md)', 
-                      textAlign: 'center', 
-                      cursor: 'pointer', 
-                      backgroundColor: paymentMethod === PAYMENT_METHODS.RAZORPAY ? 'var(--primary-light)' : 'transparent' 
-                    }}
-                    onClick={() => setPaymentMethod(PAYMENT_METHODS.RAZORPAY)}
-                  >
-                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.RAZORPAY} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Razorpay</span>
-                  </label>
-                  <label 
-                    style={{ 
-                      flex: 1, 
-                      border: paymentMethod === PAYMENT_METHODS.ONLINE ? '1px solid var(--primary)' : '1px solid var(--border)', 
-                      padding: '0.75rem', 
-                      borderRadius: 'var(--radius-md)', 
-                      textAlign: 'center', 
-                      cursor: 'pointer', 
-                      backgroundColor: paymentMethod === PAYMENT_METHODS.ONLINE ? 'var(--primary-light)' : 'transparent' 
-                    }}
-                    onClick={() => setPaymentMethod(PAYMENT_METHODS.ONLINE)}
-                  >
-                    <input type="radio" name="payment" checked={paymentMethod === PAYMENT_METHODS.ONLINE} onChange={() => {}} style={{ marginRight: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Online</span>
-                  </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: PAYMENT_METHODS.COD, label: 'COD', icon: Truck },
+                    { id: PAYMENT_METHODS.CREDIT, label: 'Credit', icon: Wallet, disabled: (user?.availableCredit || 0) < total },
+                    { id: PAYMENT_METHODS.RAZORPAY, label: 'Razorpay', icon: CreditCard },
+                    { id: PAYMENT_METHODS.ONLINE, label: 'Online', icon: ShieldCheck },
+                  ].map((method) => (
+                    <button
+                      key={method.id}
+                      disabled={method.disabled}
+                      onClick={() => setPaymentMethod(method.id)}
+                      className={`
+                        flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2
+                        ${paymentMethod === method.id 
+                          ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-lg shadow-blue-100/50' 
+                          : 'border-gray-50 bg-gray-50/30 text-gray-400 hover:border-gray-200 hover:bg-gray-50'
+                        }
+                        ${method.disabled ? 'opacity-40 cursor-not-allowed grayscale' : 'cursor-pointer'}
+                      `}
+                    >
+                      <method.icon size={20} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <Button 
                 onClick={handlePlaceOrder} 
-                style={{ width: '100%' }}
+                className="w-full h-16 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-2xl shadow-blue-200 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3"
+                loading={loading}
                 disabled={loading}
               >
-                {loading ? 'Processing...' : 'Place Order'}
+                Place Secure Order
+                <ArrowRight size={20} />
               </Button>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-2xl flex items-start gap-3">
+                <Info size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                <p className="text-[10px] font-bold text-gray-500 leading-relaxed uppercase tracking-wider">
+                  By placing this order, you agree to our wholesale terms of service and business purchase policy.
+                </p>
+              </div>
             </Card>
           </div>
         </div>

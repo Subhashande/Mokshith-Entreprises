@@ -15,7 +15,7 @@ export const createShipment = asyncHandler(async (req, res) => {
 
 export const getShipments = asyncHandler(async (req, res) => {
   const shipments = await service.getShipments(req.user);
-  successResponse(res, shipments);
+  successResponse(res, shipments || []);
 });
 
 export const getMyAssignments = asyncHandler(async (req, res) => {
@@ -37,19 +37,40 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
   successResponse(res, shipment, 'Status updated');
 });
 
+export const getDeliveryQueue = asyncHandler(async (req, res) => {
+  const shipments = await service.getDeliveryQueue(req.user);
+  successResponse(res, shipments || []);
+});
+
+export const getDeliveryHistory = asyncHandler(async (req, res) => {
+  const history = await service.getDeliveryHistory(req.user);
+  successResponse(res, history || []);
+});
+
+export const acceptDelivery = asyncHandler(async (req, res) => {
+  const shipment = await service.updateStatus(req.params.id, 'ACCEPTED', req.user._id);
+  successResponse(res, shipment, 'Delivery accepted');
+});
+
+export const startDelivery = asyncHandler(async (req, res) => {
+  const shipment = await service.updateStatus(req.params.id, 'OUT_FOR_DELIVERY', req.user._id);
+  successResponse(res, shipment, 'Delivery started');
+});
+
+export const markAsDelivered = asyncHandler(async (req, res) => {
+  const shipment = await service.updateStatus(req.params.id, 'DELIVERED', req.user._id);
+  successResponse(res, shipment, 'Order delivered successfully');
+});
+
 export const updateLocation = asyncHandler(async (req, res) => {
   const { lat, lng } = req.body;
   const shipment = await service.updateLocation(req.params.id, { lat, lng });
 
   // Emit real-time location update
-  if (global.io) {
-    global.io.emit('delivery:locationUpdated', {
-      id: req.params.id,
-      location: { lat, lng }
-    });
-  } else if (req.app.get('io')) {
-    req.app.get('io').emit('delivery:locationUpdated', {
-      id: req.params.id,
+  const io = global.io || req.app.get('io');
+  if (io) {
+    io.emit('locationUpdate', {
+      deliveryId: req.params.id,
       location: { lat, lng }
     });
   }

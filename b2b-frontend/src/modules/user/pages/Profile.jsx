@@ -4,19 +4,38 @@ import { userService } from '../userService';
 import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
-import { User, Mail, Phone, Building2, MapPin, Edit2, X } from 'lucide-react';
+import { User, Mail, Phone, Building2, MapPin, Edit2, X, Camera, Loader2 } from 'lucide-react';
 
 const Profile = () => {
   const { user, updateUserInfo } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    phone: user?.phone || user?.mobile || '',
     companyName: user?.companyName || '',
     address: user?.address || '',
   });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploading(true);
+    try {
+      const response = await userService.updateProfileImage(formData);
+      updateUserInfo(response);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -42,9 +61,8 @@ const Profile = () => {
       const updatedUser = await userService.updateProfile(formData);
       updateUserInfo(updatedUser);
       setIsEditing(false);
-      alert('Profile updated successfully!');
     } catch (err) {
-      alert(err.message || 'Failed to update profile');
+      console.error('Update failed:', err);
     } finally {
       setLoading(false);
     }
@@ -103,10 +121,21 @@ const Profile = () => {
         <div className="md:col-span-1 space-y-6">
           <Card className="text-center p-8">
             <div className="relative inline-block mb-4">
-              <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-2xl border-4 border-white">
-                {user?.name?.[0]?.toUpperCase() || 'U'}
+              <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-2xl border-4 border-white overflow-hidden">
+                {user?.profileImage ? (
+                  <img 
+                    src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.profileImage}`} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.name?.[0]?.toUpperCase() || 'U'
+                )}
               </div>
-              <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full shadow-md"></div>
+              <label className="absolute bottom-1 right-1 w-10 h-10 bg-blue-600 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white cursor-pointer hover:bg-blue-700 transition-all">
+                {uploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+              </label>
             </div>
             <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
             <p className="text-sm text-gray-500 mb-4">{user?.role?.replace('_', ' ')}</p>

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { deliveryService } from "../services/deliveryService";
-import { socket } from "../../../services/socket";
+import { useSocket } from "../../../context/SocketContext";
 
 export const useDelivery = () => {
+  const { socket, isConnected } = useSocket();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,35 +33,30 @@ export const useDelivery = () => {
   useEffect(() => {
     fetchDeliveries();
 
-    socket.on('connect', () => {
-      console.log('🔌 Socket connected:', socket.id);
-    });
+    if (!socket) return;
 
-    socket.on('connect_error', (err) => {
-      console.error('🔌 Socket connection error:', err);
-    });
-
-    socket.on('delivery:statusUpdated', (updatedShipment) => {
+    const onStatusUpdated = (updatedShipment) => {
       setDeliveries((prev) => {
         if (!Array.isArray(prev)) return [updatedShipment];
         return prev.map((d) => d._id === updatedShipment._id ? updatedShipment : d);
       });
-    });
+    };
 
-    socket.on('delivery:locationUpdated', ({ id, location }) => {
+    const onLocationUpdated = ({ id, location }) => {
       setDeliveries((prev) => {
         if (!Array.isArray(prev)) return prev;
         return prev.map((d) => d._id === id ? { ...d, currentLocation: location } : d);
       });
-    });
+    };
+
+    socket.on('delivery:statusUpdated', onStatusUpdated);
+    socket.on('delivery:locationUpdated', onLocationUpdated);
 
     return () => {
-      socket.off('connect');
-      socket.off('connect_error');
-      socket.off('delivery:statusUpdated');
-      socket.off('delivery:locationUpdated');
+      socket.off('delivery:statusUpdated', onStatusUpdated);
+      socket.off('delivery:locationUpdated', onLocationUpdated);
     };
-  }, [fetchDeliveries]);
+  }, [fetchDeliveries, socket]);
 
   return { deliveries, loading, error, updateDeliveryStatus, fetchDeliveries };
 };

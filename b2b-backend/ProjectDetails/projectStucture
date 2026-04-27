@@ -155,10 +155,8 @@ b2b-backend/
 │   │   └── query.validation.js
 │
 │   ├── modules/
-│
 │   │   ├── admin/
 │   │   ├── analytics/
-│   │   ├── audit/
 │   │   ├── auth/
 │   │   ├── cart/
 │   │   ├── category/
@@ -178,6 +176,7 @@ b2b-backend/
 │   │   ├── settings/
 │   │   ├── shipment/
 │   │   ├── superAdmin/
+│   │   ├── support/
 │   │   ├── user/
 │   │   ├── vendor/
 │   │   ├── warehouse/
