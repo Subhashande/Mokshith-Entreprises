@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const companySchema = new mongoose.Schema(
   {
@@ -45,7 +45,7 @@ const companySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Prevent duplicate company email
+//  Prevent duplicate company email
 companySchema.index({ email: 1 }, { unique: true });
 
 export default mongoose.model('Company', companySchema);

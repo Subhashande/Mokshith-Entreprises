@@ -1,4 +1,4 @@
-import * as cartRepo from '../cart/cart.repository.js';
+﻿import * as cartRepo from '../cart/cart.repository.js';
 import * as orderRepo from './order.repository.js';
 import * as creditRepo from '../credit/credit.repository.js';
 import Product from '../product/product.model.js';
@@ -35,16 +35,16 @@ const __dirname = path.dirname(__filename);
 export const createOrder = async (userId, data) => {
   const { paymentMethod = 'COD', shippingAddress, items: requestItems, idempotencyKey } = data;
 
-  // 🔥 0. Idempotency Check
+  //  0. Idempotency Check
   if (idempotencyKey) {
     const existingOrder = await Order.findOne({ idempotencyKey });
     if (existingOrder) return existingOrder;
   }
 
-  // 🔥 0. Validation
+  //  0. Validation
   if (!shippingAddress) throw new AppError('Shipping address is required', 400);
   
-  // 🔥 Check Maintenance Mode
+  //  Check Maintenance Mode
   const maintenance = await fetchSetting('maintenanceMode');
   const maintenanceOld = await fetchSetting('MAINTENANCE_MODE');
   if (maintenance?.value === true || maintenanceOld?.value === true) {
@@ -54,6 +54,8 @@ export const createOrder = async (userId, data) => {
   let finalItems = [];
   if (requestItems && requestItems.length > 0) {
     finalItems = requestItems;
+  } else if (requestItems && requestItems.length === 0) {
+    throw new AppError('Items array cannot be empty', 400);
   } else {
     const cart = await cartRepo.findCartByUser(userId);
     if (!cart || cart.items.length === 0) throw new AppError('Cart is empty', 400);
@@ -65,12 +67,19 @@ export const createOrder = async (userId, data) => {
   let totalQuantity = 0;
   const items = [];
 
-  // 🔥 1. Validate + Prepare Items + Check Stock (Pre-check)
+  // � PERFORMANCE: Fetch all products at once to avoid N+1 queries
+  const productIds = finalItems.map(item => item.productId || item.id || item.productId?._id);
+  const products = await Product.find({ _id: { $in: productIds } });
+  const productMap = new Map(products.map(p => [p._id.toString(), p]));
+
+  //  1. Validate + Prepare Items + Check Stock (Pre-check)
   for (const item of finalItems) {
-    const product = await Product.findById(item.productId || item.id || item.productId?._id);
+    const productId = (item.productId || item.id || item.productId?._id).toString();
+    const product = productMap.get(productId);
+    
     if (!product) throw new AppError(`Product not found`, 404);
 
-    // 🔥 Wholesale MOQ validation
+    //  Wholesale MOQ validation
     const minQty = product.minOrderQty || product.moq || 1;
     if (item.quantity < minQty) {
       throw new AppError(`Minimum order quantity for ${product.name} is ${minQty}`, 400);
@@ -92,7 +101,7 @@ export const createOrder = async (userId, data) => {
     });
   }
 
-  // 🔥 B2B Rule: No single-item purchase
+  //  B2B Rule: No single-item purchase
   if (totalQuantity <= 1) {
     throw new AppError('B2B Rule: Minimum total quantity must be greater than 1. No single-item purchases allowed.', 400);
   }
@@ -101,7 +110,7 @@ export const createOrder = async (userId, data) => {
   const tax = totalAmount * 0.18;
   const finalTotal = totalAmount + tax;
 
-  // 🔥 3. Prepare Order Data
+  //  3. Prepare Order Data
   const orderData = {
     userId,
     items,
@@ -116,7 +125,7 @@ export const createOrder = async (userId, data) => {
     idempotencyKey
   };
 
-  // 🔥 4. Status Mapping based on Payment Method (Strict Flow)
+  //  4. Status Mapping based on Payment Method (Strict Flow)
   if (paymentMethod.toUpperCase() === 'COD') {
     orderData.status = ORDER_STATUS.CONFIRMED;
   } else {
@@ -124,7 +133,7 @@ export const createOrder = async (userId, data) => {
     orderData.status = ORDER_STATUS.PENDING_PAYMENT;
   }
 
-  // 🔥 5. Atomic Order Creation + Stock Deduction using Transactions if supported
+  //  5. Atomic Order Creation + Stock Deduction using Transactions if supported
   const supportsTransactions = getTransactionSupport();
   let session = null;
   let order;
@@ -161,7 +170,7 @@ export const createOrder = async (userId, data) => {
     throw new AppError(err.message || 'Order placement failed', err.statusCode || 500);
   }
 
-  // 🔥 6. Post-Order Processing
+  //  6. Post-Order Processing
   try {
     // Clear Cart ONLY for COD immediately, others after payment
     if (paymentMethod.toUpperCase() === 'COD') {
@@ -192,7 +201,7 @@ export const createOrder = async (userId, data) => {
         await order.save();
       }
 
-      // 🔥 Auto-assign Delivery Partner ONLY for COD immediately, others after payment
+      //  Auto-assign Delivery Partner ONLY for COD immediately, others after payment
       await assignDelivery(order);
     } else {
       // For non-COD, just notify about pending order

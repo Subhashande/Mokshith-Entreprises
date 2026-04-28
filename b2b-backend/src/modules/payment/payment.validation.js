@@ -1,9 +1,9 @@
-import Joi from 'joi';
+﻿import Joi from 'joi';
 
-// 🔥 ADD: reusable ObjectId validation
+//  ADD: reusable ObjectId validation
 const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/).message('Invalid MongoDB ObjectId');
 
-// 🔥 EXISTING (UNCHANGED)
+//  EXISTING (UNCHANGED)
 export const verifyPaymentSchema = Joi.object({
   body: Joi.object({
     orderId: Joi.string().required(),
@@ -13,7 +13,7 @@ export const verifyPaymentSchema = Joi.object({
   }),
 });
 
-// 🔥 ADD: strict version (optional future use)
+//  ADD: strict version (optional future use)
 export const verifyPaymentStrictSchema = Joi.object({
   body: Joi.object({
     orderId: objectId.required(),
@@ -23,7 +23,7 @@ export const verifyPaymentStrictSchema = Joi.object({
   }),
 });
 
-// 🔥 ADD: hybrid payment validation (VERY IMPORTANT)
+//  ADD: hybrid payment validation (VERY IMPORTANT)
 export const hybridPaymentSchema = Joi.object({
   body: Joi.object({
     orderId: objectId.required(),
@@ -32,7 +32,7 @@ export const hybridPaymentSchema = Joi.object({
   }),
 });
 
-// 🔥 ADD: initiate payment validation (optional but recommended)
+//  ADD: initiate payment validation (optional but recommended)
 export const initiatePaymentSchema = Joi.object({
   params: Joi.object({
     orderId: objectId.required(),

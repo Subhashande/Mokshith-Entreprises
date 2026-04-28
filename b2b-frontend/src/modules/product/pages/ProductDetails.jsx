@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "../hooks/useProduct";
 import { useOrder } from "../../order/hooks/useOrder";
@@ -106,7 +106,7 @@ const ProductDetails = () => {
 
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) return product.images[0];
-    if (product.image && !product.image.includes('📦')) return product.image;
+    if (product.image && !product.image.includes('')) return product.image;
     
     const category = (product.category || product.categoryId?.name || "").toLowerCase();
     const name = (product.name || "").toLowerCase();

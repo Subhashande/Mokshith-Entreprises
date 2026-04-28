@@ -1,4 +1,4 @@
-import * as repo from './credit.repository.js';
+﻿import * as repo from './credit.repository.js';
 import AppError from '../../errors/AppError.js';
 
 // 🆕 Create Credit Account
@@ -23,7 +23,7 @@ export const createCreditAccount = async (userId, limit) => {
 
 import Order from '../order/order.model.js';
 
-// 💳 Use Credit (ORDER INTEGRATION)
+//  Use Credit (ORDER INTEGRATION)
 export const useCredit = async (userId, orderId) => {
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found', 404);
@@ -58,7 +58,7 @@ export const useCredit = async (userId, orderId) => {
     description: `Order payment for #${orderId}`,
   });
 
-  // 🔥 Update Order
+  //  Update Order
   order.paymentStatus = 'PAID';
   order.status = 'CONFIRMED';
   await order.save();
@@ -98,7 +98,7 @@ export const repayCredit = async (userId, amount) => {
 export const getCredit = async (userId) => {
   let credit = await repo.findByUser(userId);
   
-  // 🔥 Auto-create credit account if not exists (demo purposes)
+  //  Auto-create credit account if not exists (demo purposes)
   if (!credit) {
     console.log(`Auto-creating credit account for user: ${userId}`);
     credit = await repo.createCredit({

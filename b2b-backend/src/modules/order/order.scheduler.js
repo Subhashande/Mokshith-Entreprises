@@ -1,4 +1,4 @@
-import Order from './order.model.js';
+﻿import Order from './order.model.js';
 import { sendNotification } from '../notification/notification.service.js';
 
 export const cancelPendingOrders = async () => {
@@ -14,7 +14,7 @@ export const cancelPendingOrders = async () => {
       order.status = 'CANCELLED';
       await order.save();
 
-      // 🔥 Optional: notify user
+      //  Optional: notify user
       await sendNotification({
         userId: order.userId,
         title: 'Order Cancelled',
@@ -22,8 +22,8 @@ export const cancelPendingOrders = async () => {
       });
     }
 
-    console.log(`✅ Expired orders cancelled: ${orders.length}`);
+    console.log(` Expired orders cancelled: ${orders.length}`);
   } catch (error) {
-    console.error('❌ Order cleanup job failed:', error.message);
+    console.error(' Order cleanup job failed:', error.message);
   }
 };

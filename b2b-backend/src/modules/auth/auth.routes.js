@@ -1,6 +1,7 @@
 import express from 'express';
 import * as controller from './auth.controller.js';
 import { validate } from '../../middlewares/validate.middleware.js';
+import { protect } from '../../middlewares/auth.middleware.js';
 
 import {
   registerSchema,
@@ -16,5 +17,6 @@ router.post('/login', validate(loginSchema), controller.login);
 router.post('/send-otp', validate(otpSchema), controller.sendOTP);
 router.post('/verify-otp', validate(verifyOtpSchema), controller.verifyOTP);
 router.post('/refresh-token', controller.refreshToken);
+router.post('/logout', protect, controller.logout);
 
 export default router;

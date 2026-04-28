@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const invoiceSchema = new mongoose.Schema(
   {
@@ -6,7 +6,7 @@ const invoiceSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
       required: true,
-      unique: true, // 🔥 one invoice per order
+      unique: true, //  one invoice per order
       index: true,
     },
 

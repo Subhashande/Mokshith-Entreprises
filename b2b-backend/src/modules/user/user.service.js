@@ -1,4 +1,4 @@
-import AppError from '../../errors/AppError.js';
+﻿import AppError from '../../errors/AppError.js';
 import * as repo from './user.repository.js';
 import { hashPassword } from '../../utils/hashPassword.js';
 
@@ -12,7 +12,7 @@ export const changePassword = async (userId, newPassword) => {
   await repo.updateUserById(userId, { password: hashedPassword });
 };
 
-// 🔥 Allowed update fields (security)
+//  Allowed update fields (security)
 const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile', 'profileImage', 'phone', 'address', 'companyName'];
 
 export const getProfile = async (userId) => {
@@ -26,7 +26,7 @@ export const getProfile = async (userId) => {
 export const updateProfile = async (userId, data) => {
   const filteredData = {};
 
-  // 🔥 Prevent updating restricted fields
+  //  Prevent updating restricted fields
   for (const key of ALLOWED_PROFILE_FIELDS) {
     if (data[key] !== undefined) {
       filteredData[key] = data[key];

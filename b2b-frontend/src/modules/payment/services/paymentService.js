@@ -1,4 +1,4 @@
-import apiClient from "../../../services/apiClient";
+﻿import apiClient from "../../../services/apiClient";
 
 export const paymentService = {
   async getPayments() {
@@ -17,21 +17,16 @@ export const paymentService = {
     }
   },
 
-  // 🔥 FIXED CORRECTLY (IMPORTANT)
+  //  FIXED CORRECTLY (IMPORTANT)
   async hybridPayment(orderId, useCredit, totalAmount) {
     try {
-      // 🔥 ADD DEBUG
-      console.log("Calling Hybrid API:", { orderId, useCredit, totalAmount });
-
       const response = await apiClient.post(
-        "/payments/hybrid", // ✅ CORRECT ENDPOINT
-        { orderId, useCredit, totalAmount } // ✅ send all three
+        "/payments/hybrid", //  CORRECT ENDPOINT
+        { orderId, useCredit, totalAmount } //  send all three
       );
 
       return response;
     } catch (err) {
-      console.error("Hybrid Payment Error:", err);
-
       const message =
         typeof err === "string"
           ? err

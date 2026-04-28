@@ -42,49 +42,55 @@ import searchRoutes from '../modules/search/search.routes.js';
 import adminRoutes from '../modules/admin/admin.routes.js';
 import superAdminRoutes from '../modules/superAdmin/superAdmin.routes.js';
 
+// Health & Monitoring
+import healthRoutes from '../modules/health/health.routes.js';
+
 const router = express.Router();
 
-// 🔐 Auth & Users
+// Health checks (before other routes, no auth)
+router.use('/health', healthRoutes);
+
+// Auth & Users
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 
-// 🏢 Organization
+// Organization
 router.use('/companies', companyRoutes);
 router.use('/vendors', vendorRoutes);
 
-// 🛍️ Catalog
+// Catalog
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
 router.use('/pricing', pricingRoutes);
 router.use('/promotions', promotionRoutes);
 
-// 🛒 Buying
+// Buying
 router.use('/cart', cartRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/orders', orderRoutes);
 
-// 💳 Finance
+// Finance
 router.use('/payments', paymentRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/credit', creditRoutes);
 
-// 🚚 Logistics
+// Logistics
 router.use('/warehouses', warehouseRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/shipments', shipmentRoutes);
 router.use('/logistics', logisticsRoutes);
 
-// 🔔 Support
+// Support
 router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/support', supportRoutes);
 
-// 🔍 Engagement
+// Engagement
 router.use('/reviews', reviewRoutes);
 router.use('/search', searchRoutes);
 
-// 🛡️ Admin
+// Admin
 router.use('/admin', adminRoutes);
 router.use('/super-admin', superAdminRoutes);
 router.use('/superadmin', superAdminRoutes); // Alias for frontend

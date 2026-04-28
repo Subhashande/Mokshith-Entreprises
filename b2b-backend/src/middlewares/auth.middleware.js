@@ -4,6 +4,7 @@ import { fetchSetting } from '../modules/settings/settings.service.js';
 import { ROLES } from '../constants/roles.js';
 import { findUserById } from '../modules/auth/auth.repository.js';
 import { USER_STATUS } from '../constants/userStatus.js';
+import { isTokenBlacklisted } from '../modules/auth/auth.service.js';
 
 export const protect = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -11,22 +12,28 @@ export const protect = async (req, res, next) => {
   if (!token) return next(new AppError('Not authorized', 401));
 
   try {
+    // Check if token is blacklisted
+    const blacklisted = await isTokenBlacklisted(token);
+    if (blacklisted) {
+      return next(new AppError('Token has been revoked', 401));
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // 🔥 Fetch user to check status
+    // Fetch user to check status
     const user = await findUserById(decoded.id);
     if (!user) {
       return next(new AppError('User no longer exists', 401));
     }
 
-    // 🔥 Check Maintenance Mode
+    // Check Maintenance Mode
     const maintenance = await fetchSetting('maintenanceMode');
     const maintenanceOld = await fetchSetting('MAINTENANCE_MODE');
     if ((maintenance?.value === true || maintenanceOld?.value === true) && user.role !== ROLES.SUPER_ADMIN) {
       return next(new AppError('System under maintenance', 503));
     }
 
-    // 🔥 Check User Status
+    // Check User Status
     if (user.role !== ROLES.SUPER_ADMIN && user.status !== USER_STATUS.ACTIVE) {
       const message = user.status === USER_STATUS.PENDING 
         ? 'Your account is pending admin approval. Please wait for activation.' 

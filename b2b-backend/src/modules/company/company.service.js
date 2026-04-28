@@ -1,8 +1,8 @@
-import AppError from '../../errors/AppError.js';
+﻿import AppError from '../../errors/AppError.js';
 import * as repo from './company.repository.js';
 
 export const createCompany = async (data, userId) => {
-  // 🔥 Basic duplicate check (email)
+  //  Basic duplicate check (email)
   const existingCompanies = await repo.findAllCompanies();
 
   const isDuplicate = existingCompanies.find(

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Production-Ready Payment Configuration
  * Includes retry logic, payment tracking, error handling, and monitoring
  */
@@ -133,7 +133,7 @@ export class PaymentRetryHandler {
     
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        console.log(`🔄 Attempt ${attempt}/${this.maxRetries}: ${context}`);
+        console.log(` Attempt ${attempt}/${this.maxRetries}: ${context}`);
         return await fn();
       } catch (error) {
         lastError = error;
@@ -147,7 +147,7 @@ export class PaymentRetryHandler {
 
         // Calculate exponential backoff
         const delay = this.retryDelay * Math.pow(2, attempt - 1);
-        console.warn(`⚠️ Attempt ${attempt} failed. Retrying in ${delay}ms...`);
+        console.warn(` Attempt ${attempt} failed. Retrying in ${delay}ms...`);
         
         // Wait before retry
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -308,8 +308,8 @@ export const paymentAnalytics = new PaymentAnalytics();
  * Initialize payment system
  */
 export const initializePaymentSystem = () => {
-  console.log('🚀 Initializing Payment System');
-  console.log('✅ Payment Configuration:', PAYMENT_CONFIG);
+  console.log(' Initializing Payment System');
+  console.log(' Payment Configuration:', PAYMENT_CONFIG);
   return {
     statusTracker: paymentStatusTracker,
     retryHandler: paymentRetryHandler,

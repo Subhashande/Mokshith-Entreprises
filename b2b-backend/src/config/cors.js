@@ -1,4 +1,4 @@
-import cors from 'cors';
+﻿import cors from 'cors';
 
 const allowedOrigins = [
   'http://localhost:5174',
@@ -9,8 +9,15 @@ const allowedOrigins = [
 
 export const corsConfig = cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    //  SECURITY: Reject requests with no origin in production
+    if (!origin) {
+      if (process.env.NODE_ENV === 'production') {
+        return callback(new Error('Origin header required'), false);
+      }
+      // Allow dev tools, curl, Postman in development only
+      return callback(null, true);
+    }
+    
     if (allowedOrigins.indexOf(origin) === -1) {
       return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
     }

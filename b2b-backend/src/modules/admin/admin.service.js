@@ -3,6 +3,7 @@ import NotFoundError from '../../errors/NotFoundError.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
 import User from '../user/user.model.js';
 import Order from '../order/order.model.js';
+import Audit from '../audit/audit.model.js';
 
 export const getAllUsers = async () => {
   return User.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 });
@@ -56,6 +57,15 @@ export const getStats = async () => {
 };
 
 export const updateUserCredit = async (userId, creditLimit) => {
+  // Validate credit limit
+  if (creditLimit < 0) {
+    throw new AppError('Credit limit cannot be negative', 400);
+  }
+  
+  if (creditLimit > 10000000) {
+    throw new AppError('Credit limit cannot exceed ₹1,00,00,000', 400);
+  }
+
   const user = await User.findById(userId);
 
   if (!user) {
@@ -70,4 +80,27 @@ export const updateUserCredit = async (userId, creditLimit) => {
   await user.save();
 
   return user;
+};
+
+export const getAuditLogs = async (query = {}) => {
+  const { page = 1, limit = 50 } = query;
+  const skip = (page - 1) * limit;
+
+  const logs = await Audit.find()
+    .sort({ createdAt: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .populate('userId', 'name email');
+
+  const total = await Audit.countDocuments();
+
+  return {
+    data: logs,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Eye, Star, Plus, Minus, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../routes/routeConfig';
@@ -18,7 +18,7 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
 
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) return product.images[0];
-    if (product.image && !product.image.includes('📦')) return product.image;
+    if (product.image && !product.image.includes('')) return product.image;
     
     const category = (product.category || product.categoryId?.name || "").toLowerCase();
     const name = (product.name || "").toLowerCase();

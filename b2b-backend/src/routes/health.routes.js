@@ -3,17 +3,17 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
-// 🔥 Root health check
+// Root health check
 router.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server is healthy ✅',
+    message: 'Server is healthy',
     uptime: process.uptime(),
     timestamp: new Date(),
   });
 });
 
-// 🔥 Optional: direct ping
+// Optional: direct ping
 router.get('/ping', (req, res) => {
   res.status(200).json({
     success: true,
@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: 'Server is healthy ✅',
+    message: 'Server is healthy',
     uptime: process.uptime(),
     database: dbStatus,
     timestamp: new Date(),

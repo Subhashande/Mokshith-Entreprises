@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const wishlistSchema = new mongoose.Schema(
   {
@@ -6,7 +6,7 @@ const wishlistSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true, // 🔥 one wishlist per user
+      unique: true, //  one wishlist per user
     },
 
     items: [

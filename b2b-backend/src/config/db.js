@@ -17,7 +17,7 @@ const connectDB = async () => {
     });
 
     isConnected = true;
-    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
+    logger.info(`MongoDB Connected: ${conn.connection.host}`);
 
     // Check if connected to a replica set
     try {
@@ -29,12 +29,12 @@ const connectDB = async () => {
     }
 
     if (isReplicaSet) {
-      logger.info('🔄 MongoDB Transaction support enabled (Replica Set detected)');
+      logger.info('MongoDB Transaction support enabled (Replica Set detected)');
     } else {
-      logger.warn('⚠️ MongoDB Transactions disabled (Standalone mode detected)');
+      logger.warn('MongoDB Transactions disabled (Standalone mode detected)');
     }
   } catch (error) {
-    logger.error('❌ MongoDB connection failed', error);
+    logger.error('MongoDB connection failed', error);
     process.exit(1);
   }
 };

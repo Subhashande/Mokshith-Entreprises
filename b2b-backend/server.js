@@ -7,6 +7,18 @@ import { logger } from './src/config/logger.js';
 import { Server } from 'socket.io';
 import http from 'http';
 
+// 🔒 SECURITY: Validate critical environment variables at startup
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  logger.error('❌ FATAL: JWT_SECRET is missing or too weak (minimum 32 characters required)');
+  logger.error('   Set a strong JWT_SECRET in your .env file');
+  process.exit(1);
+}
+
+if (!process.env.MONGO_URI) {
+  logger.error('❌ FATAL: MONGO_URI is missing');
+  process.exit(1);
+}
+
 const PORT = process.env.PORT || 5000;
 
 let server;

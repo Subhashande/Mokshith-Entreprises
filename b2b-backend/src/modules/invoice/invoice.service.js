@@ -1,4 +1,4 @@
-import * as repo from './invoice.repository.js';
+﻿import * as repo from './invoice.repository.js';
 import { generateInvoiceNumber, createInvoicePDF } from './invoice.generator.js';
 import AppError from '../../errors/AppError.js';
 import Order from '../order/order.model.js';
@@ -11,7 +11,7 @@ export const generateInvoice = async (orderId) => {
     throw new AppError('Order not found', 404);
   }
 
-  // 🔥 Prevent duplicate invoice
+  //  Prevent duplicate invoice
   const existing = await repo.findByOrderId(order._id);
   if (existing) {
     return existing;

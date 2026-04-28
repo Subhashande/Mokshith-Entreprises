@@ -13,16 +13,16 @@ if (USE_REAL_QUEUE) {
 }
 
 export const createQueue = (name) => {
-  // 🔥 DEV MODE (your current behavior)
+  // DEV MODE (your current behavior)
   if (!USE_REAL_QUEUE) {
     return {
       name,
       add: async (job) => {
-        console.log(`🧪 [DEV QUEUE] ${name}`, job);
+        console.log(`[DEV QUEUE] ${name}`, job);
       },
     };
   }
 
-  // 🚀 PRODUCTION MODE (future)
+  // PRODUCTION MODE (future)
   return new Queue(name, { connection });
 };

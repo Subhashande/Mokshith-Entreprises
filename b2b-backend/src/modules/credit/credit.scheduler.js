@@ -1,4 +1,4 @@
-import Credit from './credit.model.js';
+﻿import Credit from './credit.model.js';
 
 export const checkCreditLimits = async () => {
   const users = await Credit.find({
@@ -6,6 +6,6 @@ export const checkCreditLimits = async () => {
   });
 
   users.forEach((u) => {
-    console.log(`⚠️ Low credit for user ${u.userId}`);
+    console.log(` Low credit for user ${u.userId}`);
   });
 };

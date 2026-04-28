@@ -1,8 +1,8 @@
-import * as repo from './notification.repository.js';
+﻿import * as repo from './notification.repository.js';
 import { notificationQueue } from '../../queues/notification.queue.js';
 
 export const sendNotification = async (data) => {
-  // 🔥 Queue-based (async processing)
+  //  Queue-based (async processing)
   await notificationQueue.add(data);
 
   return repo.createNotification(data);

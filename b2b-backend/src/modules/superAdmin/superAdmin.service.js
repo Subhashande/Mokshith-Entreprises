@@ -1,4 +1,4 @@
-import * as repo from './superAdmin.repository.js';
+﻿import * as repo from './superAdmin.repository.js';
 import AppError from '../../errors/AppError.js';
 import User from '../user/user.model.js';
 import { ROLES } from '../../constants/roles.js';
@@ -9,6 +9,7 @@ import Category from '../category/category.model.js';
 import Audit from '../audit/audit.model.js';
 import Order from '../order/order.model.js';
 import { createCreditAccount } from '../credit/credit.service.js';
+import { logger } from '../../config/logger.js';
 
 export const getAllUsers = async () => {
   return repo.getAllUsers();
@@ -47,7 +48,7 @@ export const createAdmin = async (data) => {
   try {
     await createCreditAccount(admin._id, 50000);
   } catch (err) {
-    console.error('Failed to create credit account for admin:', err.message);
+    logger.error('Failed to create credit account for admin:', err.message);
   }
 
   return admin;
@@ -59,7 +60,7 @@ export const deleteAdmin = async (id) => {
     throw new AppError('Admin not found', 404);
   }
   
-  // 🔥 Use soft delete for consistency
+  //  Use soft delete for consistency
   await User.findByIdAndUpdate(id, { isDeleted: true });
   
   return { message: 'Admin deleted successfully' };

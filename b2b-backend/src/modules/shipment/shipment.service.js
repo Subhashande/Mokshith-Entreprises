@@ -1,4 +1,4 @@
-import * as repo from './shipment.repository.js';
+﻿import * as repo from './shipment.repository.js';
 import Order from '../order/order.model.js';
 import AppError from '../../errors/AppError.js';
 
@@ -9,7 +9,7 @@ export const createShipment = async (orderId, warehouseId) => {
 
   if (!order) throw new AppError('Order not found', 404);
 
-  // 🔥 Prevent duplicate shipment
+  //  Prevent duplicate shipment
   const existing = await repo.findByOrderId(orderId);
   if (existing) return existing;
 

@@ -1,8 +1,9 @@
-import * as repo from './payment.repository.js';
+﻿import * as repo from './payment.repository.js';
 import * as gateway from './payment.gateway.js';
 import AppError from '../../errors/AppError.js';
 import mongoose from 'mongoose';
 import { getTransactionSupport } from '../../config/db.js';
+import { logger } from '../../config/logger.js';
 
 import Order from '../order/order.model.js';
 import * as creditRepo from '../credit/credit.repository.js';
@@ -60,8 +61,10 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
 
     // Safety check: frontend totalAmount vs backend totalAmount
     if (totalAmount && Math.round(order.totalAmount) !== Math.round(totalAmount)) {
-      // In production, we should probably throw an error here, but for now we log it.
-      // throw new AppError('Payment amount mismatch', 400);
+      throw new AppError(
+        `Payment amount mismatch. Expected ₹${order.totalAmount}, received ₹${totalAmount}. Please refresh and try again.`,
+        400
+      );
     }
 
     let remainingAmount = order.totalAmount;
@@ -118,7 +121,7 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
           const { autoAssignDelivery } = await import('../logistics/logistics.service.js');
           await autoAssignDelivery(order._id);
         } catch (err) {
-          console.error('Post-payment actions failed:', err.message);
+          logger.error('Post-payment actions failed:', err.message);
         }
       });
 
@@ -130,9 +133,12 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
     try {
       rzpOrder = await createRazorpayOrder(remainingAmount, userId);
     } catch (err) {
-      console.error('❌ Razorpay order creation failed during hybrid payment:', err);
-      // Revert credit deduction if Razorpay order fails
-      if (useCredit && creditUsed > 0) {
+      logger.error(' Razorpay order creation failed during hybrid payment:', err);
+      
+      //  CRITICAL FIX: Only manually revert if transactions NOT supported
+      // If transactions are supported, the abort will auto-rollback
+      if (!isTransactionStarted && useCredit && creditUsed > 0) {
+        logger.info(' Manually reverting credit (no transaction support)');
         const credit = await creditRepo.findByUser(userId);
         if (credit) {
           credit.availableCredit += creditUsed;
@@ -147,6 +153,7 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
           });
         }
       }
+      // If transaction started, it will be aborted in outer catch block
       throw err;
     }
 
@@ -164,7 +171,7 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount) => 
     try {
       await repo.createPayment(paymentData, { session: isTransactionStarted ? session : null });
     } catch (err) {
-      console.error('❌ Failed to record payment record:', err);
+      logger.error(' Failed to record payment record:', err);
       // Even if recording fails, we have the rzpOrder, but it's better to fail here
       throw new AppError('Failed to initialize payment tracking', 500);
     }

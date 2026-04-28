@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const promotionSchema = new mongoose.Schema(
   {
@@ -25,7 +25,7 @@ const promotionSchema = new mongoose.Schema(
 
     maxDiscount: {
       type: Number,
-      default: null, // 🔥 for percentage cap
+      default: null, //  for percentage cap
     },
 
     isActive: {

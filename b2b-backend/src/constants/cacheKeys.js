@@ -1,9 +1,9 @@
-export const CACHE_KEYS = {
+﻿export const CACHE_KEYS = {
   USERS: 'users',
   PRODUCTS: 'products',
   ORDERS: 'orders',
   INVENTORY: 'inventory',
 
-  // 🔥 future usage
+  //  future usage
   ANALYTICS: 'analytics',
 };

@@ -1,10 +1,10 @@
-import * as repo from './category.repository.js';
+﻿import * as repo from './category.repository.js';
 import AppError from '../../errors/AppError.js';
 
 export const createCategory = async (data) => {
   const { name, parentId } = data;
 
-  // 🔥 Check duplicate under same parent
+  //  Check duplicate under same parent
   const existing = await repo.findAllCategories();
 
   const isDuplicate = existing.find(

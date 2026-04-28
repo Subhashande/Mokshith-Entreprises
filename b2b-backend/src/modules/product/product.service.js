@@ -1,15 +1,16 @@
-import * as repo from './product.repository.js';
+﻿import * as repo from './product.repository.js';
 import AppError from '../../errors/AppError.js';
 import { buildProductFilter } from './product.utils.js';
+import { logger } from '../../config/logger.js';
 
-// 🔥 Simple In-Memory Cache
+//  Simple In-Memory Cache
 const productCache = {
   data: null,
   lastFetched: null,
   ttl: 300000 // 5 minutes
 };
 
-// 🔥 EVENTS
+//  EVENTS
 import { onProductCreated } from './product.events.js';
 
 export const createProduct = async (data) => {
@@ -19,23 +20,27 @@ export const createProduct = async (data) => {
 
   const product = await repo.createProduct(data);
   
-  // 🔥 Invalidate Cache
+  //  Invalidate Cache
   productCache.data = null;
 
-  // 🔥 EVENT (non-blocking)
+  //  EVENT (non-blocking)
   try {
     onProductCreated(product);
   } catch (err) {
-    console.error('Product event error:', err.message);
+    logger.error('Product event error:', err.message);
   }
 
   return product;
 };
 
 export const getProducts = async (query) => {
-  const { page = 1, limit = 10, categoryId, search } = query;
+  let { page = 1, limit = 10, categoryId, search } = query;
 
-  // 🔥 Caching for default product list
+  //  SECURITY: Enforce pagination limits to prevent abuse
+  page = Math.max(1, Math.min(parseInt(page) || 1, 1000));
+  limit = Math.max(1, Math.min(parseInt(limit) || 10, 100));
+
+  //  Caching for default product list
   const isDefaultQuery = page === 1 && limit === 10 && !categoryId && !search;
   if (isDefaultQuery && productCache.data && (Date.now() - productCache.lastFetched < productCache.ttl)) {
     return productCache.data;

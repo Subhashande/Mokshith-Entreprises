@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   CreditCard, 
@@ -59,10 +59,10 @@ const PaymentPage = () => {
       setLoading(true);
       setError(null);
 
-      // 🔥 WAIT FOR RAZORPAY SDK
+      //  WAIT FOR RAZORPAY SDK
       const isSdkLoaded = await ensureRazorpayLoaded();
       
-      // 🔥 VALIDATE CONFIG
+      //  VALIDATE CONFIG
       const configValidation = validateRazorpayConfig();
       const errors = [...configValidation.errors];
       
@@ -72,7 +72,7 @@ const PaymentPage = () => {
 
       if (errors.length > 0) {
         const errorMsg = errors.join(' | ');
-        console.error('❌ Razorpay configuration errors:', errors);
+        console.error(' Razorpay configuration errors:', errors);
         setError(`Payment configuration error: ${errorMsg}`);
         setLoading(false);
         return;
@@ -157,31 +157,31 @@ const PaymentPage = () => {
     setError(null);
 
     try {
-      console.log('💳 Initiating payment...', {
+      console.log(' Initiating payment...', {
         orderId,
         paymentMethod,
         totalAmount: order?.totalAmount
       });
 
-      // 🔥 CALL HYBRID PAYMENT API
+      //  CALL HYBRID PAYMENT API
       const { data: hybridRes } = await paymentService.hybridPayment(
         orderId,
         paymentMethod !== 'online',
         order.totalAmount
       );
 
-      console.log('✅ Hybrid payment response:', hybridRes);
+      console.log(' Hybrid payment response:', hybridRes);
 
-      // 🔥 SCENARIO 1: Fully paid by credit
+      //  SCENARIO 1: Fully paid by credit
       if (hybridRes.paidFullyByCredit || hybridRes.data?.paidFullyByCredit) {
-        console.log('✅ Order paid fully by credit');
+        console.log(' Order paid fully by credit');
         dispatch(clearCart());
         setPaymentSuccess(true);
         setProcessing(false);
         return;
       }
 
-      // 🔥 SCENARIO 2: Need Razorpay payment
+      //  SCENARIO 2: Need Razorpay payment
       const rzpOrder = hybridRes.gateway || hybridRes.data?.gateway;
       
       if (!rzpOrder || (!rzpOrder.gatewayOrderId && !rzpOrder.id)) {
@@ -195,7 +195,7 @@ const PaymentPage = () => {
         orderId: gatewayOrderId
       });
 
-      // 🔥 RAZORPAY OPTIONS - MULTIPLE PAYMENT METHODS
+      //  RAZORPAY OPTIONS - MULTIPLE PAYMENT METHODS
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: rzpOrder.amount, // Amount in paise
@@ -204,16 +204,16 @@ const PaymentPage = () => {
         description: `Order Payment #${orderId.slice(-8)}`,
         order_id: gatewayOrderId,
         
-        // 🔥 ENABLE MULTIPLE PAYMENT METHODS
+        //  ENABLE MULTIPLE PAYMENT METHODS
         method: {
-          upi: true,          // ✅ UPI (GPay, PhonePe, PayTM, etc.)
-          card: true,         // ✅ Credit/Debit Cards
-          netbanking: true,   // ✅ Net Banking
-          wallet: true,       // ✅ Digital Wallets (PayTM, Freecharge, etc.)
+          upi: true,          //  UPI (GPay, PhonePe, PayTM, etc.)
+          card: true,         //  Credit/Debit Cards
+          netbanking: true,   //  Net Banking
+          wallet: true,       //  Digital Wallets (PayTM, Freecharge, etc.)
           emi: false,         // Disable EMI for now
         },
         
-        // 🔥 SUCCESS HANDLER
+        //  SUCCESS HANDLER
         handler: async function (response) {
           try {
             // Remove sensitive logging of full response in production
@@ -221,7 +221,7 @@ const PaymentPage = () => {
               PaymentLogger.log('Razorpay response received', response);
             }
 
-            // 🔥 SECURITY 1: Validate response fields
+            //  SECURITY 1: Validate response fields
             const validation = validateRazorpayResponse(response);
             if (!validation.isValid) {
               const errorMsg = validation.errors.join(', ');
@@ -231,7 +231,7 @@ const PaymentPage = () => {
               return;
             }
 
-            // 🔥 SECURITY 2: Check for duplicate payment processing
+            //  SECURITY 2: Check for duplicate payment processing
             if (PaymentDuplicateDetector.isDuplicate(response.razorpay_payment_id)) {
               PaymentLogger.log('Duplicate payment detected', response.razorpay_payment_id);
             }
@@ -239,7 +239,7 @@ const PaymentPage = () => {
             setProcessing(true);
             setError(null);
 
-            // 🔥 SECURITY 3: Sanitize payment data before sending
+            //  SECURITY 3: Sanitize payment data before sending
             const sanitizedData = sanitizePaymentData({
               orderId: order._id,
               razorpay_order_id: response.razorpay_order_id,
@@ -247,17 +247,17 @@ const PaymentPage = () => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            // 🔥 VERIFY PAYMENT ON BACKEND
+            //  VERIFY PAYMENT ON BACKEND
             await paymentService.verifyPayment(sanitizedData);
 
-            // 🔥 SECURITY 4: Mark as processed
+            //  SECURITY 4: Mark as processed
             PaymentDuplicateDetector.markProcessed(response.razorpay_payment_id);
 
             dispatch(clearCart());
             setPaymentSuccess(true);
             setProcessing(false);
           } catch (err) {
-            console.error('❌ Payment verification failed');
+            console.error(' Payment verification failed');
             PaymentLogger.error('Verification failed', err);
 
             const errorMsg = PaymentErrorHandler.getMessage(err);
@@ -266,10 +266,10 @@ const PaymentPage = () => {
           }
         },
 
-        // 🔥 MODAL OPTIONS
+        //  MODAL OPTIONS
         modal: {
           ondismiss: async function() {
-            console.log('❌ Razorpay modal closed by user');
+            console.log(' Razorpay modal closed by user');
             setProcessing(false);
             setError('Payment cancelled. You can retry whenever you are ready.');
             
@@ -289,27 +289,27 @@ const PaymentPage = () => {
           backdrop_color: "rgba(0, 0, 0, 0.7)"
         },
         
-        // 🔥 NOTES FOR BACKEND
+        //  NOTES FOR BACKEND
         notes: {
           orderId: orderId,
           userId: user?.id,
           paymentMethod: paymentMethod
         },
 
-        // 🔥 RETRY LOGIC
+        //  RETRY LOGIC
         timeout: 600  // 10 minutes timeout
       };
 
-      // 🔥 OPEN RAZORPAY
+      //  OPEN RAZORPAY
       if (!window.Razorpay) {
         throw new Error('Razorpay is not loaded. Please refresh the page.');
       }
 
       const razorpayInstance = new window.Razorpay(options);
 
-      // 🔥 HANDLE FAILED PAYMENTS (INSUFFICIENT FUNDS, ETC)
+      //  HANDLE FAILED PAYMENTS (INSUFFICIENT FUNDS, ETC)
       razorpayInstance.on('payment.failed', async function (response) {
-        console.error('❌ Razorpay payment failed:', response.error);
+        console.error(' Razorpay payment failed:', response.error);
         PaymentLogger.error('Razorpay payment failed', response.error);
         setError(`Payment failed: ${response.error.description}`);
         setProcessing(false);
@@ -324,7 +324,7 @@ const PaymentPage = () => {
       razorpayInstance.open();
 
     } catch (err) {
-      console.error('❌ PAYMENT ERROR:', err);
+      console.error(' PAYMENT ERROR:', err);
       
       const errorMessage = 
         typeof err === "string" 
@@ -360,7 +360,7 @@ const PaymentPage = () => {
       const invoiceData = res.data || res;
       
       if (invoiceData?.fileUrl) {
-        console.log('✅ Invoice found, opening...');
+        console.log(' Invoice found, opening...');
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
         const fileUrl = invoiceData.fileUrl.startsWith('http') 
           ? invoiceData.fileUrl 
@@ -370,23 +370,23 @@ const PaymentPage = () => {
       }
 
       // If invoice doesn't exist, generate it
-      console.log('📋 Generating invoice...');
+      console.log(' Generating invoice...');
       const genRes = await invoiceService.generateInvoice(orderId);
       const genData = genRes.data || genRes;
 
       if (genData?.fileUrl) {
-        console.log('✅ Invoice generated, opening...');
+        console.log(' Invoice generated, opening...');
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
         const fileUrl = genData.fileUrl.startsWith('http') 
           ? genData.fileUrl 
           : `${baseUrl}${genData.fileUrl}`;
         window.open(fileUrl, '_blank');
       } else {
-        console.warn('⚠️ Invoice generation in progress');
+        console.warn(' Invoice generation in progress');
         setError('Invoice is being generated. Please try again in a moment.');
       }
     } catch (err) {
-      console.error('❌ Error with invoice:', err);
+      console.error(' Error with invoice:', err);
       setError('Could not download invoice. Please try from the Orders section.');
     } finally {
       setProcessing(false);
@@ -519,7 +519,7 @@ const PaymentPage = () => {
               <ShieldCheck className="w-8 h-8 text-blue-600" /> Select Payment Method
             </h2>
 
-            {/* 🔥 ENHANCED PAYMENT METHODS */}
+            {/*  ENHANCED PAYMENT METHODS */}
             <div className="grid grid-cols-1 gap-4">
               {/* ONLINE PAYMENT OPTION */}
               <div onClick={() => setPaymentMethod('online')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}>

@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   orders: [],
-  cart: [],
   loading: false,
   error: null,
 };
@@ -19,31 +18,6 @@ const orderSlice = createSlice({
       state.loading = false;
       state.orders = action.payload;
     },
-    addToCart: (state, action) => {
-      const item = action.payload;
-      const itemId = item._id || item.id;
-      const quantityToAdd = item.quantity || 1;
-      const existingItem = state.cart.find((i) => (i._id || i.id) === itemId);
-      
-      if (existingItem) {
-        existingItem.quantity += quantityToAdd;
-      } else {
-        state.cart.push({ ...item, quantity: quantityToAdd });
-      }
-    },
-    removeFromCart: (state, action) => {
-      state.cart = state.cart.filter((item) => (item._id || item.id) !== action.payload);
-    },
-    updateQuantity: (state, action) => {
-      const { id, quantity } = action.payload;
-      const item = state.cart.find((i) => (i._id || i.id) === id);
-      if (item) {
-        item.quantity = quantity;
-      }
-    },
-    clearCart: (state) => {
-      state.cart = [];
-    },
     fetchFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
@@ -51,5 +25,5 @@ const orderSlice = createSlice({
   },
 });
 
-export const { fetchStart, fetchOrdersSuccess, addToCart, removeFromCart, updateQuantity, clearCart, fetchFailure } = orderSlice.actions;
+export const { fetchStart, fetchOrdersSuccess, fetchFailure } = orderSlice.actions;
 export default orderSlice.reducer;

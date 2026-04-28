@@ -1,4 +1,4 @@
-import Inventory from './inventory.model.js';
+﻿import Inventory from './inventory.model.js';
 
 export const findInventory = (productId, warehouseId) =>
   Inventory.findOne({ productId, warehouseId });
@@ -12,7 +12,7 @@ export const updateInventory = (id, data) =>
 export const findAll = () =>
   Inventory.find().populate('productId warehouseId');
 
-// 🔥 NEW (IMPORTANT)
+//  NEW (IMPORTANT)
 export const findByProduct = (productId) =>
   Inventory.find({ productId });
 

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import { ROLES } from '../../constants/roles.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
 
@@ -106,7 +106,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Soft delete filter
+//  Soft delete filter
 userSchema.pre(/^find/, function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();

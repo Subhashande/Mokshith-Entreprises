@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema(
   {
@@ -29,7 +29,7 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Prevent duplicate category under same parent
+//  Prevent duplicate category under same parent
 categorySchema.index({ name: 1, parentId: 1 }, { unique: true });
 
 export default mongoose.model('Category', categorySchema);

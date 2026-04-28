@@ -1,4 +1,4 @@
-import { calculatePrice } from './pricing.engine.js';
+﻿import { calculatePrice } from './pricing.engine.js';
 import * as repo from './pricing.repository.js';
 import AppError from '../../errors/AppError.js';
 
@@ -11,7 +11,7 @@ export const getPrice = async ({ price, quantity }) => {
     throw new AppError('Invalid quantity', 400);
   }
 
-  // 🔥 Future: fetch rules from DB
+  //  Future: fetch rules from DB
   await repo.getPricingRules();
 
   const finalPrice = calculatePrice({

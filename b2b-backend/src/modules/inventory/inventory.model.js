@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const inventorySchema = new mongoose.Schema(
   {
@@ -30,7 +30,7 @@ const inventorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 Prevent duplicate product in same warehouse
+//  Prevent duplicate product in same warehouse
 inventorySchema.index(
   { productId: 1, warehouseId: 1 },
   { unique: true }

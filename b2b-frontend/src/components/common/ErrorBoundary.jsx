@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+﻿import React, { Component } from 'react';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -21,7 +21,7 @@ class ErrorBoundary extends Component {
           height: '100vh', display: 'flex', flexDirection: 'column', 
           alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' 
         }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</h1>
+          <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}></h1>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Something went wrong</h2>
           <p style={{ color: 'var(--text-muted)', maxWidth: '500px' }}>
             {this.state.error?.message || "An unexpected error occurred in this section of the app."}

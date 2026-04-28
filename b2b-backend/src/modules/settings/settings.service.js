@@ -1,7 +1,7 @@
-import * as repo from './settings.repository.js';
+﻿import * as repo from './settings.repository.js';
 import AppError from '../../errors/AppError.js';
 
-// 🔥 Allowed keys (for safety)
+//  Allowed keys (for safety)
 const ALLOWED_KEYS = [
   'maintenanceMode',
   'siteName',
@@ -30,7 +30,7 @@ export const updateSetting = async (key, value) => {
     throw new AppError('Setting key is required', 400);
   }
 
-  // 🔥 Optional strict control
+  //  Optional strict control
   if (!ALLOWED_KEYS.includes(key)) {
     throw new AppError('Invalid setting key', 400);
   }

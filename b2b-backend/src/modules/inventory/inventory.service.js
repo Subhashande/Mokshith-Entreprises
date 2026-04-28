@@ -1,7 +1,8 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import * as repo from './inventory.repository.js';
 import AppError from '../../errors/AppError.js';
 import Warehouse from '../warehouse/warehouse.model.js';
+import { logger } from '../../config/logger.js';
 
 // ➕ Add Stock
 export const addStock = async ({ productId, warehouseId, stock }) => {
@@ -31,12 +32,12 @@ export const getInventoryStats = async () => {
   };
 };
 
-// 📦 Get All Inventory
+//  Get All Inventory
 export const getInventory = async () => {
   return repo.findAll();
 };
 
-// 🔄 Update Stock
+//  Update Stock
 export const updateStock = async ({ productId, warehouseId, stock, type = 'SET' }) => {
   let inventory = await repo.findInventory(productId, warehouseId);
 
@@ -61,7 +62,7 @@ export const updateStock = async ({ productId, warehouseId, stock, type = 'SET' 
   return inventory.save();
 };
 
-// ✅ Check Stock Availability
+//  Check Stock Availability
 export const checkStock = async (productId, quantity) => {
   if (quantity <= 0) {
     throw new AppError('Quantity must be greater than 0', 400);
@@ -71,7 +72,7 @@ export const checkStock = async (productId, quantity) => {
 
   // If no inventory records found, automatically create a default stock for demo/new products
   if (items.length === 0) {
-    console.log(`Auto-seeding stock for product: ${productId}`);
+    logger.info(`Auto-seeding stock for product: ${productId}`);
     // Find first warehouse or create a default one
     let warehouse = await Warehouse.findOne();
     if (!warehouse) {
@@ -95,7 +96,7 @@ export const checkStock = async (productId, quantity) => {
   return true;
 };
 
-// 🔥 NEW — Deduct Stock (IMPORTANT FOR ORDER FLOW)
+//  NEW — Deduct Stock (IMPORTANT FOR ORDER FLOW)
 export const reduceStock = async (productId, quantity, options = {}) => {
   const { session } = options;
   
@@ -113,7 +114,7 @@ export const reduceStock = async (productId, quantity, options = {}) => {
     const deductAmount = Math.min(item.stock, remaining);
     if (deductAmount <= 0) continue;
 
-    // 🔥 Optimistic Locking Update
+    //  Optimistic Locking Update
     const updated = await mongoose.model('Inventory').findOneAndUpdate(
       { 
         _id: item._id, 

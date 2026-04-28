@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+﻿import { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { orderService } from "../services/orderService";
 import { 
@@ -46,7 +46,7 @@ export const useOrder = (shouldFetch = false) => {
     dispatch(fetchStart());
     try {
       const newOrder = await orderService.placeOrder(orderData);
-      // 🔥 CART SHOULD ONLY BE CLEARED AFTER SUCCESSFUL PAYMENT
+      //  CART SHOULD ONLY BE CLEARED AFTER SUCCESSFUL PAYMENT
       // dispatch(clearCartAction()); 
       await fetchOrders();
       return newOrder;

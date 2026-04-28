@@ -14,6 +14,7 @@ router.get('/approvals', adminController.getApprovals);
 router.post('/approve/:id', adminController.approveUser);
 router.post('/reject/:id', adminController.rejectUser);
 router.get('/stats', adminController.getStats);
+router.get('/logs', adminController.getAuditLogs);
 
 router.patch(
   '/users/:id',

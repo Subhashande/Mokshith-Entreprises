@@ -1,4 +1,4 @@
-# B2B Backend Codebase - Comprehensive Audit
+﻿# B2B Backend Codebase - Comprehensive Audit
 
 **Generated:** April 24, 2026  
 **Framework:** Express.js + MongoDB + Node.js  
@@ -17,7 +17,7 @@
 
 ### Route Categories (V1 - 25 modules)
 
-#### 🔐 Authentication & Users
+####  Authentication & Users
 - **[src/modules/auth/auth.routes.js](src/modules/auth/auth.routes.js)**
   - POST `/api/v1/auth/register` - User registration with schema validation
   - POST `/api/v1/auth/login` - Password login
@@ -30,12 +30,12 @@
   - Address management
   - User preferences
 
-#### 🏢 Organization & Vendor Management
+####  Organization & Vendor Management
 - **[src/modules/company/company.routes.js](src/modules/company/company.routes.js)** - B2B company profiles
 - **[src/modules/vendor/vendor.routes.js](src/modules/vendor/vendor.routes.js)** - Vendor management
 - **[src/modules/superAdmin/superAdmin.routes.js](src/modules/superAdmin/superAdmin.routes.js)** - Super admin operations
 
-#### 🛍️ Catalog & Products
+####  Catalog & Products
 - **[src/modules/category/category.routes.js](src/modules/category/category.routes.js)** - Category CRUD
 - **[src/modules/product/product.routes.js](src/modules/product/product.routes.js)**
   - POST `/api/v1/products` - Create product (Auth + Admin/Vendor/SuperAdmin)
@@ -49,7 +49,7 @@
 - **[src/modules/pricing/pricing.routes.js](src/modules/pricing/pricing.routes.js)** - Dynamic pricing engine
 - **[src/modules/promotion/promotion.routes.js](src/modules/promotion/promotion.routes.js)** - Promotions & discounts
 
-#### 🛒 Buying Flow
+####  Buying Flow
 - **[src/modules/cart/cart.routes.js](src/modules/cart/cart.routes.js)**
   - POST `/api/v1/cart` - Add to cart
   - GET `/api/v1/cart` - Get cart
@@ -62,7 +62,7 @@
   - GET `/api/v1/orders/:id` - Get order details
   - PATCH `/api/v1/orders/:id/status` - Update order status (Admin/SuperAdmin)
 
-#### 💳 Payment & Finance
+####  Payment & Finance
 - **[src/modules/payment/payment.routes.js](src/modules/payment/payment.routes.js)**
   - POST `/api/v1/payments/hybrid` - Hybrid payment (credit + gateway)
   - POST `/api/v1/payments/create-order` - Create Razorpay order
@@ -73,7 +73,7 @@
 - **[src/modules/invoice/invoice.routes.js](src/modules/invoice/invoice.routes.js)** - Invoice generation & retrieval
 - **[src/modules/credit/credit.routes.js](src/modules/credit/credit.routes.js)** - Credit account management
 
-#### 🚚 Logistics & Shipping
+####  Logistics & Shipping
 - **[src/modules/warehouse/warehouse.routes.js](src/modules/warehouse/warehouse.routes.js)** - Warehouse management
 - **[src/modules/inventory/inventory.routes.js](src/modules/inventory/inventory.routes.js)**
   - POST `/api/v1/inventory/add` - Add stock
@@ -85,7 +85,7 @@
 - **[src/modules/shipment/shipment.routes.js](src/modules/shipment/shipment.routes.js)** - Shipment tracking
 - **[src/modules/logistics/logistics.routes.js](src/modules/logistics/logistics.routes.js)** - Advanced logistics routing
 
-#### 🔔 Support & Engagement
+####  Support & Engagement
 - **[src/modules/notification/notification.routes.js](src/modules/notification/notification.routes.js)** - Push/Email/SMS notifications
 - **[src/modules/analytics/analytics.routes.js](src/modules/analytics/analytics.routes.js)** - Dashboard analytics
 - **[src/modules/settings/settings.routes.js](src/modules/settings/settings.routes.js)** - System settings (maintenance mode, etc.)
@@ -93,7 +93,7 @@
 - **[src/modules/review/review.routes.js](src/modules/review/review.routes.js)** - Product reviews
 - **[src/modules/search/search.routes.js](src/modules/search/search.routes.js)** - Global search
 
-#### 🛡️ Admin
+####  Admin
 - **[src/modules/admin/admin.routes.js](src/modules/admin/admin.routes.js)**
   - GET `/api/v1/admin/users` - Get all users
   - GET `/api/v1/admin/approvals` - Get pending user approvals

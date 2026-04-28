@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import * as controller from './category.controller.js';
 import { protect } from '../../middlewares/auth.middleware.js';
 import { authorize } from '../../middlewares/role.middleware.js';
@@ -17,7 +17,7 @@ router.post(
 
 router.get('/', protect, controller.getCategories);
 
-// 🔥 NEW
+//  NEW
 router.get('/:id', protect, controller.getCategoryById);
 
 export default router;

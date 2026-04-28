@@ -1,8 +1,9 @@
 import { razorpay } from '../../config/razorpay.js';
 import crypto from 'crypto';
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 
-// 🔥 Circuit Breaker State
+// Circuit Breaker State
 const circuitBreaker = {
   failures: 0,
   lastFailure: null,
@@ -49,18 +50,18 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
   if (!checkCircuit()) {
     throw new Error('Payment gateway is temporarily unavailable (Circuit Breaker). Please try again in a minute.');
   }
-  // 🔥 VALIDATION: Ensure amount is valid
+  // VALIDATION: Ensure amount is valid
   const numericAmount = Number(amount);
   if (isNaN(numericAmount) || numericAmount < 0) {
     throw new Error('Invalid amount provided for payment');
   }
 
-  // 🔥 VALIDATION: Razorpay minimum is ₹1 (100 paise)
+  // VALIDATION: Razorpay minimum is ₹1 (100 paise)
   if (numericAmount < 1) {
     throw new Error('Minimum payment amount is ₹1');
   }
 
-  // 🔥 VALIDATION: Reasonable maximum (₹10,000,000)
+  // VALIDATION: Reasonable maximum (₹10,000,000)
   if (numericAmount > 10000000) {
     throw new Error('Maximum payment amount is ₹1,00,00,000');
   }
@@ -72,7 +73,7 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
   };
 
   try {
-    console.log('📦 Creating Razorpay order:', {
+    logger.info('Creating Razorpay order:', {
       amount: numericAmount,
       amountInPaise: options.amount,
       currency,
@@ -82,7 +83,7 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
     const order = await razorpay.orders.create(options);
     recordSuccess();
     
-    console.log('✅ Razorpay order created successfully:', {
+    logger.info('Razorpay order created successfully:', {
       orderId: order.id,
       amount: order.amount,
       receipt: order.receipt
@@ -99,7 +100,7 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
     };
   } catch (error) {
     recordFailure();
-    console.error('❌ RAZORPAY ERROR:', {
+    console.error('RAZORPAY ERROR:', {
       message: error.message,
       code: error.code,
       description: error.description,
@@ -132,9 +133,9 @@ export const createPaymentOrder = async ({ amount, currency = 'INR', receipt }) 
  */
 export const verifyPayment = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
   try {
-    // ✅ VALIDATION: Check required fields
+    // VALIDATION: Check required fields
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      console.error('❌ Missing payment verification fields', {
+      console.error('Missing payment verification fields', {
         orderId: razorpay_order_id,
         paymentId: razorpay_payment_id,
         hasSignature: !!razorpay_signature
@@ -151,9 +152,9 @@ export const verifyPayment = async ({ razorpay_order_id, razorpay_payment_id, ra
     const isValid = razorpay_signature === expectedSign;
     
     if (isValid) {
-      console.log('✅ Payment signature verified successfully');
+      console.log('Payment signature verified successfully');
     } else {
-      console.error('❌ Payment signature verification failed:', {
+      console.error('Payment signature verification failed:', {
         received: razorpay_signature,
         expected: expectedSign,
         sign
@@ -162,7 +163,7 @@ export const verifyPayment = async ({ razorpay_order_id, razorpay_payment_id, ra
 
     return isValid;
   } catch (error) {
-    console.error('❌ Error during payment verification:', error.message);
+    console.error('Error during payment verification:', error.message);
     return false;
   }
 };
@@ -177,7 +178,7 @@ export const verifyPayment = async ({ razorpay_order_id, razorpay_payment_id, ra
 export const verifyWebhookSignature = (rawBody, signature, secret) => {
   try {
     if (!secret) {
-      console.error('❌ Webhook secret not configured');
+      console.error('Webhook secret not configured');
       return false;
     }
 
@@ -189,12 +190,12 @@ export const verifyWebhookSignature = (rawBody, signature, secret) => {
     const isValid = signature === expectedSignature;
     
     if (!isValid) {
-      console.error('❌ Webhook signature mismatch');
+      console.error('Webhook signature mismatch');
     }
 
     return isValid;
   } catch (error) {
-    console.error('❌ Error verifying webhook signature:', error.message);
+    console.error('Error verifying webhook signature:', error.message);
     return false;
   }
 };

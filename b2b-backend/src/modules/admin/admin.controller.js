@@ -46,3 +46,8 @@ export const updateUserCredit = asyncHandler(async (req, res) => {
 
   successResponse(res, user, 'User credit updated successfully');
 });
+
+export const getAuditLogs = asyncHandler(async (req, res) => {
+  const logs = await adminService.getAuditLogs(req.query);
+  successResponse(res, logs);
+});

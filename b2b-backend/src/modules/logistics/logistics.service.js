@@ -5,6 +5,7 @@ import Order from '../order/order.model.js';
 import { DELIVERY_STATUS } from '../../constants/deliveryStatus.js';
 import { ORDER_STATUS } from '../../constants/orderStatus.js';
 import mongoose from 'mongoose';
+import { logger } from '../../config/logger.js';
 
 export const createShipment = async (order, warehouses) => {
   if (!order) throw new AppError('Order not found', 404);
@@ -24,7 +25,7 @@ export const createShipment = async (order, warehouses) => {
 };
 
 export const autoAssignDelivery = async (orderId) => {
-  console.log('Auto-assigning delivery for order:', orderId);
+  logger.info('Auto-assigning delivery for order:', orderId);
   
   const order = await Order.findById(orderId).populate('userId');
   if (!order) return;
@@ -39,7 +40,7 @@ export const autoAssignDelivery = async (orderId) => {
   });
 
   if (!activePartners || activePartners.length === 0) {
-    console.warn('No active delivery partners found for auto-assignment');
+    logger.warn('No active delivery partners found for auto-assignment');
     return;
   }
 
@@ -90,7 +91,7 @@ export const autoAssignDelivery = async (orderId) => {
     });
   }
 
-  console.log(`Order ${orderId} auto-assigned to ${chosenPartner.name}`);
+  logger.info(`Order ${orderId} auto-assigned to ${chosenPartner.name}`);
   return shipment;
 };
 

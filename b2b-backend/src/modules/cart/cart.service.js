@@ -1,4 +1,4 @@
-import * as repo from './cart.repository.js';
+﻿import * as repo from './cart.repository.js';
 import Product from '../product/product.model.js';
 import AppError from '../../errors/AppError.js';
 
@@ -8,13 +8,13 @@ export const addToCart = async (userId, { productId, quantity }) => {
   const product = await Product.findById(productId);
   if (!product) throw new AppError('Product not found', 404);
 
-  // 🔥 Wholesale MOQ validation
+  //  Wholesale MOQ validation
   const minQty = product.minOrderQty || product.moq || 1;
   if (quantity < minQty) {
     throw new AppError(`Minimum order quantity for ${product.name} is ${minQty}`, 400);
   }
 
-  // 🔥 Optional: stock validation
+  //  Optional: stock validation
   if (product.stock < quantity) {
     throw new AppError('Insufficient stock', 400);
   }

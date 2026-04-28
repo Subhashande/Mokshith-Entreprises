@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useWishlist } from '../hooks/useWishlist';
 import { useOrder } from '../../order/hooks/useOrder';
 import Card from '../../../components/ui/Card';
@@ -40,7 +40,7 @@ const WishlistPage = () => {
 
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) return product.images[0];
-    if (product.image && !product.image.includes('📦')) return product.image;
+    if (product.image && !product.image.includes('')) return product.image;
     
     const category = (product.category?.name || product.categoryId?.name || "").toLowerCase();
     const name = (product.name || "").toLowerCase();

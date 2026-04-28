@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Payment Security Utilities
  * Handles validation, verification, and secure payment operations
  */
@@ -42,7 +42,7 @@ export const validateRazorpayResponse = (response) => {
  */
 export const validatePaymentAmount = (expectedAmount, actualAmount, tolerance = 0) => {
   if (typeof expectedAmount !== 'number' || typeof actualAmount !== 'number') {
-    console.error('❌ Invalid amount types for validation');
+    console.error(' Invalid amount types for validation');
     return false;
   }
 
@@ -96,7 +96,7 @@ export const PaymentDuplicateDetector = (() => {
 
         return true;
       } catch (err) {
-        console.error('❌ Error checking duplicate payment:', err);
+        console.error(' Error checking duplicate payment:', err);
         return false;
       }
     },
@@ -119,9 +119,9 @@ export const PaymentDuplicateDetector = (() => {
         };
 
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payments));
-        console.log('✅ Payment marked as processed:', paymentId);
+        console.log(' Payment marked as processed:', paymentId);
       } catch (err) {
-        console.error('❌ Error marking payment as processed:', err);
+        console.error(' Error marking payment as processed:', err);
       }
     },
 
@@ -131,9 +131,9 @@ export const PaymentDuplicateDetector = (() => {
     clear: () => {
       try {
         sessionStorage.removeItem(STORAGE_KEY);
-        console.log('✅ Payment history cleared');
+        console.log(' Payment history cleared');
       } catch (err) {
-        console.error('❌ Error clearing payment history:', err);
+        console.error(' Error clearing payment history:', err);
       }
     }
   };

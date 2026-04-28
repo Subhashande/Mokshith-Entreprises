@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes/routeConfig';
 import Button from '../ui/Button';
@@ -39,7 +39,7 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) =
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {cart.length === 0 ? (
             <div style={{ textAlign: 'center', marginTop: '4rem' }}>
-              <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</p>
+              <p style={{ fontSize: '3rem', marginBottom: '1rem' }}></p>
               <p style={{ color: 'var(--text-muted)' }}>Your cart is empty</p>
               <Button onClick={onClose} variant="secondary" style={{ marginTop: '1rem' }}>Start Shopping</Button>
             </div>
@@ -52,7 +52,7 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) =
                 return (
                   <div key={item._id || item.id} style={{ display: 'flex', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ width: '80px', height: '80px', backgroundColor: '#f1f5f9', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                      📦
+                      
                     </div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{item.name}</p>
@@ -87,7 +87,7 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) =
                       
                       {isItemMoqViolated && (
                         <p style={{ color: 'var(--error)', fontSize: '0.7rem', marginTop: '0.5rem', fontWeight: '600' }}>
-                          ⚠️ Minimum {minQty} required for wholesale
+                           Minimum {minQty} required for wholesale
                         </p>
                       )}
                     </div>
