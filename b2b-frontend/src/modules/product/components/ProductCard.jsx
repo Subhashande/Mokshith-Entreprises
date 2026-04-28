@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { ShoppingCart, Eye, Star, Plus, Minus, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../routes/routeConfig';
 import { useWishlist } from '../../../modules/wishlist/hooks/useWishlist';
+import styles from './ProductCard.module.css';
 
 const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
     setQty(product.minOrderQty || product.moq || 1);
   }, [product]);
 
-  const getProductImage = (product) => {
+  const productImage = useMemo(() => {
     if (product.images && product.images.length > 0) return product.images[0];
     if (product.image && !product.image.includes('')) return product.image;
     
@@ -33,6 +34,13 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
       return "https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=500&q=80";
     
     return "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=500&q=80";
+  }, [product]);
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(`${routes.PRODUCTS}/${product._id || product.id}`);
+    }
   };
 
   const handleAction = (e, action) => {
@@ -79,344 +87,105 @@ const ProductCard = ({ product, onAddToCart, onBuyNow, user }) => {
 
   return (
     <div 
-      className="product-card premium-card"
+      className={styles.card}
       onClick={() => navigate(`${routes.PRODUCTS}/${product._id || product.id}`)}
+      onKeyPress={handleKeyPress}
+      role="article"
+      tabIndex={0}
+      aria-label={`${product.name}, ${product.category || 'product'}, ₹${product.price}`}
     >
-      <div className="product-image-wrapper">
+      <div className={styles.imageWrapper}>
         <img 
-          src={getProductImage(product)} 
-          alt={product.name} 
-          className="product-image"
+          src={productImage} 
+          alt={`${product.name} - ${product.category || 'product'}`}
+          className={styles.image}
+          loading="lazy"
+          decoding="async"
           onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&w=500&q=80"; }}
         />
-        <div className="product-overlay">
+        <div className={styles.overlay}>
           <button 
-            className="overlay-button"
+            className={styles.overlayButton}
             onClick={(e) => { e.stopPropagation(); navigate(`${routes.PRODUCTS}/${product._id || product.id}`); }}
+            aria-label="View product details"
           >
-            <Eye size={18} />
+            <Eye size={18} aria-hidden="true" />
           </button>
           <button 
-            className={`overlay-button ${inWishlist ? 'wishlist-active' : ''}`}
+            className={`${styles.overlayButton} ${inWishlist ? styles.wishlistActive : ''}`}
             onClick={handleWishlistToggle}
+            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-pressed={inWishlist}
           >
-            <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
+            <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
           </button>
         </div>
-        {product.isNew && <span className="badge-new">New</span>}
+        {product.isNew && <span className={styles.badgeNew}>New</span>}
       </div>
 
-      <div className="product-info">
-        <div className="product-meta">
-          <span className="product-category">
+      <div className={styles.info}>
+        <div className={styles.meta}>
+          <span className={styles.category}>
             {product.category || product.categoryId?.name || "Wholesale"}
           </span>
-          <div className="product-rating">
-            <Star size={14} fill="var(--accent)" color="var(--accent)" />
+          <div className={styles.rating} aria-label={`Rating: ${product.rating || 4.5} out of 5`}>
+            <Star size={14} fill="var(--accent)" color="var(--accent)" aria-hidden="true" />
             <span>{product.rating || 4.5}</span>
           </div>
         </div>
         
-        <h3 className="product-title">{product.name}</h3>
-        <p className="product-description">{product.description?.substring(0, 60)}...</p>
+        <h3 className={styles.title}>{product.name}</h3>
+        <p className={styles.description}>{product.description?.substring(0, 60)}...</p>
         
-        <div className="wholesale-badge">
+        <div className={styles.wholesaleBadge}>
           <span>Minimum Order: {minQty} {product.unit || 'units'}</span>
         </div>
 
-        <div className="product-footer">
-          <div className="product-price-wrapper">
-            <span className="price-label">Price per {product.unit || 'unit'}</span>
-            <span className="product-price">
+        <div className={styles.footer}>
+          <div className={styles.priceWrapper}>
+            <span className={styles.priceLabel}>Price per {product.unit || 'unit'}</span>
+            <span className={styles.price}>
               ₹{product.price?.toLocaleString() || product.basePrice?.toLocaleString() || "0"}
             </span>
           </div>
           
-          <div className="quantity-selector-inline">
-            <button onClick={handleDecrease} className="qty-btn" title="Decrease">
-              <Minus size={16} strokeWidth={3} />
+          <div className={styles.quantitySelector} role="group" aria-label="Quantity selector">
+            <button 
+              onClick={handleDecrease} 
+              className={styles.qtyBtn} 
+              aria-label="Decrease quantity"
+              disabled={qty <= minQty}
+            >
+              <Minus size={16} strokeWidth={3} aria-hidden="true" />
             </button>
-            <span className="qty-val">{qty}</span>
-            <button onClick={handleIncrease} className="qty-btn" title="Increase">
-              <Plus size={16} strokeWidth={3} />
+            <span className={styles.qtyVal} aria-live="polite">{qty}</span>
+            <button 
+              onClick={handleIncrease} 
+              className={styles.qtyBtn} 
+              aria-label="Increase quantity"
+            >
+              <Plus size={16} strokeWidth={3} aria-hidden="true" />
             </button>
           </div>
         </div>
 
-        <div className="product-actions-full">
+        <div className={styles.actions}>
           <button 
-            className="add-to-cart-btn-full"
+            className={styles.btnAddToCart}
             onClick={(e) => handleAction(e, onAddToCart)}
+            aria-label={`Add ${qty} ${product.unit || 'units'} of ${product.name} to cart`}
           >
-            <ShoppingCart size={18} /> Add
+            <ShoppingCart size={18} aria-hidden="true" /> Add
           </button>
           <button 
-            className="buy-now-btn-full"
+            className={styles.btnBuyNow}
             onClick={(e) => handleAction(e, onBuyNow)}
+            aria-label={`Buy ${qty} ${product.unit || 'units'} of ${product.name} now`}
           >
             Buy Now
           </button>
         </div>
       </div>
-
-      <style>{`
-        .product-card {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          background: var(--surface);
-          border-radius: var(--radius-lg);
-          border: 1px solid var(--border-light);
-          transition: all 0.3s ease;
-          overflow: hidden;
-          cursor: pointer;
-          position: relative;
-        }
-
-        .product-card:hover {
-          transform: translateY(-5px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--primary-light);
-        }
-
-        .product-image-wrapper {
-          position: relative;
-          height: 180px;
-          overflow: hidden;
-          background: #f8fafc;
-        }
-
-        .product-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s ease;
-        }
-
-        .product-card:hover .product-image {
-          transform: scale(1.1);
-        }
-
-        .product-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .product-card:hover .product-overlay {
-          opacity: 1;
-        }
-
-        .overlay-button {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: var(--surface);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: none;
-          cursor: pointer;
-          color: var(--text-main);
-          box-shadow: var(--shadow-md);
-          transition: all 0.2s ease;
-        }
-
-        .overlay-button:hover {
-          transform: scale(1.1);
-          background: var(--primary);
-          color: white;
-        }
-
-        .wishlist-active {
-          color: #ef4444;
-        }
-
-        .wishlist-active:hover {
-          background: #ef4444;
-          color: white;
-        }
-
-        .badge-new {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: var(--accent);
-          color: white;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          font-weight: 700;
-        }
-
-        .product-info {
-          padding: 1.25rem;
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-
-        .product-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
-        }
-
-        .product-category {
-          font-size: 0.75rem;
-          color: var(--primary);
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .product-rating {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 0.8125rem;
-          font-weight: 600;
-        }
-
-        .product-title {
-          font-size: 1rem;
-          font-weight: 700;
-          color: var(--text-main);
-          margin-bottom: 0.5rem;
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .product-description {
-          font-size: 0.8125rem;
-          color: var(--text-muted);
-          margin-bottom: 1rem;
-          line-height: 1.5;
-        }
-
-        .wholesale-badge {
-          background: #eff6ff;
-          color: #1e40af;
-          padding: 0.5rem;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          border: 1px dashed #bfdbfe;
-        }
-
-        .product-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-top: auto;
-          margin-bottom: 1rem;
-        }
-
-        .product-price-wrapper {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .price-label {
-          font-size: 0.75rem;
-          color: var(--text-muted);
-        }
-
-        .product-price {
-          font-size: 1.125rem;
-          font-weight: 800;
-          color: var(--text-main);
-        }
-
-        .quantity-selector-inline {
-          display: flex;
-          align-items: center;
-          background: #f1f5f9;
-          border-radius: 20px;
-          padding: 4px;
-          gap: 12px;
-        }
-
-        .qty-btn {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          border: 1px solid #e2e8f0;
-          background: #f8fafc;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: #1e293b;
-          transition: all 0.2s ease;
-        }
-
-        .qty-btn:hover {
-          background: #f1f5f9;
-          border-color: #cbd5e1;
-          color: #2563eb;
-        }
-
-        .qty-btn:active {
-          transform: scale(0.95);
-        }
-
-        .qty-val {
-          font-weight: 700;
-          font-size: 0.875rem;
-          min-width: 20px;
-          text-align: center;
-        }
-
-        .product-actions-full {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.75rem;
-        }
-
-        .add-to-cart-btn-full, .buy-now-btn-full {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 0.625rem;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          border: none;
-        }
-
-        .add-to-cart-btn-full {
-          background: var(--primary-light);
-          color: var(--primary);
-        }
-
-        .add-to-cart-btn-full:hover {
-          background: var(--primary);
-          color: white;
-        }
-
-        .buy-now-btn-full {
-          background: var(--primary);
-          color: white;
-        }
-
-        .buy-now-btn-full:hover {
-          background: var(--primary-dark);
-          transform: translateY(-2px);
-        }
-      `}</style>
     </div>
   );
 };

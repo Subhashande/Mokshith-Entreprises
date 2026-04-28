@@ -7,6 +7,7 @@ import { ShoppingCart, User, Menu, X, LogOut, LayoutDashboard, Package, CreditCa
 import Sidebar from './Sidebar';
 import CartDrawer from './CartDrawer';
 import ConfirmDialog from '../feedback/ConfirmDialog';
+import styles from './Navbar.module.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -31,59 +32,59 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="navbar-header">
-        <div className="navbar-container">
-          <Link to={routes.LANDING} className="navbar-logo">
-            <span className="logo-text">Mokshith</span>
-            <span className="logo-badge">B2B</span>
+      <header className={styles.navbarHeader}>
+        <div className={styles.navbarContainer}>
+          <Link to={routes.LANDING} className={styles.navbarLogo}>
+            <span className={styles.logoText}>Mokshith</span>
+            <span className={styles.logoBadge}>B2B</span>
           </Link>
 
-          <nav className="navbar-links">
-            <Link to={routes.PRODUCTS} className={`nav-link ${location.pathname === routes.PRODUCTS ? 'active' : ''}`}>
+          <nav className={styles.navbarLinks}>
+            <Link to={routes.PRODUCTS} className={`${styles.navLink} ${location.pathname === routes.PRODUCTS ? styles.active : ''}`}>
               Products
             </Link>
             {!user && (
-              <Link to="#" className="nav-link">
+              <Link to="#" className={styles.navLink}>
                 Pricing
               </Link>
             )}
             {user && (
               <>
-                <Link to={routes.DASHBOARD} className={`nav-link ${location.pathname === routes.DASHBOARD ? 'active' : ''}`}>
+                <Link to={routes.DASHBOARD} className={`${styles.navLink} ${location.pathname === routes.DASHBOARD ? styles.active : ''}`}>
                   Dashboard
                 </Link>
-                <Link to={routes.ORDERS} className={`nav-link ${location.pathname === routes.ORDERS ? 'active' : ''}`}>
+                <Link to={routes.ORDERS} className={`${styles.navLink} ${location.pathname === routes.ORDERS ? styles.active : ''}`}>
                   Orders
                 </Link>
               </>
             )}
           </nav>
 
-          <div className="navbar-actions">
+          <div className={styles.navbarActions}>
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="action-icon-button"
+              className={styles.actionIconButton}
               aria-label="Cart"
             >
               <ShoppingCart size={20} />
-              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
             </button>
             
             {user ? (
-              <div className="user-profile-wrapper">
+              <div className={styles.userProfileWrapper}>
                 <button 
                   onClick={() => setIsSidebarOpen(true)}
-                  className="user-avatar-button"
+                  className={styles.userAvatarButton}
                 >
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </button>
               </div>
             ) : (
-              <div className="auth-buttons">
-                <Link to={routes.LOGIN} className="login-link">
+              <div className={styles.authButtons}>
+                <Link to={routes.LOGIN} className={styles.loginLink}>
                   Login
                 </Link>
-                <Link to={routes.REGISTER} className="premium-button premium-button-primary register-cta">
+                <Link to={routes.REGISTER} className={`btn-primary ${styles.registerCta}`}>
                   Register
                 </Link>
               </div>
@@ -117,150 +118,6 @@ const Navbar = () => {
         onUpdateQuantity={updateQuantity} 
         onRemoveItem={removeFromCart} 
       />
-
-      <style>{`
-        .navbar-header {
-          background-color: var(--surface);
-          border-bottom: 1px solid var(--border);
-          padding: 0 2rem;
-          height: 72px;
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          display: flex;
-          align-items: center;
-        }
-
-        .navbar-container {
-          max-width: 1200px;
-          width: 100%;
-          margin: 0 auto;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .navbar-logo {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          text-decoration: none;
-        }
-
-        .logo-text {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: #000000;
-          letter-spacing: -0.02em;
-        }
-
-        .logo-badge {
-          background-color: var(--primary);
-          color: white;
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.125rem 0.5rem;
-          border-radius: var(--radius-sm);
-        }
-
-        .navbar-links {
-          display: flex;
-          gap: 2rem;
-          align-items: center;
-        }
-
-        .nav-link {
-          font-weight: 500;
-          color: #4b5563;
-          text-decoration: none;
-          font-size: 0.9375rem;
-          transition: var(--transition-fast);
-        }
-
-        .nav-link:hover, .nav-link.active {
-          color: var(--primary);
-        }
-
-        .navbar-actions {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-        }
-
-        .action-icon-button {
-          position: relative;
-          background: none;
-          border: none;
-          color: var(--text-muted);
-          padding: 0.5rem;
-          cursor: pointer;
-          transition: var(--transition-fast);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .action-icon-button:hover {
-          color: var(--primary);
-        }
-
-        .cart-badge {
-          position: absolute;
-          top: 0;
-          right: 0;
-          background-color: var(--primary);
-          color: white;
-          font-size: 0.7rem;
-          border-radius: 9999px;
-          min-width: 18px;
-          height: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          padding: 0 4px;
-        }
-
-        .user-avatar-button {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background-color: var(--primary-light);
-          color: var(--primary);
-          border: 1px solid var(--primary);
-          font-weight: 700;
-          cursor: pointer;
-          transition: var(--transition-fast);
-        }
-
-        .user-avatar-button:hover {
-          box-shadow: 0 0 0 4px var(--primary-light);
-        }
-
-        .auth-buttons {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-        }
-
-        .login-link {
-          color: var(--text-main);
-          font-weight: 600;
-          font-size: 0.9375rem;
-          text-decoration: none;
-        }
-
-        .register-cta {
-          padding: 0.625rem 1.25rem;
-          font-size: 0.9375rem;
-        }
-
-        @media (max-width: 768px) {
-          .navbar-links {
-            display: none;
-          }
-        }
-      `}</style>
     </>
   );
 };

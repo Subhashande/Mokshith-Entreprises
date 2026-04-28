@@ -1,0 +1,275 @@
+@import '../../../styles/shared.module.css';
+
+.authContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--surface);
+}
+
+.authSidebar {
+  flex: 1;
+  background-color: var(--text-main);
+  color: white;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebarLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  margin-bottom: 6rem;
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.logoBadge {
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sidebarFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  flex: 1;
+}
+
+.featureItem {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.featureIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.featureItem h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.featureItem p {
+  color: #94a3b8;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.sidebarFooter {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 3rem;
+}
+
+.authMain {
+  flex: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.authFormWrapper {
+  width: 100%;
+  max-width: 440px;
+}
+
+.authHeader {
+  margin-bottom: 3rem;
+}
+
+.authHeader h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.authHeader p {
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.maintenanceBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.formGroup label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.forgotLink {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  transition: var(--transition-fast);
+  background-color: #f8fafc;
+}
+
+.inputWrapper input:focus {
+  border-color: var(--primary);
+  background-color: white;
+  outline: none;
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.formOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.checkboxLabel input {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.authSubmit {
+  margin-top: 1rem;
+  padding: 0.875rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.authFooterText {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.authFooterText a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.authFooterText a:hover {
+  text-decoration: underline;
+}
+
+.errorMessage {
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: var(--error);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .authSidebar {
+    display: none;
+  }
+  
+  .authMain {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .authMain {
+    padding: 1.5rem;
+  }
+  
+  .authHeader h1 {
+    font-size: 1.75rem;
+  }
+}

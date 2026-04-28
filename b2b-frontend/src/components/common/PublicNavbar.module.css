@@ -1,0 +1,94 @@
+@import '../../styles/shared.module.css';
+
+/* Navbar Header */
+.navbarHeader {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 72px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+.navbarContainer {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo */
+.navbarLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #000000;
+  letter-spacing: -0.02em;
+}
+
+.logoBadge {
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Navigation Links */
+.navbarLinks {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navLink {
+  font-weight: 500;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: var(--transition-fast);
+}
+
+.navLink:hover,
+.navLink.active {
+  color: var(--primary);
+}
+
+/* Navbar Actions */
+.navbarActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.loginLink {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  margin-right: 1.5rem;
+}
+
+.registerCta {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}

@@ -1,0 +1,371 @@
+@import '../../../styles/shared.module.css';
+
+/* Reuse base auth container styles */
+.authContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--surface);
+}
+
+.authSidebar {
+  flex: 1;
+  background-color: var(--text-main);
+  color: white;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebarLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  margin-bottom: 6rem;
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.logoBadge {
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sidebarFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  flex: 1;
+}
+
+.featureItem {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.featureIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.featureItem h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.featureItem p {
+  color: #94a3b8;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.sidebarFooter {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 3rem;
+}
+
+.authMain {
+  flex: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  overflow-y: auto;
+}
+
+.authFormWrapper {
+  width: 100%;
+  max-width: 560px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: var(--transition-fast);
+}
+
+.backButton:hover {
+  color: var(--primary);
+}
+
+.authHeader {
+  margin-bottom: 3rem;
+}
+
+.authHeader h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.authHeader p {
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+/* Role Selection Unique Styles */
+.roleSelection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.roleCard {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.roleCard:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.roleIconWrapper {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+
+.roleCard:hover .roleIconWrapper {
+  background: white;
+}
+
+.roleText {
+  flex: 1;
+}
+
+.roleText h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--text-main);
+}
+
+.roleText p {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.roleArrow {
+  color: var(--border);
+  transition: all 0.2s ease;
+}
+
+.roleCard:hover .roleArrow {
+  color: var(--primary);
+  transform: translateX(4px);
+}
+
+/* Form Styles */
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.inputWrapper input,
+.premiumSelect {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  transition: var(--transition-fast);
+  background-color: #f8fafc;
+}
+
+.inputWrapper input:focus,
+.premiumSelect:focus {
+  border-color: var(--primary);
+  background-color: white;
+  outline: none;
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.premiumSelect {
+  padding-left: 3rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.authSubmit {
+  margin-top: 1rem;
+  padding: 0.875rem;
+  font-size: 1rem;
+}
+
+.authFooterText {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.authFooterText a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.authFooterText a:hover {
+  text-decoration: underline;
+}
+
+.errorMessage {
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: var(--error);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Registration Success */
+.registrationSuccess {
+  text-align: center;
+  padding: 2rem 0;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.successIconWrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #f0fdf4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.successIconWrapper svg {
+  color: #22c55e;
+}
+
+.registrationSuccess h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+.registrationSuccess p {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .authSidebar {
+    display: none;
+  }
+  
+  .authMain {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .authMain {
+    padding: 1.5rem;
+  }
+  
+  .authHeader h1 {
+    font-size: 1.75rem;
+  }
+}

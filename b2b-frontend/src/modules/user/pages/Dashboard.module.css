@@ -1,0 +1,316 @@
+@import '../../../styles/shared.module.css';
+
+/* Dashboard Container */
+.dashboardContainer {
+  background-color: var(--background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardMain {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  flex: 1;
+}
+
+/* Dashboard Header */
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+}
+
+.headerLeft h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.headerLeft p {
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.statCard {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.statIconWrapper {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorBlue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.colorGreen {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.colorOrange {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.colorPurple {
+  background: #faf5ff;
+  color: #9333ea;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.statArrow {
+  margin-left: auto;
+  color: var(--border);
+  transition: transform 0.2s ease;
+}
+
+.statCard:hover .statArrow {
+  transform: translateX(4px);
+  color: var(--primary);
+}
+
+/* Content Grid */
+.dashboardContentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+/* Recent Orders Section */
+.recentOrdersSection {
+  padding: 2rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.viewAll {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* Orders Table */
+.ordersTableWrapper {
+  overflow-x: auto;
+}
+
+.ordersTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ordersTable th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ordersTable td {
+  padding: 1.25rem 0;
+  font-size: 0.9375rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ordersTable tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ordersTable tr:hover {
+  background-color: #f8fafc;
+}
+
+.orderId {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.orderAmount {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Status Badges */
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.statusPending {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.statusCompleted {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.statusShipped {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+/* Side Content */
+.sideContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.creditPreview {
+  padding: 2rem;
+}
+
+.creditProgressWrapper {
+  margin: 1.5rem 0 2rem;
+}
+
+.creditLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.progressBar {
+  height: 0.5rem;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 9999px;
+}
+
+.creditHelp {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* Quick Links */
+.quickLinksSection {
+  /* Inherits card styling */
+}
+
+.quickLinksGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.quickLinkCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-main);
+  transition: all 0.2s;
+}
+
+.quickLinkCard:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.quickLinkCard span {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .dashboardContentGrid {
+    grid-template-columns: 1fr;
+  }
+}

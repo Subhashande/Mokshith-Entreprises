@@ -26,7 +26,7 @@ import Button from '../../../components/ui/Button';
 import { useSocket } from '../../../context/SocketContext';
 import Loader from '../../../components/common/Loader';
 import { useDispatch } from 'react-redux';
-import { clearCart } from '../../order/orderSlice';
+import { clearCart } from '../../cart/cartSlice';
 import {
   validateRazorpayResponse,
   validatePaymentAmount,

@@ -15,6 +15,7 @@ import {
   Briefcase,
   ShieldCheck
 } from 'lucide-react';
+import styles from './Register.module.css';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -92,52 +93,52 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-sidebar">
-        <div className="sidebar-content">
-          <Link to={routes.LANDING} className="sidebar-logo">
-            <span className="logo-text">Mokshith</span>
-            <span className="logo-badge">B2B</span>
+    <div className={styles.authContainer}>
+      <div className={styles.authSidebar}>
+        <div className={styles.sidebarContent}>
+          <Link to={routes.LANDING} className={styles.sidebarLogo}>
+            <span className={styles.logoText}>Mokshith</span>
+            <span className={styles.logoBadge}>B2B</span>
           </Link>
-          <div className="sidebar-features">
-            <div className="feature-item">
-              <div className="feature-icon"><ShieldCheck size={20} /></div>
+          <div className={styles.sidebarFeatures}>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}><ShieldCheck size={20} /></div>
               <div>
                 <h4>Secure Transactions</h4>
                 <p>Enterprise-grade security for all your business deals.</p>
               </div>
             </div>
-            <div className="feature-item">
-              <div className="feature-icon"><Briefcase size={20} /></div>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}><Briefcase size={20} /></div>
               <div>
                 <h4>Business Tools</h4>
                 <p>Advanced analytics and inventory management.</p>
               </div>
             </div>
           </div>
-          <div className="sidebar-footer">
+          <div className={styles.sidebarFooter}>
             <p>© 2026 Mokshith Enterprises</p>
           </div>
         </div>
       </div>
 
-      <div className="auth-main">
-        <div className="auth-form-wrapper">
+      <div className={styles.authMain}>
+        <div className={styles.authFormWrapper}>
           {step === 2 && (
-            <button className="back-button" onClick={() => setStep(1)}>
+            <button className={styles.backButton} onClick={() => setStep(1)}>
               <ArrowLeft size={18} /> <span>Back to roles</span>
             </button>
           )}
 
-          <div className="auth-header">
+          <div className={styles.authHeader}>
             <h1>{step === 1 ? "Choose your account type" : "Create your account"}</h1>
             <p>{step === 1 ? "Select the role that best fits your needs" : `Setting up your ${roles.find(r => r.id === form.role)?.label} account`}</p>
           </div>
 
           {isRegistered ? (
-            <div className="registration-success">
-              <div className="success-icon-wrapper">
-                <ShieldCheck size={48} className="text-green-500" />
+            <div className={styles.registrationSuccess}>
+              <div className={styles.successIconWrapper}>
+                <ShieldCheck size={48} />
               </div>
               <h2>Registration Successful!</h2>
               <p>Your account has been created and is currently <strong>pending admin approval</strong>.</p>
@@ -163,19 +164,19 @@ const Register = () => {
                     <h3>{role.label}</h3>
                     <p>{role.description}</p>
                   </div>
-                  <ChevronRight className="role-arrow" size={20} />
+                  <ChevronRight className={styles.roleArrow} size={20} />
                 </div>
               ))}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="auth-form">
-              {error && <div className="error-message">{error}</div>}
+            <form onSubmit={handleSubmit} className={styles.authForm}>
+              {error && <div className={styles.errorMessage}>{error}</div>}
               
-              <div className="form-grid">
-                <div className="form-group">
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
                   <label>Full Name</label>
-                  <div className="input-wrapper">
-                    <User size={18} className="input-icon" />
+                  <div className={styles.inputWrapper}>
+                    <User size={18} className={styles.inputIcon} />
                     <input
                       type="text"
                       name="name"
@@ -203,10 +204,10 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Email Address</label>
-                <div className="input-wrapper">
-                  <Mail size={18} className="input-icon" />
+                <div className={styles.inputWrapper}>
+                  <Mail size={18} className={styles.inputIcon} />
                   <input
                     type="email"
                     name="email"
@@ -219,11 +220,11 @@ const Register = () => {
               </div>
 
               {form.role === "B2B_CUSTOMER" && (
-                <div className="form-grid">
-                  <div className="form-group">
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
                     <label>Company Name</label>
-                    <div className="input-wrapper">
-                      <Building2 size={18} className="input-icon" />
+                    <div className={styles.inputWrapper}>
+                      <Building2 size={18} className={styles.inputIcon} />
                       <input
                         type="text"
                         name="companyName"
@@ -234,10 +235,10 @@ const Register = () => {
                       />
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label>GST Number</label>
-                    <div className="input-wrapper">
-                      <ShieldCheck size={18} className="input-icon" />
+                  <div className={styles.formGroup}>
+                    <label>GST Number (Optional)</label>
+                    <div className={styles.inputWrapper}>
+                      <ShieldCheck size={18} className={styles.inputIcon} />
                       <input
                         type="text"
                         name="gstNumber"
@@ -252,10 +253,10 @@ const Register = () => {
               )}
 
               {form.role === "DELIVERY_PARTNER" && (
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Vehicle Type</label>
-                  <div className="input-wrapper">
-                    <Truck size={18} className="input-icon" />
+                  <div className={styles.inputWrapper}>
+                    <Truck size={18} className={styles.inputIcon} />
                     <select
                       name="vehicleType"
                       value={form.vehicleType}
@@ -272,10 +273,10 @@ const Register = () => {
                 </div>
               )}
 
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Password</label>
-                <div className="input-wrapper">
-                  <Lock size={18} className="input-icon" />
+                <div className={styles.inputWrapper}>
+                  <Lock size={18} className={styles.inputIcon} />
                   <input
                     type="password"
                     name="password"
@@ -289,7 +290,7 @@ const Register = () => {
 
               <button 
                 type="submit" 
-                className="premium-button premium-button-primary auth-submit"
+                className="btn-primary"
                 disabled={loading}
               >
                 {loading ? "Creating account..." : "Complete Registration"}
@@ -297,327 +298,11 @@ const Register = () => {
             </form>
           )}
 
-          <div className="auth-footer-text">
+          <div className={styles.authFooterText}>
             Already have an account? <Link to={routes.LOGIN}>Sign in</Link>
           </div>
         </div>
       </div>
-
-      <style>{`
-        .auth-container {
-          display: flex;
-          min-height: 100vh;
-          background-color: var(--surface);
-        }
-
-        .auth-sidebar {
-          flex: 1;
-          background-color: var(--text-main);
-          color: white;
-          padding: 4rem;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .sidebar-logo {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          text-decoration: none;
-          margin-bottom: 6rem;
-        }
-
-        .sidebar-features {
-          display: flex;
-          flex-direction: column;
-          gap: 3rem;
-          flex: 1;
-        }
-
-        .feature-item {
-          display: flex;
-          gap: 1.5rem;
-        }
-
-        .feature-icon {
-          width: 2.5rem;
-          height: 2.5rem;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-md);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .feature-item h4 {
-          font-size: 1.125rem;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
-        }
-
-        .feature-item p {
-          color: #94a3b8;
-          font-size: 0.9375rem;
-          line-height: 1.6;
-        }
-
-        .sidebar-footer {
-          color: #64748b;
-          font-size: 0.875rem;
-        }
-
-        .auth-main {
-          flex: 1.5;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 4rem;
-          overflow-y: auto;
-        }
-
-        .auth-form-wrapper {
-          width: 100%;
-          max-width: 560px;
-        }
-
-        .back-button {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: none;
-          border: none;
-          color: var(--text-muted);
-          font-weight: 600;
-          cursor: pointer;
-          margin-bottom: 2rem;
-          transition: var(--transition-fast);
-        }
-
-        .back-button:hover {
-          color: var(--primary);
-        }
-
-        .auth-header {
-          margin-bottom: 3rem;
-        }
-
-        .auth-header h1 {
-          font-size: 2rem;
-          font-weight: 800;
-          color: var(--text-main);
-          margin-bottom: 0.5rem;
-          letter-spacing: -0.02em;
-        }
-
-        .auth-header p {
-          color: var(--text-muted);
-          font-size: 1.125rem;
-        }
-
-        .role-selection {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-        }
-
-        .role-card {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-          padding: 1.5rem;
-          background: var(--surface);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-lg);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .role-card:hover {
-          border-color: var(--primary);
-          background-color: var(--primary-light);
-          transform: translateY(-2px);
-        }
-
-        .role-icon-wrapper {
-          width: 3.5rem;
-          height: 3.5rem;
-          background: #f1f5f9;
-          border-radius: var(--radius-md);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--primary);
-          transition: all 0.2s ease;
-        }
-
-        .role-card:hover .role-icon-wrapper {
-          background: white;
-        }
-
-        .role-text {
-          flex: 1;
-        }
-
-        .role-text h3 {
-          font-size: 1.125rem;
-          font-weight: 700;
-          margin-bottom: 0.25rem;
-        }
-
-        .role-text p {
-          color: var(--text-muted);
-          font-size: 0.9375rem;
-        }
-
-        .role-arrow {
-          color: var(--border);
-          transition: all 0.2s ease;
-        }
-
-        .role-card:hover .role-arrow {
-          color: var(--primary);
-          transform: translateX(4px);
-        }
-
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .form-group label {
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: var(--text-main);
-        }
-
-        .input-wrapper {
-          position: relative;
-        }
-
-        .input-icon {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text-muted);
-        }
-
-        .input-wrapper input, .premium-select {
-          width: 100%;
-          padding: 0.75rem 1rem 0.75rem 3rem;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          font-size: 0.9375rem;
-          transition: var(--transition-fast);
-          background-color: #f8fafc;
-        }
-
-        .input-wrapper input:focus, .premium-select:focus {
-          border-color: var(--primary);
-          background-color: white;
-          outline: none;
-          box-shadow: 0 0 0 4px var(--primary-light);
-        }
-
-        .premium-select {
-          padding-left: 3rem;
-          appearance: none;
-        }
-
-        .auth-submit {
-          margin-top: 1rem;
-          padding: 0.875rem;
-          font-size: 1rem;
-        }
-
-        .auth-footer-text {
-          margin-top: 2rem;
-          text-align: center;
-          color: var(--text-muted);
-          font-size: 0.9375rem;
-        }
-
-        .auth-footer-text a {
-          color: var(--primary);
-          font-weight: 600;
-          text-decoration: none;
-        }
-
-        .error-message {
-          padding: 0.75rem 1rem;
-          background-color: #fef2f2;
-          border: 1px solid #fee2e2;
-          color: var(--error);
-          border-radius: var(--radius-md);
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-
-        .registration-success {
-          text-align: center;
-          padding: 2rem 0;
-          animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .success-icon-wrapper {
-          width: 80px;
-          height: 80px;
-          background-color: #f0fdf4;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 1.5rem;
-        }
-
-        .registration-success h2 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: var(--text-main);
-          margin-bottom: 1rem;
-        }
-
-        .registration-success p {
-          color: var(--text-muted);
-          margin-bottom: 0.5rem;
-          line-height: 1.6;
-        }
-
-        @media (max-width: 992px) {
-          .auth-sidebar {
-            display: none;
-          }
-          .auth-main {
-            padding: 2rem;
-          }
-        }
-
-        @media (max-width: 576px) {
-          .form-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-          }
-        }
-      `}</style>
     </div>
   );
 };

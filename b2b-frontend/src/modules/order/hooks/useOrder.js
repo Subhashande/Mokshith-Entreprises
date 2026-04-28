@@ -4,16 +4,19 @@ import { orderService } from "../services/orderService";
 import { 
   fetchStart, 
   fetchOrdersSuccess, 
-  addToCart as addToCartAction, 
-  removeFromCart as removeFromCartAction, 
-  updateQuantity as updateQuantityAction,
-  clearCart as clearCartAction, 
   fetchFailure 
 } from "../orderSlice";
+import { 
+  addToCart as addToCartAction, 
+  removeFromCart as removeFromCartAction, 
+  updateCartQuantity as updateQuantityAction,
+  clearCart as clearCartAction 
+} from "../../cart/cartSlice";
 
 export const useOrder = (shouldFetch = false) => {
   const dispatch = useDispatch();
-  const { orders, cart, loading, error } = useSelector((state) => state.order);
+  const { orders, loading, error } = useSelector((state) => state.order);
+  const { items: cart } = useSelector((state) => state.cart);
 
   const fetchOrders = useCallback(async () => {
     dispatch(fetchStart());

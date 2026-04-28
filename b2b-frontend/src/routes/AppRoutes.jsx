@@ -1,83 +1,92 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { routes } from "./routeConfig";
 
-// Components
+// Components (keep these eager - small and used frequently)
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import RoleGuard from "../components/common/RoleGuard";
 import RoleBasedRoute from "../components/common/RoleBasedRoute";
+import Loader from "../components/common/Loader";
 
-// Layouts
+// Layouts (keep eager - critical for all routes)
 import MainLayout from "../components/layout/MainLayout";
 import PublicLayout from "../components/layout/PublicLayout";
 import AdminLayout from "../components/layout/AdminLayout";
 import SuperAdminLayout from "../components/layout/SuperAdminLayout";
 import DeliveryLayout from "../components/layout/DeliveryLayout";
 
-// Pages
-import LandingPage from "../modules/product/pages/LandingPage";
-import LoginPage from "../modules/auth/pages/LoginPage";
-import RegisterPage from "../modules/auth/pages/Register";
-import ProductPage from "../modules/product/pages/ProductPage";
-import AdminPage from "../modules/admin/pages/AdminPage";
-import AdminUsersPage from "../modules/admin/pages/Users";
-import AdminProductsPage from "../modules/admin/pages/Products";
-import AdminOrdersPage from "../modules/admin/pages/Orders";
-import AdminVendorsPage from "../modules/admin/pages/Vendors";
-import AdminApprovalsPage from "../modules/admin/pages/Approvals";
-import SuperAdminPage from "../modules/superadmin/pages/SuperAdminPage";
-import DeliveryPage from "../modules/delivery/pages/DeliveryPage";
-import CreditPage from "../modules/credit/pages/CreditPage";
-import CheckoutPage from "../modules/order/pages/Checkout";
-import OrdersPage from "../modules/order/pages/OrdersPage";
-import OrderDetails from "../modules/order/pages/OrderDetails";
-import CartPage from "../modules/order/pages/Cart";
-import PaymentPage from "../modules/payment/pages/PaymentPage";
-import ProfilePage from "../modules/user/pages/Profile";
-import SecurityPage from "../modules/user/pages/Security";
-import HelpPage from "../modules/user/pages/Help";
-import ProductDetails from "../modules/product/pages/ProductDetails";
-import Dashboard from "../modules/user/pages/Dashboard";
+// Lazy-loaded Pages (code-split by route)
+const LandingPage = lazy(() => import("../modules/product/pages/LandingPage"));
+const LoginPage = lazy(() => import("../modules/auth/pages/LoginPage"));
+const RegisterPage = lazy(() => import("../modules/auth/pages/Register"));
+const ProductPage = lazy(() => import("../modules/product/pages/ProductPage"));
+const ProductDetails = lazy(() => import("../modules/product/pages/ProductDetails"));
 
-// New Module Pages
-import AnalyticsPage from "../modules/analytics/pages/AnalyticsPage";
-import CompanyPage from "../modules/company/pages/CompanyPage";
-import InventoryPage from "../modules/inventory/pages/InventoryPage";
-import LogisticsPage from "../modules/logistics/pages/LogisticsPage";
-import ShipmentTrackingPage from "../modules/shipment/pages/ShipmentTrackingPage";
-import WarehousePage from "../modules/warehouse/pages/WarehousePage";
-import PromotionPage from "../modules/promotion/pages/PromotionPage";
-import WishlistPage from "../modules/wishlist/pages/WishlistPage";
-import SettingsPage from "../modules/settings/SettingsPage";
+// Admin Pages
+const AdminPage = lazy(() => import("../modules/admin/pages/AdminPage"));
+const AdminUsersPage = lazy(() => import("../modules/admin/pages/Users"));
+const AdminProductsPage = lazy(() => import("../modules/admin/pages/Products"));
+const AdminOrdersPage = lazy(() => import("../modules/admin/pages/Orders"));
+const AdminVendorsPage = lazy(() => import("../modules/admin/pages/Vendors"));
+const AdminApprovalsPage = lazy(() => import("../modules/admin/pages/Approvals"));
+
+// Super Admin & Delivery
+const SuperAdminPage = lazy(() => import("../modules/superadmin/pages/SuperAdminPage"));
+const DeliveryPage = lazy(() => import("../modules/delivery/pages/DeliveryPage"));
+
+// User & Orders
+const Dashboard = lazy(() => import("../modules/user/pages/Dashboard"));
+const ProfilePage = lazy(() => import("../modules/user/pages/Profile"));
+const SecurityPage = lazy(() => import("../modules/user/pages/Security"));
+const HelpPage = lazy(() => import("../modules/user/pages/Help"));
+const OrdersPage = lazy(() => import("../modules/order/pages/OrdersPage"));
+const OrderDetails = lazy(() => import("../modules/order/pages/OrderDetails"));
+const CartPage = lazy(() => import("../modules/order/pages/Cart"));
+const CheckoutPage = lazy(() => import("../modules/order/pages/Checkout"));
+const PaymentPage = lazy(() => import("../modules/payment/pages/PaymentPage"));
+
+// Additional Modules
+const CreditPage = lazy(() => import("../modules/credit/pages/CreditPage"));
+const AnalyticsPage = lazy(() => import("../modules/analytics/pages/AnalyticsPage"));
+const CompanyPage = lazy(() => import("../modules/company/pages/CompanyPage"));
+const InventoryPage = lazy(() => import("../modules/inventory/pages/InventoryPage"));
+const LogisticsPage = lazy(() => import("../modules/logistics/pages/LogisticsPage"));
+const ShipmentTrackingPage = lazy(() => import("../modules/shipment/pages/ShipmentTrackingPage"));
+const WarehousePage = lazy(() => import("../modules/warehouse/pages/WarehousePage"));
+const PromotionPage = lazy(() => import("../modules/promotion/pages/PromotionPage"));
+const WishlistPage = lazy(() => import("../modules/wishlist/pages/WishlistPage"));
+const SettingsPage = lazy(() => import("../modules/settings/SettingsPage"));
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* PUBLIC ROUTES */}
-        <Route path={routes.LANDING} element={<PublicLayout><LandingPage /></PublicLayout>} />
-        <Route path={routes.LOGIN} element={<LoginPage />} />
-        <Route path={routes.REGISTER} element={<RegisterPage />} />
-        
-        <Route path={routes.PRODUCTS} element={<MainLayout><ProductPage /></MainLayout>} />
-        <Route path={`${routes.PRODUCTS}/:id`} element={<MainLayout><ProductDetails /></MainLayout>} />
+      <Suspense fallback={<Loader text="Loading..." />}>
+        <Routes>
+          {/* PUBLIC ROUTES */}
+          <Route path={routes.LANDING} element={<PublicLayout><LandingPage /></PublicLayout>} />
+          <Route path={routes.LOGIN} element={<LoginPage />} />
+          <Route path={routes.REGISTER} element={<RegisterPage />} />
+          
+          <Route path={routes.PRODUCTS} element={<MainLayout><ProductPage /></MainLayout>} />
+          <Route path={`${routes.PRODUCTS}/:id`} element={<MainLayout><ProductDetails /></MainLayout>} />
 
-        {/* B2C & B2B HOME */}
-        <Route path={routes.HOME} element={
-          <ProtectedRoute>
-            <RoleGuard allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
-              <MainLayout><ProductPage /></MainLayout>
-            </RoleGuard>
-          </ProtectedRoute>
-        } />
+          {/* B2C & B2B HOME */}
+          <Route path={routes.HOME} element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
+                <MainLayout><ProductPage /></MainLayout>
+              </RoleGuard>
+            </ProtectedRoute>
+          } />
 
-        {/* B2B ROUTES */}
-        <Route path={routes.DASHBOARD} element={
-          <ProtectedRoute>
-            <RoleGuard allowedRoles={["B2B_CUSTOMER"]}>
-              <MainLayout><Dashboard /></MainLayout>
-            </RoleGuard>
-          </ProtectedRoute>
-        } />
+          {/* B2B ROUTES */}
+          <Route path={routes.DASHBOARD} element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["B2B_CUSTOMER"]}>
+                <MainLayout><Dashboard /></MainLayout>
+              </RoleGuard>
+            </ProtectedRoute>
+          } />
         <Route path={routes.CREDIT} element={
           <ProtectedRoute>
             <RoleGuard allowedRoles={["B2B_CUSTOMER"]}>
@@ -272,6 +281,7 @@ const AppRoutes = () => {
         {/* FALLBACK */}
         <Route path="*" element={<MainLayout><h2>404 Not Found</h2></MainLayout>} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };
