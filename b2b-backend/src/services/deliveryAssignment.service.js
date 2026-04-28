@@ -1,5 +1,6 @@
 import User from '../modules/user/user.model.js';
 import Logistics from '../modules/logistics/logistics.model.js';
+import { logger } from '../config/logger.js';
 
 export const assignDelivery = async (order) => {
   try {
@@ -11,7 +12,7 @@ export const assignDelivery = async (order) => {
     });
 
     if (!deliveryPartner) {
-      console.warn(`No delivery partner available for order ${order._id}`);
+      logger.warn(`No delivery partner available for order ${order._id}`);
       return null;
     }
 
@@ -27,10 +28,10 @@ export const assignDelivery = async (order) => {
       trackingNumber: `TRK-${Date.now()}`
     });
 
-    console.log(`Order ${order._id} assigned to delivery partner ${deliveryPartner._id}`);
+    logger.info(`Order ${order._id} assigned to delivery partner ${deliveryPartner._id}`);
     return logistics;
   } catch (error) {
-    console.error('Delivery assignment failed:', error);
+    logger.error('Delivery assignment failed:', error);
     return null;
   }
 };

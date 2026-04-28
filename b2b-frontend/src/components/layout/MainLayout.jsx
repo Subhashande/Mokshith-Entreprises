@@ -5,6 +5,7 @@ import { useSocket } from '../../context/SocketContext';
 import { useNotification } from '../../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes/routeConfig';
+import styles from './MainLayout.module.css';
 
 const MainLayout = ({ children }) => {
   const { on } = useSocket();
@@ -31,8 +32,12 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className="main-layout flex flex-col min-h-screen bg-gray-50/30">
+      <a href="#main-content" className={styles.skipLink}>
+        Skip to main content
+      </a>
+      
       <Navbar />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1" tabIndex="-1">
         {children}
       </main>
       <Footer />

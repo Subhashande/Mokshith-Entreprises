@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../hooks/useAuth";
 import { useSelector } from "react-redux";
 import { routes } from "../../../routes/routeConfig";
+import { loginSchema } from "../../../validations/schemas";
 import { 
   Mail, 
   Lock, 
@@ -20,24 +23,18 @@ const LoginPage = () => {
   const { login, loading, error, user } = useAuth();
   const { config } = useSelector((state) => state.superAdmin);
 
-  // Redirect if already logged in removed for manual control
-
-  const [form, setForm] = useState({
-    identifier: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: 'onBlur',
   });
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      await login(form);
+      await login(data);
       // Success is handled by useAuth/AppRoutes
     } catch (err) {
       console.error("Login failed:", err);
@@ -88,40 +85,57 @@ const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className={styles.authForm}>
-            {error && <div className={styles.errorMessage}>{error}</div>}
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.authForm} noValidate>
+            {error && (
+              <div className={styles.errorMessage} role="alert" aria-live="polite">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
             
             <div className={styles.formGroup}>
-              <label>Email Address</label>
+              <label htmlFor="identifier">Email Address</label>
               <div className={styles.inputWrapper}>
-                <Mail size={18} className={styles.inputIcon} />
+                <Mail size={18} className={styles.inputIcon} aria-hidden="true" />
                 <input
-                  type="text"
-                  name="identifier"
+                  id="identifier"
+                  type="email"
                   placeholder="name@company.com"
-                  value={form.identifier}
-                  onChange={handleChange}
-                  required
+                  aria-label="Email address"
+                  aria-invalid={errors.identifier ? 'true' : 'false'}
+                  aria-describedby={errors.identifier ? 'identifier-error' : undefined}
+                  {...register('identifier')}
                 />
               </div>
+              {errors.identifier && (
+                <span id="identifier-error" className={styles.fieldError} role="alert">
+                  {errors.identifier.message}
+                </span>
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <div className={styles.labelRow}>
-                <label>Password</label>
+                <label htmlFor="password">Password</label>
                 <Link to="#" className={styles.forgotLink}>Forgot password?</Link>
               </div>
               <div className={styles.inputWrapper}>
-                <Lock size={18} className={styles.inputIcon} />
+                <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
                 <input
+                  id="password"
                   type="password"
-                  name="password"
                   placeholder="••••••••"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
+                  aria-label="Password"
+                  aria-invalid={errors.password ? 'true' : 'false'}
+                  aria-describedby={errors.password ? 'password-error' : undefined}
+                  {...register('password')}
                 />
               </div>
+              {errors.password && (
+                <span id="password-error" className={styles.fieldError} role="alert">
+                  {errors.password.message}
+                </span>
+              )}
             </div>
 
             <div className={styles.formOptions}>
@@ -134,10 +148,11 @@ const LoginPage = () => {
             <button 
               type="submit" 
               className={`btn-primary ${styles.authSubmit}`}
-              disabled={loading}
+              disabled={loading || isSubmitting}
+              aria-busy={loading || isSubmitting}
             >
-              {loading ? "Signing in..." : "Sign In"}
-              {!loading && <ArrowRight size={18} />}
+              {loading || isSubmitting ? "Signing in..." : "Sign In"}
+              {!loading && !isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
             </button>
           </form>
 

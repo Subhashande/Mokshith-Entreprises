@@ -3,6 +3,8 @@
  * Handles validation, verification, and secure payment operations
  */
 
+import logger from '../../../utils/logger';
+
 /**
  * Validate Razorpay response contains all required fields
  * @param {Object} response - Razorpay payment response
@@ -42,7 +44,7 @@ export const validateRazorpayResponse = (response) => {
  */
 export const validatePaymentAmount = (expectedAmount, actualAmount, tolerance = 0) => {
   if (typeof expectedAmount !== 'number' || typeof actualAmount !== 'number') {
-    console.error(' Invalid amount types for validation');
+    logger.error('⚠ Invalid amount types for validation');
     return false;
   }
 
@@ -96,7 +98,7 @@ export const PaymentDuplicateDetector = (() => {
 
         return true;
       } catch (err) {
-        console.error(' Error checking duplicate payment:', err);
+        logger.error('⚠ Error checking duplicate payment:', err);
         return false;
       }
     },
@@ -119,9 +121,9 @@ export const PaymentDuplicateDetector = (() => {
         };
 
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payments));
-        console.log(' Payment marked as processed:', paymentId);
+        logger.info('✓ Payment marked as processed:', paymentId);
       } catch (err) {
-        console.error(' Error marking payment as processed:', err);
+        logger.error('⚠ Error marking payment as processed:', err);
       }
     },
 
@@ -131,9 +133,9 @@ export const PaymentDuplicateDetector = (() => {
     clear: () => {
       try {
         sessionStorage.removeItem(STORAGE_KEY);
-        console.log(' Payment history cleared');
+        logger.info('✓ Payment history cleared');
       } catch (err) {
-        console.error(' Error clearing payment history:', err);
+        logger.error('⚠ Error clearing payment history:', err);
       }
     }
   };
@@ -197,19 +199,17 @@ export const PaymentErrorHandler = {
 export const PaymentLogger = {
   log: (action, data) => {
     const timestamp = new Date().toISOString();
-    console.log(`[PAYMENT ${timestamp}] ${action}:`, data);
+    logger.info(`[PAYMENT ${timestamp}] ${action}:`, data);
   },
 
   error: (action, error) => {
     const timestamp = new Date().toISOString();
-    console.error(`[PAYMENT ERROR ${timestamp}] ${action}:`, error);
+    logger.error(`[PAYMENT ERROR ${timestamp}] ${action}:`, error);
   },
 
   debug: (action, data) => {
-    if (process.env.NODE_ENV === 'development') {
-      const timestamp = new Date().toISOString();
-      console.debug(`[PAYMENT DEBUG ${timestamp}] ${action}:`, data);
-    }
+    const timestamp = new Date().toISOString();
+    logger.debug(`[PAYMENT DEBUG ${timestamp}] ${action}:`, data);
   }
 };
 

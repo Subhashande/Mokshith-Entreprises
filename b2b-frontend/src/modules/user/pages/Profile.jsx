@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { userService } from '../userService';
+import { profileSchema } from '../../../validations/schemas';
 import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { User, Mail, Phone, Building2, MapPin, Edit2, X, Camera, Loader2 } from 'lucide-react';
+import styles from './Profile.module.css';
 
 const Profile = () => {
   const { user, updateUserInfo } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || user?.mobile || '',
-    companyName: user?.companyName || '',
-    address: user?.address || '',
+  
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: user?.name || '',
+      phone: user?.phone || user?.mobile || '',
+      companyName: user?.companyName || '',
+      gstNumber: user?.gstNumber || '',
+    }
   });
 
   const handleImageUpload = async (e) => {
@@ -39,76 +45,69 @@ const Profile = () => {
 
   useEffect(() => {
     if (user) {
-      setFormData({
+      reset({
         name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
+        phone: user.phone || user?.mobile || '',
         companyName: user.companyName || '',
-        address: user.address || '',
+        gstNumber: user.gstNumber || '',
       });
     }
-  }, [user]);
+  }, [user, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data) => {
     try {
-      const updatedUser = await userService.updateProfile(formData);
+      const updatedUser = await userService.updateProfile(data);
       updateUserInfo(updatedUser);
       setIsEditing(false);
     } catch (err) {
       console.error('Update failed:', err);
-    } finally {
-      setLoading(false);
     }
+  };
+  
+  const handleCancel = () => {
+    setIsEditing(false);
+    reset({
+      name: user?.name || '',
+      phone: user?.phone || user?.mobile || '',
+      companyName: user?.companyName || '',
+      gstNumber: user?.gstNumber || '',
+    });
   };
 
   const DetailItem = ({ icon: Icon, label, value }) => (
-    <div className="flex items-start space-x-4 p-4 rounded-lg bg-gray-50 border border-gray-100 transition-all hover:shadow-sm">
-      <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+    <div className={styles.detailItem}>
+      <div className={styles.detailIcon}>
         <Icon size={20} />
       </div>
-      <div className="flex-1">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-        <p className="text-gray-900 font-medium">{value || <span className="text-gray-400 italic">Not provided</span>}</p>
+      <div className={styles.detailContent}>
+        <p className={styles.detailLabel}>{label}</p>
+        <p className={value ? styles.detailValue : styles.detailValueEmpty}>
+          {value || 'Not provided'}
+        </p>
       </div>
     </div>
   );
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className={styles.container}>
+      <div className={styles.header}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-gray-500 mt-1">Manage your account details and preferences</p>
+          <h1 className={styles.headerTitle}>My Profile</h1>
+          <p className={styles.headerSubtitle}>Manage your account details and preferences</p>
         </div>
         {!isEditing ? (
           <Button 
             onClick={() => setIsEditing(true)} 
-            className="flex items-center space-x-2 px-6 py-2 shadow-lg hover:shadow-xl transition-all"
+            className={styles.editButton}
           >
             <Edit2 size={18} />
             <span>Edit Profile</span>
           </Button>
         ) : (
           <Button 
-            variant="outline"
-            onClick={() => {
-              setIsEditing(false);
-              setFormData({
-                name: user?.name || '',
-                email: user?.email || '',
-                phone: user?.phone || '',
-                companyName: user?.companyName || '',
-                address: user?.address || '',
-              });
-            }} 
-            className="flex items-center space-x-2 px-6 py-2"
+            variant="secondary"
+            onClick={handleCancel} 
+            className={styles.editButton}
           >
             <X size={18} />
             <span>Cancel</span>
@@ -116,31 +115,38 @@ const Profile = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className={styles.grid}>
         {/* Left Column: Avatar & Quick Info */}
-        <div className="md:col-span-1 space-y-6">
-          <Card className="text-center p-8">
-            <div className="relative inline-block mb-4">
-              <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-2xl border-4 border-white overflow-hidden">
+        <div>
+          <Card className={styles.avatarCard}>
+            <div className={styles.avatarWrapper}>
+              <div className={styles.avatar}>
                 {user?.profileImage ? (
                   <img 
                     src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.profileImage}`} 
                     alt="Profile" 
-                    className="w-full h-full object-cover"
+                    className={styles.avatarImage}
                   />
                 ) : (
                   user?.name?.[0]?.toUpperCase() || 'U'
                 )}
               </div>
-              <label className="absolute bottom-1 right-1 w-10 h-10 bg-blue-600 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white cursor-pointer hover:bg-blue-700 transition-all">
+              <label className={styles.uploadButton} aria-label="Upload profile picture">
                 {uploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
-                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                <input 
+                  type="file" 
+                  className={styles.uploadInput} 
+                  accept="image/*" 
+                  onChange={handleImageUpload} 
+                  disabled={uploading} 
+                  aria-label="Choose profile picture"
+                />
               </label>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
-            <p className="text-sm text-gray-500 mb-4">{user?.role?.replace('_', ' ')}</p>
-            <div className="pt-4 border-t border-gray-100">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <h2 className={styles.userName}>{user?.name}</h2>
+            <p className={styles.userRole}>{user?.role?.replace('_', ' ')}</p>
+            <div className={styles.divider}>
+              <span className={styles.badge}>
                 Active Account
               </span>
             </div>
@@ -148,68 +154,61 @@ const Profile = () => {
         </div>
 
         {/* Right Column: Details or Form */}
-        <div className="md:col-span-2">
-          <Card className="p-2 overflow-hidden">
+        <div>
+          <Card className={styles.detailsCard}>
             {!isEditing ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
-                <DetailItem icon={User} label="Full Name" value={formData.name} />
-                <DetailItem icon={Mail} label="Email Address" value={formData.email} />
-                <DetailItem icon={Phone} label="Phone Number" value={formData.phone} />
-                <DetailItem icon={Building2} label="Company Name" value={formData.companyName} />
-                <div className="sm:col-span-2">
-                  <DetailItem icon={MapPin} label="Address" value={formData.address} />
-                </div>
+              <div className={styles.detailsGrid}>
+                <DetailItem icon={User} label="Full Name" value={user?.name} />
+                <DetailItem icon={Mail} label="Email Address" value={user?.email} />
+                <DetailItem icon={Phone} label="Phone Number" value={user?.phone || user?.mobile} />
+                <DetailItem icon={Building2} label="Company Name" value={user?.companyName} />
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <Input
-                    label="Full Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="focus:ring-2 focus:ring-blue-500"
-                  />
-                  <Input
-                    label="Email Address (Locked)"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    className="bg-gray-50 opacity-70"
-                  />
-                  <Input
-                    label="Phone Number"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="focus:ring-2 focus:ring-blue-500"
-                  />
-                  <Input
-                    label="Company Name"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    className="focus:ring-2 focus:ring-blue-500"
-                  />
-                  <div className="sm:col-span-2 space-y-1">
-                    <label className="text-sm font-semibold text-gray-700">Address</label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      rows="4"
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                      placeholder="Enter your complete address..."
+              <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+                <div className={styles.formGrid}>
+                  <div>
+                    <Input
+                      label="Full Name"
+                      {...register('name')}
+                      error={errors.name?.message}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Email Address"
+                      value={user?.email}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Phone Number"
+                      {...register('phone')}
+                      error={errors.phone?.message}
+                      placeholder="10-digit mobile number"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Company Name"
+                      {...register('companyName')}
+                      error={errors.companyName?.message}
+                    />
+                  </div>
+                  <div className={styles.fullWidth}>
+                    <Input
+                      label="GST Number (Optional)"
+                      {...register('gstNumber')}
+                      error={errors.gstNumber?.message}
+                      placeholder="15-digit GST number"
                     />
                   </div>
                 </div>
-                <div className="flex justify-end pt-4 border-t border-gray-100">
+                <div className={styles.formActions}>
                   <Button 
                     type="submit" 
-                    loading={loading} 
-                    className="px-8 py-3 shadow-lg hover:shadow-xl transition-all"
+                    loading={isSubmitting}
                   >
                     Save Changes
                   </Button>

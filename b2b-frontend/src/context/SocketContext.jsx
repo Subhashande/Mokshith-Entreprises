@@ -2,6 +2,7 @@
 import { io } from 'socket.io-client';
 import { useAuth } from '../modules/auth/hooks/useAuth';
 import { useSelector } from 'react-redux';
+import logger from '../utils/logger';
 
 const SocketContext = createContext();
 
@@ -41,13 +42,13 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on('connect', () => {
-      console.log(' Socket connected');
+      logger.info('✓ Socket connected');
       setIsConnected(true);
       socketInstance.emit('join', user._id || user.id);
     });
 
     socketInstance.on('disconnect', (reason) => {
-      console.log(' Socket disconnected:', reason);
+      logger.warn('✗ Socket disconnected:', reason);
       setIsConnected(false);
       if (reason === 'io server disconnect') {
         // the disconnection was initiated by the server, you need to reconnect manually
@@ -56,15 +57,15 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on('reconnect_attempt', (attempt) => {
-      console.log(` Socket reconnection attempt: ${attempt}`);
+      logger.info(`↻ Socket reconnection attempt: ${attempt}`);
     });
 
     socketInstance.on('reconnect_failed', () => {
-      console.error(' Socket reconnection failed');
+      logger.error('✗ Socket reconnection failed');
     });
 
     socketInstance.on('connect_error', (err) => {
-      console.error(' Socket connection error:', err.message);
+      logger.error('✗ Socket connection error:', err.message);
     });
 
     setSocket(socketInstance);

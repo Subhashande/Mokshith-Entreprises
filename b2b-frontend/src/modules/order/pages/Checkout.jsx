@@ -24,6 +24,7 @@ const Checkout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.COD);
   const [address, setAddress] = useState({
     name: user?.name || "",
@@ -44,8 +45,11 @@ const Checkout = () => {
   };
 
   const validateCheckout = () => {
+    const newErrors = {};
+    
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      newErrors.cart = "Your cart is empty!";
+      setErrors(newErrors);
       return false;
     }
 
@@ -53,7 +57,11 @@ const Checkout = () => {
     const missingFields = requiredFields.filter(f => !address[f]?.trim());
     
     if (missingFields.length > 0) {
-      alert(`Please fill in all shipping details: ${missingFields.join(', ')}`);
+      missingFields.forEach(field => {
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+      });
+      newErrors.form = `Please fill in all required fields: ${missingFields.join(', ')}`;
+      setErrors(newErrors);
       return false;
     }
 
@@ -64,24 +72,31 @@ const Checkout = () => {
 
     if (moqViolations.length > 0) {
       const names = moqViolations.map(item => item.name).join(', ');
-      alert(`Minimum Order Quantity not met for: ${names}. Please adjust in cart.`);
+      newErrors.moq = `Minimum Order Quantity not met for: ${names}. Please adjust in cart.`;
+      setErrors(newErrors);
       return false;
     }
 
     if (paymentMethod === PAYMENT_METHODS.CREDIT) {
       if (!user?.availableCredit || user.availableCredit < total) {
-        alert("Insufficient credit balance. Please choose another payment method.");
+        newErrors.payment = "Insufficient credit balance. Please choose another payment method.";
+        setErrors(newErrors);
         return false;
       }
     }
 
+    setErrors({});
     return true;
   };
 
   const handlePlaceOrder = async () => {
-    if (!validateCheckout()) return;
+    if (!validateCheckout()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     
     setLoading(true);
+    setErrors({});
     try {
       const payload = {
         items: cart.map(item => ({
@@ -101,7 +116,8 @@ const Checkout = () => {
       navigate(routes.PAYMENT.replace(':orderId', newOrder._id));
     } catch (err) {
       console.error("Checkout Error:", err);
-      alert(err.message || "Failed to place order. Please check your connection and try again.");
+      setErrors({ form: err.message || "Failed to place order. Please check your connection and try again." });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -146,6 +162,27 @@ const Checkout = () => {
             <span>Payment</span>
           </div>
         </div>
+
+        {/* Error Display */}
+        {Object.keys(errors).length > 0 && (
+          <div 
+            className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl mb-6" 
+            role="alert"
+            aria-live="polite"
+          >
+            <div className="flex items-start gap-3">
+              <Info size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-black text-red-900 mb-2">Please fix the following errors:</h3>
+                <ul className="list-disc list-inside space-y-1 text-sm text-red-700">
+                  {Object.values(errors).map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-8">

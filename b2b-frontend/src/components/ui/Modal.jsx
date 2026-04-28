@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import styles from './Modal.module.css';
 
 const Modal = ({ 
   isOpen = false, 
@@ -12,6 +13,9 @@ const Modal = ({
   preventClose = false,
   footer
 }) => {
+  const modalRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e) => {
@@ -35,17 +39,42 @@ const Modal = ({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // Focus management and keyboard accessibility (focus trapping)
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    // Focus close button when modal opens
+    closeButtonRef.current?.focus();
+    
+    const handleTab = (e) => {
+      if (e.key === 'Tab') {
+        const focusableElements = modalRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (!focusableElements?.length) return;
+        
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', handleTab);
+    
+    return () => {
+      document.removeEventListener('keydown', handleTab);
+    };
+  }, [isOpen]);
 
-  const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    '4xl': 'max-w-4xl',
-    full: 'max-w-[95vw]'
-  };
+  if (!isOpen) return null;
 
   const handleClose = (e) => {
     if (e) e.stopPropagation();
@@ -54,50 +83,52 @@ const Modal = ({
     }
   };
 
+  const modalClassName = [styles.modal, styles[size]].filter(Boolean).join(' ');
+
   return (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+      className={styles.overlay}
       onClick={(e) => {
         if (closeOnOverlayClick && e.target === e.currentTarget) {
           handleClose(e);
         }
       }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <div 
-        className={`bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-full ${sizeClasses[size] || sizeClasses.md} overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 ease-out`}
+        ref={modalRef}
+        className={modalClassName}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-10 py-8 border-b border-gray-50 flex justify-between items-center bg-white/80 backdrop-blur-xl sticky top-0 z-10">
-          <div>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight leading-none">{title}</h3>
-            <div className="h-1.5 w-16 bg-blue-600 rounded-full mt-4 shadow-sm shadow-blue-200"></div>
+        {title && (
+          <div className={styles.header}>
+            <h3 id="modal-title" className={styles.title}>{title}</h3>
+            {showCloseIcon && (
+              <button 
+                ref={closeButtonRef}
+                type="button"
+                onClick={handleClose}
+                disabled={preventClose}
+                className={styles.closeButton}
+                aria-label="Close modal"
+              >
+                <X size={20} strokeWidth={2.5} />
+              </button>
+            )}
           </div>
-          {showCloseIcon && (
-            <button 
-              type="button"
-              onClick={handleClose}
-              disabled={preventClose}
-              className={`p-4 rounded-[1.25rem] transition-all duration-500 active:scale-90 ${
-                preventClose 
-                  ? 'text-gray-100 cursor-not-allowed opacity-50' 
-                  : 'hover:bg-gray-100 text-gray-400 hover:text-gray-900 hover:rotate-180 bg-gray-50/50'
-              }`}
-              aria-label="Close modal"
-            >
-              <X size={24} strokeWidth={3} />
-            </button>
-          )}
-        </div>
+        )}
 
         {/* Body */}
-        <div className="px-10 py-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className={styles.body}>
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-10 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-4">
+          <div className={styles.footer}>
             {footer}
           </div>
         )}

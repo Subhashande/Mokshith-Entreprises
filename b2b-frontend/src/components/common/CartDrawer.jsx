@@ -7,6 +7,51 @@ import styles from './CartDrawer.module.css';
 
 const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) => {
   const navigate = useNavigate();
+  const drawerRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  // Focus management and keyboard accessibility
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    // Focus close button when opened
+    closeButtonRef.current?.focus();
+    
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    const handleTab = (e) => {
+      if (e.key === 'Tab') {
+        const focusableElements = drawerRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (!focusableElements?.length) return;
+        
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleTab);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleTab);
+    };
+  }, [isOpen, onClose]);
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const isMoqViolated = cart.some(item => {
     const minQty = item.minOrderQty || item.moq || 1;
@@ -19,14 +64,25 @@ const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem }) =
     <div 
       className={styles.overlay}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-drawer-title"
     >
       <div 
+        ref={drawerRef}
         className={styles.drawer}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.drawerHeader}>
-          <h2 className={styles.drawerTitle}>Your Shopping Cart</h2>
-          <button onClick={onClose} className={styles.closeButton}>×</button>
+          <h2 id="cart-drawer-title" className={styles.drawerTitle}>Your Shopping Cart</h2>
+          <button 
+            ref={closeButtonRef}
+            onClick={onClose} 
+            className={styles.closeButton}
+            aria-label="Close shopping cart"
+          >
+            ×
+          </button>
         </div>
 
         <div className={styles.drawerContent}>

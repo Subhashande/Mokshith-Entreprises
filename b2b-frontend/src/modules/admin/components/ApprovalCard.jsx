@@ -1,35 +1,29 @@
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
+import styles from './ApprovalCard.module.css';
 
 const ApprovalCard = ({ approval, onApprove, onReject }) => {
   const isPending = approval.status === "pending";
 
+  const getStatusClass = () => {
+    if (approval.status === 'approved') return styles.statusApproved;
+    if (approval.status === 'rejected') return styles.statusRejected;
+    return styles.statusPending;
+  };
+
   return (
-    <Card style={{ marginBottom: "1rem", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-          <span style={{ 
-            fontSize: '0.75rem', 
-            fontWeight: '700', 
-            textTransform: 'uppercase',
-            backgroundColor: 'var(--primary-light)',
-            color: 'var(--primary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: 'var(--radius-sm)'
-          }}>
+    <Card className={styles.card}>
+      <div className={styles.contentWrapper}>
+        <div className={styles.headerRow}>
+          <span className={styles.typeBadge}>
             {approval.type}
           </span>
-          <span style={{ 
-            fontSize: '0.875rem', 
-            fontWeight: '600',
-            color: approval.status === 'approved' ? 'var(--success)' : 
-                   approval.status === 'rejected' ? 'var(--error)' : 'var(--warning)'
-          }}>
+          <span className={`${styles.status} ${getStatusClass()}`}>
             {approval.status.charAt(0).toUpperCase() + approval.status.slice(1)}
           </span>
         </div>
-        <h4 style={{ fontSize: '1.125rem', fontWeight: '700', marginBottom: '0.25rem' }}>{approval.title}</h4>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+        <h4 className={styles.title}>{approval.title}</h4>
+        <p className={styles.date}>
           Requested on {new Date(approval.createdAt).toLocaleDateString('en-IN', {
             day: 'numeric', month: 'short', year: 'numeric'
           })}
@@ -37,7 +31,7 @@ const ApprovalCard = ({ approval, onApprove, onReject }) => {
       </div>
 
       {isPending && (
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className={styles.actions}>
           <Button onClick={() => onApprove(approval.id)} size="small">
             Approve
           </Button>
@@ -45,7 +39,7 @@ const ApprovalCard = ({ approval, onApprove, onReject }) => {
             onClick={() => onReject(approval.id)} 
             size="small" 
             variant="secondary"
-            style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+            className={styles.rejectButton}
           >
             Reject
           </Button>

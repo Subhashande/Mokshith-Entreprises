@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { routes } from "../../../routes/routeConfig";
 import { authService } from "../services/authService";
 import { useAuth } from "../hooks/useAuth";
+import { registerSchema } from "../../../validations/schemas";
 import { 
   User, 
   Building2, 
@@ -20,28 +23,30 @@ import styles from './Register.module.css';
 const Register = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [step, setStep] = useState(1); // 1: Role Selection, 2: Details
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate(routes.DASHBOARD);
-    }
-  }, [user, navigate]);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [step, setStep] = useState(1);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    password: "",
-    role: "B2B_CUSTOMER",
-    companyName: "",
-    gstNumber: "",
-    vehicleType: ""
+  const [error, setError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      role: "B2B_CUSTOMER",
+    },
   });
+
+  const selectedRole = watch('role');
 
   const roles = [
     {
@@ -64,31 +69,34 @@ const Register = () => {
     }
   ];
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(routes.DASHBOARD);
+    }
+  }, [user, navigate]);
 
   const handleRoleSelect = (roleId) => {
-    setForm({ ...form, role: roleId });
+    setValue('role', roleId);
     setStep(2);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data) => {
     setError("");
     
     try {
-      await authService.register(form);
+      // Transform data to match API expectations
+      const payload = {
+        ...data,
+        mobile: data.phone, // Map phone to mobile for API
+      };
+      delete payload.phone;
+      delete payload.confirmPassword;
+      
+      await authService.register(payload);
       setIsRegistered(true);
-      // Removed immediate navigate to login
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -154,72 +162,143 @@ const Register = () => {
           ) : step === 1 ? (
             <div className="role-selection">
               {roles.map((role) => (
-                <div 
+                <button
+                  type="button"
                   key={role.id} 
-                  className={`role-card ${form.role === role.id ? 'active' : ''}`}
+                  className={`role-card ${selectedRole === role.id ? 'active' : ''}`}
                   onClick={() => handleRoleSelect(role.id)}
+                  aria-pressed={selectedRole === role.id}
+                  aria-label={`Select ${role.label} account type`}
                 >
-                  <div className="role-icon-wrapper">{role.icon}</div>
+                  <div className="role-icon-wrapper" aria-hidden="true">{role.icon}</div>
                   <div className="role-text">
                     <h3>{role.label}</h3>
                     <p>{role.description}</p>
                   </div>
-                  <ChevronRight className={styles.roleArrow} size={20} />
-                </div>
+                  <ChevronRight className={styles.roleArrow} size={20} aria-hidden="true" />
+                </button>
               ))}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className={styles.authForm}>
-              {error && <div className={styles.errorMessage}>{error}</div>}
+            <form onSubmit={handleSubmit(onSubmit)} className={styles.authForm} noValidate>
+              {error && (
+                <div className={styles.errorMessage} role="alert" aria-live="polite">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
+              )}
               
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
-                  <label>Full Name</label>
+                  <label htmlFor="name">Full Name</label>
                   <div className={styles.inputWrapper}>
-                    <User size={18} className={styles.inputIcon} />
+                    <User size={18} className={styles.inputIcon} aria-hidden="true" />
                     <input
+                      id="name"
                       type="text"
-                      name="name"
                       placeholder="John Doe"
-                      value={form.name}
-                      onChange={handleChange}
-                      required
+                      aria-label="Full name"
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
+                      {...register('name')}
                     />
                   </div>
+                  {errors.name && (
+                    <span id="name-error" className={styles.fieldError} role="alert">
+                      {errors.name.message}
+                    </span>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label>Mobile Number</label>
-                  <div className="input-wrapper">
-                    <Phone size={18} className="input-icon" />
+                <div className={styles.formGroup}>
+                  <label htmlFor="phone">Mobile Number</label>
+                  <div className={styles.inputWrapper}>
+                    <Phone size={18} className={styles.inputIcon} aria-hidden="true" />
                     <input
+                      id="phone"
                       type="tel"
-                      name="mobile"
                       placeholder="9876543210"
-                      value={form.mobile}
-                      onChange={handleChange}
-                      required
+                      aria-label="Mobile number"
+                      aria-invalid={errors.phone ? 'true' : 'false'}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
+                      {...register('phone')}
                     />
                   </div>
+                  {errors.phone && (
+                    <span id="phone-error" className={styles.fieldError} role="alert">
+                      {errors.phone.message}
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className={styles.formGroup}>
-                <label>Email Address</label>
+                <label htmlFor="email">Email Address</label>
                 <div className={styles.inputWrapper}>
-                  <Mail size={18} className={styles.inputIcon} />
+                  <Mail size={18} className={styles.inputIcon} aria-hidden="true" />
                   <input
+                    id="email"
                     type="email"
-                    name="email"
                     placeholder="john@company.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
+                    aria-label="Email address"
+                    aria-invalid={errors.email ? 'true' : 'false'}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    {...register('email')}
                   />
+                </div>
+                {errors.email && (
+                  <span id="email-error" className={styles.fieldError} role="alert">
+                    {errors.email.message}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="password">Password</label>
+                  <div className={styles.inputWrapper}>
+                    <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
+                    <input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      aria-label="Password"
+                      aria-invalid={errors.password ? 'true' : 'false'}
+                      aria-describedby={errors.password ? 'password-error' : undefined}
+                      {...register('password')}
+                    />
+                  </div>
+                  {errors.password && (
+                    <span id="password-error" className={styles.fieldError} role="alert">
+                      {errors.password.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <div className={styles.inputWrapper}>
+                    <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      aria-label="Confirm password"
+                      aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                      aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
+                      {...register('confirmPassword')}
+                    />
+                  </div>
+                  {errors.confirmPassword && (
+                    <span id="confirm-password-error" className={styles.fieldError} role="alert">
+                      {errors.confirmPassword.message}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {form.role === "B2B_CUSTOMER" && (
+              {/* Role-specific Fields */}
+              {selectedRole === "B2B_CUSTOMER" && (
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
                     <label>Company Name</label>

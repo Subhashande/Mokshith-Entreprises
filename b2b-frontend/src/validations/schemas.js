@@ -87,11 +87,3 @@ export const passwordChangeSchema = z.object({
   message: "Passwords don't match",
   path: ['confirmNewPassword'],
 });
-
-// Export types for TypeScript users
-export type LoginFormData = z.infer<typeof loginSchema>;
-export type RegisterFormData = z.infer<typeof registerSchema>;
-export type ProductFormData = z.infer<typeof productSchema>;
-export type OrderFormData = z.infer<typeof orderSchema>;
-export type ProfileFormData = z.infer<typeof profileSchema>;
-export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;

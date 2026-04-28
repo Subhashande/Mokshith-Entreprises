@@ -1,0 +1,28 @@
+.layout {
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.skipLink {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 var(--radius-md) 0;
+  z-index: 9999;
+  transition: top 0.3s;
+}
+
+.skipLink:focus {
+  top: 0;
+  outline: 2px solid var(--primary-dark);
+  outline-offset: 2px;
+}
+
+.mainContent {
+  outline: none;
+}

@@ -1,15 +1,4 @@
-import { verifyPayment } from './payment.service.js';
+import { handlePaymentWebhook } from './payment.webhookHandler.js';
 
-export const paymentWebhook = async (req, res) => {
-  try {
-    const payload = req.body;
-
-    await verifyPayment(payload);
-
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('Webhook failed:', err.message);
-
-    res.status(400).json({ success: false });
-  }
-};
+// Export the enhanced webhook handler with retry mechanism
+export const paymentWebhook = handlePaymentWebhook;

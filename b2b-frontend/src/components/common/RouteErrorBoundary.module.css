@@ -1,0 +1,124 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  background: #fafafa;
+}
+
+.content {
+  max-width: 500px;
+  text-align: center;
+  background: white;
+  padding: 3rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.5rem;
+  background: #fef2f2;
+  border-radius: 50%;
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+  color: #dc2626;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+}
+
+.message {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+.errorDetail {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.buttonPrimary,
+.buttonSecondary {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.buttonPrimary {
+  background: var(--primary, #3b82f6);
+  color: white;
+}
+
+.buttonPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.buttonSecondary {
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+}
+
+.buttonSecondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.errorDetails {
+  margin-top: 2rem;
+  text-align: left;
+  background: #fafafa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.errorSummary {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.errorSummary:hover {
+  color: #111827;
+}
+
+.errorStack {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -1,20 +1,21 @@
 import React from 'react';
+import styles from './Table.module.css';
 
 const Table = ({ headers, children, className = '', containerClassName = '' }) => {
   return (
-    <div className={`overflow-x-auto rounded-xl border border-gray-100 ${containerClassName}`}>
-      <table className={`w-full text-left border-collapse ${className}`}>
-        <thead>
-          <tr className="bg-gray-50/50 border-b border-gray-100">
+    <div className={`${styles.container} ${containerClassName}`}>
+      <table className={`${styles.table} ${className}`}>
+        <thead className={styles.thead}>
+          <tr>
             {headers.map((header, index) => {
               const label = typeof header === 'object' ? header.label : header;
-              const className = typeof header === 'object' ? header.className : '';
+              const headerClassName = typeof header === 'object' ? header.className : '';
               const style = typeof header === 'object' ? header.style : {};
               
               return (
                 <th 
                   key={index} 
-                  className={`py-4 px-6 text-sm font-bold text-gray-600 uppercase tracking-wider ${className}`}
+                  className={`${styles.th} ${headerClassName}`}
                   style={style}
                 >
                   {label}
@@ -23,7 +24,7 @@ const Table = ({ headers, children, className = '', containerClassName = '' }) =
             })}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className={styles.tbody}>
           {children}
         </tbody>
       </table>
@@ -33,7 +34,7 @@ const Table = ({ headers, children, className = '', containerClassName = '' }) =
 
 export const TableRow = ({ children, className = '', onClick }) => (
   <tr 
-    className={`hover:bg-gray-50/50 transition-colors ${onClick ? 'cursor-pointer' : ''} ${className}`}
+    className={`${styles.tr} ${onClick ? styles.clickable : ''} ${className}`}
     onClick={onClick}
   >
     {children}
@@ -41,7 +42,7 @@ export const TableRow = ({ children, className = '', onClick }) => (
 );
 
 export const TableCell = ({ children, className = '', colSpan }) => (
-  <td className={`py-4 px-6 text-sm text-gray-700 ${className}`} colSpan={colSpan}>
+  <td className={`${styles.td} ${className}`} colSpan={colSpan}>
     {children}
   </td>
 );

@@ -86,18 +86,23 @@ const B2BDashboard = () => {
         </header>
 
         {/* Stats Grid */}
-        <section className={styles.statsGrid}>
+        <section className={styles.statsGrid} role="region" aria-label="Dashboard statistics">
           {stats.map((stat, index) => (
-            <div key={index} className={`${styles.statCard} premium-card`} onClick={() => navigate(stat.link)}>
-              <div className={`${styles.statIconWrapper} ${styles[`color${stat.color.charAt(0).toUpperCase()}${stat.color.slice(1)}`]}`}>
+            <button 
+              key={index} 
+              className={`${styles.statCard} premium-card`} 
+              onClick={() => navigate(stat.link)}
+              aria-label={`${stat.label}: ${stat.value}. Click to view details`}
+            >
+              <div className={`${styles.statIconWrapper} ${styles[`color${stat.color.charAt(0).toUpperCase()}${stat.color.slice(1)}`]}`} aria-hidden="true">
                 {stat.icon}
               </div>
               <div className={styles.statInfo}>
                 <span className={styles.statLabel}>{stat.label}</span>
                 <span className={styles.statValue}>{stat.value}</span>
               </div>
-              <ChevronRight className={styles.statArrow} size={16} />
-            </div>
+              <ChevronRight className={styles.statArrow} size={16} aria-hidden="true" />
+            </button>
           ))}
         </section>
 

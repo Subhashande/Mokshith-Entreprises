@@ -157,12 +157,6 @@ const PaymentPage = () => {
     setError(null);
 
     try {
-      console.log(' Initiating payment...', {
-        orderId,
-        paymentMethod,
-        totalAmount: order?.totalAmount
-      });
-
       //  CALL HYBRID PAYMENT API
       const { data: hybridRes } = await paymentService.hybridPayment(
         orderId,
@@ -170,11 +164,8 @@ const PaymentPage = () => {
         order.totalAmount
       );
 
-      console.log(' Hybrid payment response:', hybridRes);
-
       //  SCENARIO 1: Fully paid by credit
       if (hybridRes.paidFullyByCredit || hybridRes.data?.paidFullyByCredit) {
-        console.log(' Order paid fully by credit');
         dispatch(clearCart());
         setPaymentSuccess(true);
         setProcessing(false);
@@ -189,11 +180,6 @@ const PaymentPage = () => {
       }
 
       const gatewayOrderId = rzpOrder.gatewayOrderId || rzpOrder.id;
-
-      console.log('💰 Opening Razorpay modal...', {
-        amount: rzpOrder.amount,
-        orderId: gatewayOrderId
-      });
 
       //  RAZORPAY OPTIONS - MULTIPLE PAYMENT METHODS
       const options = {
@@ -515,14 +501,22 @@ const PaymentPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 space-y-8">
-            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-blue-600" /> Select Payment Method
+            <h2 id="payment-method-heading" className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-blue-600" aria-hidden="true" /> Select Payment Method
             </h2>
 
             {/*  ENHANCED PAYMENT METHODS */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-4" role="radiogroup" aria-labelledby="payment-method-heading">
               {/* ONLINE PAYMENT OPTION */}
-              <div onClick={() => setPaymentMethod('online')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}>
+              <button 
+                type="button"
+                onClick={() => setPaymentMethod('online')} 
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPaymentMethod('online'); }}}
+                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all text-left ${paymentMethod === 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}
+                role="radio"
+                aria-checked={paymentMethod === 'online'}
+                aria-label="Pay online with UPI, cards, net banking, or digital wallets"
+              >
                 <div className="space-y-4">
                   <div className="flex items-start gap-5">
                     <div className={`p-4 rounded-2xl flex-shrink-0 ${paymentMethod === 'online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
@@ -557,11 +551,19 @@ const PaymentPage = () => {
                     <Lock size={14} /> Secured by Razorpay
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* CREDIT OPTION */}
               {credit?.availableCredit > 0 && (
-                <div onClick={() => setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid')} className={`border-2 rounded-2xl p-6 cursor-pointer transition-all ${paymentMethod !== 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid')} 
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPaymentMethod(credit.availableCredit >= order.totalAmount ? 'credit' : 'hybrid'); }}}
+                  className={`border-2 rounded-2xl p-6 cursor-pointer transition-all text-left ${paymentMethod !== 'online' ? 'border-blue-600 bg-blue-50/40 shadow-xl' : 'border-white bg-white shadow-sm hover:border-blue-200'}`}
+                  role="radio"
+                  aria-checked={paymentMethod !== 'online'}
+                  aria-label={`Pay using business credit. Available balance: ${credit.availableCredit.toLocaleString()} rupees`}
+                >
                   <div className="space-y-4">
                     <div className="flex items-start gap-5">
                       <div className={`p-4 rounded-2xl flex-shrink-0 ${paymentMethod !== 'online' ? 'bg-blue-600 text-white' : 'bg-green-50 text-green-600'}`}>
@@ -589,7 +591,7 @@ const PaymentPage = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               )}
 
               {/* SECURITY BADGE */}

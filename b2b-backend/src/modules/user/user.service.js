@@ -13,7 +13,7 @@ export const changePassword = async (userId, newPassword) => {
 };
 
 //  Allowed update fields (security)
-const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile', 'profileImage', 'phone', 'address', 'companyName'];
+const ALLOWED_PROFILE_FIELDS = ['name', 'email', 'mobile', 'profileImage', 'phone', 'address', 'companyName', 'gstNumber'];
 
 export const getProfile = async (userId) => {
   const user = await repo.findById(userId);

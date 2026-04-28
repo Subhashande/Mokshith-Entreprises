@@ -7,6 +7,7 @@ import ProtectedRoute from "../components/common/ProtectedRoute";
 import RoleGuard from "../components/common/RoleGuard";
 import RoleBasedRoute from "../components/common/RoleBasedRoute";
 import Loader from "../components/common/Loader";
+import RouteErrorBoundary from "../components/common/RouteErrorBoundary";
 
 // Layouts (keep eager - critical for all routes)
 import MainLayout from "../components/layout/MainLayout";

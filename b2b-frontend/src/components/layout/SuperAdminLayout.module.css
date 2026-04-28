@@ -1,0 +1,48 @@
+.container {
+  background-color: var(--background);
+  min-height: 100vh;
+}
+
+.header {
+  background-color: #000000;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid var(--primary);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.badge {
+  font-size: 0.75rem;
+  background-color: var(--error);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.headerRight {
+  display: flex;
+  gap: 1rem;
+}
+
+.dbShellButton {
+  background-color: transparent !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}

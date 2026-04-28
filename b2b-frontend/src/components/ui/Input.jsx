@@ -1,30 +1,29 @@
 import React from 'react';
+import styles from './Input.module.css';
 
-const Input = ({ label, error, helperText, className = '', fullWidth, ...props }) => {
+const Input = ({ label, error, helperText, className = '', fullWidth = true, ...props }) => {
+  const containerClass = fullWidth ? styles.inputContainer : styles.inputContainerAuto;
+  
   return (
-    <div className={`input-container ${className}`} style={{ width: fullWidth ? '100%' : 'auto', marginBottom: '1.5rem' }}>
+    <div className={`${containerClass} ${className}`}>
       {label && (
-        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">
+        <label className={styles.label}>
           {label}
         </label>
       )}
       <input 
-        className={`premium-input w-full px-5 py-4 rounded-2xl border-2 transition-all duration-300 outline-none ${
-          error 
-            ? 'border-red-100 bg-red-50/30 focus:border-red-500' 
-            : 'border-gray-100 bg-gray-50/50 focus:border-blue-500 focus:bg-white'
-        }`}
+        className={`${styles.input} ${error ? styles.inputError : ''}`}
         {...props}
       />
       {error && (
-        <span className="block mt-2 text-xs font-bold text-red-500 flex items-center gap-1.5 animate-in slide-in-from-top-1">
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+        <span className={styles.errorMessage}>
+          <span className={styles.errorDot}></span>
           {error}
         </span>
       )}
       {helperText && !error && (
-        <p className="mt-2 text-xs font-bold text-gray-400 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 bg-gray-200 rounded-full"></span>
+        <p className={styles.helperText}>
+          <span className={styles.helperDot}></span>
           {helperText}
         </p>
       )}
