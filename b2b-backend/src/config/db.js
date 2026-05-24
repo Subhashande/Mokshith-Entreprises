@@ -12,9 +12,6 @@ const connectDB = async () => {
 
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      
       // Optimized connection pool settings
       maxPoolSize: 100, // Increased from 10 for better concurrency  
       minPoolSize: 5, // Increased from 2
