@@ -52,7 +52,7 @@ describe('Payment Module - Comprehensive Tests', () => {
     beforeEach(async () => {
       testOrder = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 10000,
         }),
         status: ORDER_STATUS.CONFIRMED,
@@ -249,7 +249,7 @@ describe('Payment Module - Comprehensive Tests', () => {
     beforeEach(async () => {
       testOrder = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 10000,
         }),
         status: ORDER_STATUS.CONFIRMED,
@@ -257,7 +257,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
       testPayment = await Payment.create({
         orderId: testOrder._id,
-        customerId: testUser._id,
+        userId: testUser._id,
         amount: 10000,
         currency: 'INR',
         razorpayOrderId: 'order_test123',
@@ -405,7 +405,7 @@ describe('Payment Module - Comprehensive Tests', () => {
     beforeEach(async () => {
       testOrder = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 10000,
         }),
         status: ORDER_STATUS.CONFIRMED,
@@ -413,7 +413,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
       testPayment = await Payment.create({
         orderId: testOrder._id,
-        customerId: testUser._id,
+        userId: testUser._id,
         amount: 10000,
         razorpayOrderId: 'order_webhook123',
         razorpayPaymentId: 'pay_webhook123',
@@ -563,7 +563,7 @@ describe('Payment Module - Comprehensive Tests', () => {
     beforeEach(async () => {
       testOrder = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 10000,
         }),
         status: ORDER_STATUS.PAID,
@@ -571,7 +571,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
       testPayment = await Payment.create({
         orderId: testOrder._id,
-        customerId: testUser._id,
+        userId: testUser._id,
         amount: 10000,
         razorpayOrderId: 'order_refund123',
         razorpayPaymentId: 'pay_refund123',
@@ -718,13 +718,13 @@ describe('Payment Module - Comprehensive Tests', () => {
 
     beforeEach(async () => {
       const testOrder = await Order.create({
-        ...generateTestOrder({ customerId: testUser._id }),
+        ...generateTestOrder({ userId: testUser._id }),
         status: ORDER_STATUS.PAID,
       });
 
       testPayment = await Payment.create({
         orderId: testOrder._id,
-        customerId: testUser._id,
+        userId: testUser._id,
         amount: 10000,
         razorpayOrderId: 'order_details123',
         razorpayPaymentId: 'pay_details123',
@@ -762,7 +762,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
       const otherPayment = await Payment.create({
         orderId: testPayment.orderId,
-        customerId: otherUser._id,
+        userId: otherUser._id,
         amount: 5000,
         razorpayOrderId: 'order_other',
         status: PAYMENT_STATUS.SUCCESS,
@@ -794,7 +794,7 @@ describe('Payment Module - Comprehensive Tests', () => {
     beforeEach(async () => {
       testOrder = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 10000,
         }),
         status: ORDER_STATUS.CONFIRMED,
@@ -825,7 +825,7 @@ describe('Payment Module - Comprehensive Tests', () => {
       for (let i = 0; i < 3; i++) {
         const order = await Order.create({
           ...generateTestOrder({
-            customerId: testUser._id,
+            userId: testUser._id,
             totalAmount: 100000, // Large amount
           }),
           status: ORDER_STATUS.CONFIRMED,
@@ -869,13 +869,13 @@ describe('Payment Module - Comprehensive Tests', () => {
   describe('Payment Edge Cases & Concurrency', () => {
     it('should handle concurrent payment verifications', async () => {
       const testOrder = await Order.create({
-        ...generateTestOrder({ customerId: testUser._id }),
+        ...generateTestOrder({ userId: testUser._id }),
         status: ORDER_STATUS.CONFIRMED,
       });
 
       const testPayment = await Payment.create({
         orderId: testOrder._id,
-        customerId: testUser._id,
+        userId: testUser._id,
         amount: 10000,
         razorpayOrderId: 'order_concurrent',
         status: PAYMENT_STATUS.PENDING,
@@ -904,7 +904,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
     it('should handle zero amount payments gracefully', async () => {
       const testOrder = await Order.create({
-        ...generateTestOrder({ customerId: testUser._id, totalAmount: 0 }),
+        ...generateTestOrder({ userId: testUser._id, totalAmount: 0 }),
         status: ORDER_STATUS.CONFIRMED,
       });
 
@@ -922,7 +922,7 @@ describe('Payment Module - Comprehensive Tests', () => {
 
     it('should handle negative amount gracefully', async () => {
       const testOrder = await Order.create({
-        ...generateTestOrder({ customerId: testUser._id }),
+        ...generateTestOrder({ userId: testUser._id }),
         status: ORDER_STATUS.CONFIRMED,
       });
 

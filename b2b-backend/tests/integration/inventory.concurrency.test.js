@@ -5,6 +5,7 @@ import Inventory from '../../src/modules/inventory/inventory.model.js';
 import Warehouse from '../../src/modules/warehouse/warehouse.model.js';
 import Order from '../../src/modules/order/order.model.js';
 import User from '../../src/modules/user/user.model.js';
+import Category from '../../src/modules/category/category.model.js';
 import { reduceStock, checkStock, restoreStock } from '../../src/modules/inventory/inventory.service.js';
 import { createOrder } from '../../src/modules/order/order.service.js';
 import { clearDatabase, generateTestUser } from '../helpers/testUtils.js';
@@ -20,9 +21,16 @@ describe('Inventory Concurrency Tests', () => {
   let testWarehouse;
   let testProduct;
   let testUser;
+  let testCategory;
 
   beforeEach(async () => {
     await clearDatabase();
+
+    // Create test category
+    testCategory = await Category.create({
+      name: 'Test Category',
+      slug: 'test-category-' + Date.now(),
+    });
 
     // Create test warehouse
     testWarehouse = await Warehouse.create({
@@ -41,7 +49,7 @@ describe('Inventory Concurrency Tests', () => {
       name: 'Test Product',
       description: 'Product for concurrency testing',
       price: 100,
-      category: 'Electronics',
+      categoryId: testCategory._id,
       sku: `TEST-${Date.now()}`,
       status: 'ACTIVE',
     });
@@ -245,7 +253,7 @@ describe('Inventory Concurrency Tests', () => {
         name: 'Test Product 2',
         description: 'Second product',
         price: 150,
-        category: 'Electronics',
+        categoryId: testCategory._id,
         sku: `TEST2-${Date.now()}`,
         status: 'ACTIVE',
       });

@@ -269,6 +269,11 @@ export const restoreStock = async (productId, quantity, options = {}) => {
 export const reserveInventory = async (orderId, items, ttlSeconds = 900) => {
   const { redisClient } = await import('../../config/redis.js');
   
+  // Validate input
+  if (!items || items.length === 0) {
+    throw new AppError('No items provided for reservation', 400);
+  }
+  
   try {
     // 1. Check stock availability for all items
     for (const item of items) {

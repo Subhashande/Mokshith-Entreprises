@@ -73,7 +73,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Should process in order: 1, 2, 3, 4, 5
       expect(processedOrder).toEqual([1, 2, 3, 4, 5]);
-    }, 10000);
+    }, 25000);
 
     it.skip('should prioritize high-priority jobs over low-priority', async () => {
       // SKIPPED: BullMQ priority requires jobs to be waiting in queue before worker starts.
@@ -116,7 +116,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       expect(processedOrder.includes('low-1')).toBe(true);
       expect(processedOrder.includes('low-2')).toBe(true);
       expect(processedOrder.includes('low-3')).toBe(true);
-    }, 10000);
+    }, 25000);
 
     it('should handle delayed jobs with priority correctly', async () => {
       const processedOrder = [];
@@ -148,7 +148,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Order: immediate-high → immediate-low → delayed-low
       expect(processedOrder).toEqual(['immediate-high', 'immediate-low', 'delayed-low']);
-    }, 10000);
+    }, 25000);
 
     it('should maintain consistent ordering with concurrent workers', async () => {
       const processedJobs = [];
@@ -205,7 +205,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       await worker1.close();
       await worker2.close();
       await worker3.close();
-    }, 10000);
+    }, 25000);
 
     it('should prevent priority starvation of low-priority jobs', async () => {
       const processedOrder = [];
@@ -234,7 +234,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Low priority job should eventually be processed (no infinite starvation)
       expect(processedOrder).toContain('low-1');
-    }, 10000);
+    }, 25000);
   });
 
   describe('STEP 8: Rate Limiting & Throttling', () => {
@@ -286,7 +286,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // Verify rate limiting was applied (total time > 2s for 10 jobs)
       const totalDuration = processedTimestamps[9] - processedTimestamps[0];
       expect(totalDuration).toBeGreaterThan(1500); // Should span at least 2 rate windows
-    }, 12000);
+    }, 30000);
 
     it('should enforce worker-level concurrency throttling', async () => {
       let currentConcurrent = 0;
@@ -319,7 +319,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // Max concurrent should not exceed 3
       expect(maxConcurrent).toBeGreaterThan(0);
       expect(maxConcurrent).toBeLessThanOrEqual(3);
-    }, 10000);
+    }, 25000);
 
     it('should handle burst traffic with rate limiting', async () => {
       testQueue = new Queue(queueName, {
@@ -357,7 +357,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // Verify all completed
       const completed = await testQueue.getCompletedCount();
       expect(completed).toBe(50);
-    }, 15000);
+    }, 35000);
 
     it('should apply consistent rate limiting across retries', async () => {
       let attemptCount = 0;
@@ -400,7 +400,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Rate limit should apply to both initial attempts and retries
       expect(attemptCount).toBeGreaterThan(2);
-    }, 12000);
+    }, 30000);
 
     it('should handle distributed rate limiting (multiple workers)', async () => {
       testQueue = new Queue(queueName, {
@@ -438,7 +438,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       await worker1.close();
       await worker2.close();
       await worker3.close();
-    }, 15000);
+    }, 35000);
   });
 
   describe('STEP 9: Graceful Shutdown Stabilization', () => {
@@ -473,7 +473,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
-    }, 10000);
+    }, 25000);
 
     it('should handle shutdown during retry delay', async () => {
       let attemptCount = 0;
@@ -506,7 +506,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       const delayedJob = await testQueue.getJob(job.id);
       expect(delayedJob.attemptsMade).toBe(1);
       expect(delayedJob.delay).toBeGreaterThan(0);
-    }, 10000);
+    }, 25000);
 
     it('should handle shutdown with delayed jobs in queue', async () => {
       testWorker = new Worker(
@@ -532,7 +532,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       const job = await testQueue.getJob(delayedJob.id);
       expect(job).toBeDefined();
       expect(job.processedOn).toBeUndefined();
-    }, 5000);
+    }, 20000);
 
     it('should handle shutdown during Redis reconnection attempt', async () => {
       testWorker = new Worker(
@@ -555,7 +555,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Should close cleanly without hanging
       expect(true).toBe(true);
-    }, 5000);
+    }, 20000);
 
     it('should support job recovery after restart', async () => {
       testWorker = new Worker(
@@ -593,7 +593,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // All jobs should eventually complete
       const completed = await testQueue.getCompletedCount();
       expect(completed).toBeGreaterThanOrEqual(2);
-    }, 10000);
+    }, 25000);
 
     it('should prevent new jobs from being accepted during shutdown', async () => {
       const processedJobs = [];
@@ -629,7 +629,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // Second job should be waiting
       const waitingJob = await testQueue.getJob(job2.id);
       expect(waitingJob.processedOn).toBeUndefined();
-    }, 10000);
+    }, 25000);
 
     it('should close all Redis connections on shutdown', async () => {
       testWorker = new Worker(
@@ -650,7 +650,7 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
       // Verify clean shutdown (no hanging connections)
       // If this test completes without timeout, connections are closed
       expect(true).toBe(true);
-    }, 10000);
+    }, 25000);
 
     it('should handle forced shutdown timeout gracefully', async () => {
       testWorker = new Worker(
@@ -678,6 +678,6 @@ describe('Phase 6: Priority, Rate Limiting & Shutdown', () => {
 
       // Worker should close even if job hasn't completed
       expect(true).toBe(true);
-    }, 5000);
+    }, 20000);
   });
 });

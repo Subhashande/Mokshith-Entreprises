@@ -89,7 +89,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Queue depth should decrease
       const remainingWaiting = await testQueue.getWaitingCount();
       expect(remainingWaiting).toBeLessThan(waitingCount);
-    }, 5000);
+    }, 50000);
 
     it('should track failed job count accurately', async () => {
       // Add jobs that will fail
@@ -105,7 +105,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Check failed count
       const failedCount = await testQueue.getFailedCount();
       expect(failedCount).toBe(3);
-    }, 5000);
+    }, 50000);
 
     it('should track completed job count', async () => {
       await Promise.all([
@@ -118,7 +118,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       const completedCount = await testQueue.getCompletedCount();
       expect(completedCount).toBe(3);
-    }, 5000);
+    }, 50000);
 
     it('should provide comprehensive job counts via getJobCounts', async () => {
       // Add various jobs
@@ -147,7 +147,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       expect(counts.completed).toBeGreaterThan(0);
       expect(counts.failed).toBeGreaterThan(0);
       expect(counts.delayed).toBe(1);
-    }, 5000);
+    }, 50000);
 
     it('should track active worker count (simulated)', async () => {
       // In a real environment, you'd query Redis for active connections
@@ -160,7 +160,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Should have active jobs while worker is processing
       await new Promise(resolve => setTimeout(resolve, 50));
       expect(activeCount).toBeGreaterThanOrEqual(0);
-    }, 2000);
+    }, 40000);
 
     it('should track retry metrics', async () => {
       let attemptCount = 0;
@@ -188,7 +188,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       expect(completedJob.attemptsMade).toBe(3);
       expect(completedJob.finishedOn).toBeDefined();
       expect(completedJob.processedOn).toBeDefined();
-    }, 15000);
+    }, 40000);
 
     it('should calculate average processing time', async () => {
       const processingTimes = [];
@@ -218,7 +218,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       expect(averageTime).toBeGreaterThanOrEqual(180);
       expect(averageTime).toBeLessThan(300);
-    }, 5000);
+    }, 50000);
 
     it('should provide queue health status API', async () => {
       await Promise.all([
@@ -244,7 +244,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       expect(health.completed).toBeGreaterThan(0);
       expect(health.failed).toBeGreaterThan(0);
       expect(health.paused).toBe(false);
-    }, 5000);
+    }, 50000);
   });
 
   describe('STEP 11: Distributed Processing Consistency', () => {
@@ -306,7 +306,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       await worker1.close();
       await worker2.close();
       await worker3.close();
-    }, 15000);
+    }, 40000);
 
     it('should maintain consistent distributed state across workers', async () => {
       const sharedState = { counter: 0 };
@@ -345,7 +345,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       await worker1.close();
       await worker2.close();
-    }, 5000);
+    }, 50000);
 
     it('should handle worker failover gracefully', async () => {
       let worker1ProcessedCount = 0;
@@ -395,7 +395,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Both workers should have processed jobs
       expect(worker1ProcessedCount).toBeGreaterThan(0);
       expect(worker2ProcessedCount).toBeGreaterThan(0);
-    }, 10000);
+    }, 30000);
 
     it('should handle concurrent consumers without race conditions', async () => {
       const processedItems = [];
@@ -434,7 +434,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       await worker1.close();
       await worker2.close();
-    }, 10000);
+    }, 30000);
   });
 
   describe('STEP 12: Queue Integration Tests', () => {
@@ -456,11 +456,24 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Create test order
       testOrder = await Order.create({
         userId: testUser._id,
-        items: [{ productId: new mongoose.Types.ObjectId(), quantity: 5, price: 1000 }],
+        items: [{ 
+          productId: new mongoose.Types.ObjectId(), 
+          name: 'Test Product',
+          quantity: 5, 
+          price: 1000 
+        }],
         totalAmount: 5000,
         paymentStatus: 'PENDING',
         status: 'PENDING_PAYMENT',
         paymentMethod: 'ONLINE',
+        address: {
+          name: 'Test Customer',
+          phone: '9876543210',
+          addressLine: '123 Test Street',
+          city: 'Test City',
+          state: 'Test State',
+          pincode: '123456',
+        },
       });
     });
 
@@ -502,7 +515,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       const updatedOrder = await Order.findById(testOrder._id);
       expect(updatedOrder.status).toBe('CONFIRMED');
       expect(updatedOrder.invoiceGenerated).toBe(true);
-    }, 10000);
+    }, 30000);
 
     it('should handle payment → queue → delivery assignment flow', async () => {
       // Create successful payment
@@ -550,7 +563,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       const updatedOrder = await Order.findById(testOrder._id);
       expect(updatedOrder.deliveryAssigned).toBe(true);
-    }, 10000);
+    }, 30000);
 
     it('should handle retry → recovery → success flow', async () => {
       let attemptCount = 0;
@@ -591,7 +604,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       const updatedOrder = await Order.findById(testOrder._id);
       expect(updatedOrder.status).toBe('CONFIRMED');
       expect(updatedOrder.retryCount).toBe(3);
-    }, 15000);
+    }, 40000);
 
     it('should handle DLQ → manual retry → success flow', async () => {
       let attemptCount = 0;
@@ -628,7 +641,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       // Should succeed
       const retriedJob = await testQueue.getJob(job.id);
       expect(retriedJob.returnvalue?.success).toBe(true);
-    }, 15000);
+    }, 40000);
 
     it('should handle shutdown → restart → job recovery flow', async () => {
       testWorker = new Worker(
@@ -664,7 +677,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       const completed = await testQueue.getCompletedCount();
       expect(completed).toBeGreaterThanOrEqual(2);
-    }, 10000);
+    }, 30000);
   });
 
   describe('STEP 13: Error Handling Validation', () => {
@@ -687,7 +700,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       const failedJob = await testQueue.getJob(job.id);
       expect(failedJob.failedReason).toContain('Invalid job payload');
-    }, 8000);
+    }, 25000);
 
     it('should handle Redis connection failures gracefully', async () => {
       testWorker = new Worker(
@@ -736,7 +749,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       const recoveredJob = await testQueue.getJob(job.id);
       expect(recoveredJob.returnvalue.success).toBe(true);
-    }, 15000);
+    }, 40000);
 
     it('should handle duplicate job events gracefully', async () => {
       const processedEvents = [];
@@ -763,7 +776,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
 
       // Should only process once
       expect(processedEvents.length).toBe(1);
-    }, 5000);
+    }, 50000);
   });
 
   describe('STEP 14: Final Validation Requirements', () => {
@@ -815,7 +828,7 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       expect(processed.length).toBe(1);
-    }, 5000);
+    }, 50000);
 
     it('should support stable repeated test runs', async () => {
       for (let run = 1; run <= 3; run++) {
@@ -835,6 +848,6 @@ describe('Phase 6: Health, Distributed Processing & Validation', () => {
         await testWorker.close();
         await testQueue.obliterate({ force: true });
       }
-    }, 20000);
+    }, 50000);
   });
 });

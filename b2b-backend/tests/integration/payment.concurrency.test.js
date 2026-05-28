@@ -35,7 +35,7 @@ describe('Payment Concurrency Tests', () => {
     // Create test order
     testOrder = await Order.create({
       ...generateTestOrder({
-        customerId: testUser._id,
+        userId: testUser._id,
         totalAmount: 10000,
       }),
       userId: testUser._id,
@@ -216,7 +216,7 @@ describe('Payment Concurrency Tests', () => {
 
       const order2 = await Order.create({
         ...generateTestOrder({
-          customerId: user2._id,
+          userId: user2._id,
           totalAmount: 8000,
         }),
         userId: user2._id,

@@ -38,7 +38,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -56,7 +56,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
         password: 'PlainPassword@123',
       });
 
-      await request.post('/api/auth/register').send(userData).expect(201);
+      await request.post('/api/v1/auth/register').send(userData).expect(201);
 
       const user = await User.findOne({ email: userData.email });
       expect(user.password).not.toBe(userData.password);
@@ -69,7 +69,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(400);
 
@@ -83,11 +83,11 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       // First registration
-      await request.post('/api/auth/register').send(userData).expect(201);
+      await request.post('/api/v1/auth/register').send(userData).expect(201);
 
       // Duplicate registration
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(400);
 
@@ -100,13 +100,13 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // First registration
       await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(generateTestUser({ mobile, email: 'user1@test.com' }))
         .expect(201);
 
       // Duplicate mobile
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(generateTestUser({ mobile, email: 'user2@test.com' }))
         .expect(400);
 
@@ -119,7 +119,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(400);
 
@@ -132,7 +132,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(400);
 
@@ -144,7 +144,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
         password: 'Password123!', // Common breached password
       });
 
-      const response = await request.post('/api/auth/register').send(userData);
+      const response = await request.post('/api/v1/auth/register').send(userData);
 
       // Should either reject or warn about breach
       expect(response.status).toBeLessThan(500);
@@ -153,7 +153,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
     it('should track password history on registration', async () => {
       const userData = generateTestUser();
 
-      await request.post('/api/auth/register').send(userData).expect(201);
+      await request.post('/api/v1/auth/register').send(userData).expect(201);
 
       const user = await User.findOne({ email: userData.email });
       expect(user.passwordHistory).toBeDefined();
@@ -166,7 +166,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       delete userData.role;
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -177,7 +177,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const userData = generateTestUser();
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -188,7 +188,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const userData = generateTestUser();
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -203,7 +203,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       };
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(invalidData)
         .expect(400);
 
@@ -216,7 +216,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -227,7 +227,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const userData = generateTestUser();
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -242,7 +242,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const userData = generateTestUser();
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .set('User-Agent', 'Mozilla/5.0 Chrome/120.0')
         .expect(201);
@@ -275,7 +275,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should login with valid email and password', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -291,7 +291,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should login with valid mobile and password', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.mobile,
           password: testPassword,
@@ -304,7 +304,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should reject login with invalid password', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: 'WrongPassword@123',
@@ -317,7 +317,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should reject login for non-existent user', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: 'nonexistent@test.com',
           password: testPassword,
@@ -332,7 +332,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       await testUser.save();
 
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -347,7 +347,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       await testUser.save();
 
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -361,7 +361,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       // Attempt 5 failed logins
       for (let i = 0; i < 5; i++) {
         await request
-          .post('/api/auth/login')
+          .post('/api/v1/auth/login')
           .send({
             identifier: testUser.email,
             password: 'WrongPassword',
@@ -371,7 +371,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // 6th attempt should be blocked
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -384,7 +384,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
     it('should reset login attempts on successful login', async () => {
       // Failed attempt
       await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: 'Wrong',
@@ -393,7 +393,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // Successful login
       await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -409,7 +409,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       await testUser.save();
 
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -423,7 +423,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should track login IP address', async () => {
       await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: testPassword,
@@ -440,7 +440,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const attempts = Array(20)
         .fill()
         .map(() =>
-          request.post('/api/auth/login').send({
+          request.post('/api/v1/auth/login').send({
             identifier: testUser.email,
             password: 'wrong',
           })
@@ -453,7 +453,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should not expose user info on failed login', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: 'random@test.com',
           password: 'Random@123',
@@ -491,7 +491,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should refresh access token with valid refresh token', async () => {
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(200);
 
@@ -505,7 +505,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const oldToken = validRefreshToken.token;
 
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: oldToken })
         .expect(200);
 
@@ -522,7 +522,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       await validRefreshToken.save();
 
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(401);
 
@@ -534,7 +534,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       await validRefreshToken.save();
 
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(401);
 
@@ -544,13 +544,13 @@ describe('Authentication Module - Comprehensive Tests', () => {
     it('should detect token reuse and revoke entire family', async () => {
       // First refresh (valid)
       await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(200);
 
       // Try to reuse old token (should detect reuse)
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(401);
 
@@ -570,13 +570,13 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // First rotation
       const response1 = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(200);
 
       // Second rotation
       const response2 = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: response1.body.data.refreshToken })
         .expect(200);
 
@@ -588,7 +588,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should reject invalid refresh token format', async () => {
       const response = await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: 'invalid_token_format' })
         .expect(401);
 
@@ -599,7 +599,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const originalLastUsed = validRefreshToken.lastUsedAt;
 
       await request
-        .post('/api/auth/refresh-token')
+        .post('/api/v1/auth/refresh-token')
         .send({ refreshToken: validRefreshToken.token })
         .expect(200);
 
@@ -634,7 +634,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should revoke refresh token on logout', async () => {
       const response = await request
-        .post('/api/auth/logout')
+        .post('/api/v1/auth/logout')
         .send({ refreshToken: refreshToken.token })
         .expect(200);
 
@@ -645,7 +645,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
     });
 
     it('should handle logout without refresh token gracefully', async () => {
-      const response = await request.post('/api/auth/logout').send({}).expect(200);
+      const response = await request.post('/api/v1/auth/logout').send({}).expect(200);
 
       expect(response.body.success).toBe(true);
     });
@@ -653,7 +653,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
     it('should log security event on logout', async () => {
       // This would check audit logs in real implementation
       const response = await request
-        .post('/api/auth/logout')
+        .post('/api/v1/auth/logout')
         .send({ refreshToken: refreshToken.token })
         .expect(200);
 
@@ -677,7 +677,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // Login to get access token
       const loginResponse = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: oldPassword,
@@ -688,7 +688,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should change password with valid old password', async () => {
       const response = await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -702,7 +702,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should reject change with incorrect old password', async () => {
       const response = await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword: 'WrongOld@123',
@@ -715,7 +715,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should reject weak new password', async () => {
       const response = await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -729,7 +729,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
     it('should prevent password reuse from history', async () => {
       // Change password first time
       await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -739,7 +739,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // Login with new password
       const loginResponse = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: testUser.email,
           password: newPassword,
@@ -749,7 +749,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       // Try to change back to old password
       const response = await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${newAccessToken}`)
         .send({
           oldPassword: newPassword,
@@ -762,7 +762,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should invalidate all sessions on password change', async () => {
       await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -782,7 +782,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const beforeChange = testUser.lastPasswordChange;
 
       await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -798,7 +798,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should add new password to history', async () => {
       await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           oldPassword,
@@ -812,7 +812,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
     it('should require authentication', async () => {
       const response = await request
-        .post('/api/auth/change-password')
+        .post('/api/v1/auth/change-password')
         .send({
           oldPassword,
           newPassword,
@@ -826,7 +826,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
   describe('Security & Edge Cases', () => {
     it('should sanitize SQL injection attempts', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           identifier: "admin' OR '1'='1",
           password: "' OR '1'='1",
@@ -841,7 +841,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
 
       const attempts = Array(5)
         .fill()
-        .map(() => request.post('/api/auth/register').send(userData));
+        .map(() => request.post('/api/v1/auth/register').send(userData));
 
       const responses = await Promise.all(attempts.map((p) => p.catch((e) => e.response)));
 
@@ -853,7 +853,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       const longString = 'a'.repeat(10000);
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: longString + '@test.com',
           password: 'Test@1234',
@@ -871,7 +871,7 @@ describe('Authentication Module - Comprehensive Tests', () => {
       });
 
       const response = await request
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send(userData)
         .expect(201);
 
@@ -879,14 +879,14 @@ describe('Authentication Module - Comprehensive Tests', () => {
     });
 
     it('should handle empty request body', async () => {
-      const response = await request.post('/api/auth/login').send({}).expect(400);
+      const response = await request.post('/api/v1/auth/login').send({}).expect(400);
 
       expect(response.body.success).toBe(false);
     });
 
     it('should handle malformed JSON', async () => {
       const response = await request
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .set('Content-Type', 'application/json')
         .send('{"invalid json}')
         .expect(400);

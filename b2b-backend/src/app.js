@@ -162,8 +162,8 @@ app.use(ipBlockMiddleware);
 // 🔥 Request timeout protection (30 seconds)
 app.use(timeoutMiddleware(30000));
 
-// 🔥 Handle preflight requests (VERY IMPORTANT)
-app.options("*", corsConfig);
+// 🔥 Handle preflight requests (already handled by global CORS middleware above)
+// app.options("*", corsConfig); // REMOVED: Invalid wildcard route causing path-to-regexp error
 
 
 // 🛡️ Security middleware

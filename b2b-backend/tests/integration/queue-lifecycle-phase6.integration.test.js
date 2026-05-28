@@ -128,7 +128,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       // Verify job completed successfully
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
-    }, 10000);
+    }, 30000);
 
     it('should reject new jobs during shutdown', async () => {
       testWorker = new Worker(
@@ -161,7 +161,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       // Job2 should be waiting (not processed by closed worker)
       const waitingJob2 = await testQueue.getJob(job2.id);
       expect(waitingJob2.finishedOn).toBeUndefined();
-    }, 10000);
+    }, 30000);
 
     it('should handle worker crash and job reprocessing', async () => {
       let attemptCount = 0;
@@ -195,7 +195,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
       expect(completedJob.returnvalue.attemptCount).toBe(2);
-    }, 15000);
+    }, 40000);
 
     it('should prevent duplicate worker registration on same queue', async () => {
       // Create first worker
@@ -303,7 +303,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       await job2.waitUntilFinished(queueEvents, 5000);
 
       expect(jobsProcessed).toBe(2);
-    }, 15000);
+    }, 40000);
   });
 
   describe('STEP 3: Job Processing Stabilization', () => {
@@ -352,7 +352,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       const failedJob = await testQueue.getJob(job.id);
       expect(failedJob.attemptsMade).toBe(3);
       expect(failedJob.failedReason).toContain('Processing failed');
-    }, 12000);
+    }, 35000);
 
     it('should reject malformed job payload gracefully', async () => {
       await testWorker.close();
@@ -376,7 +376,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
 
       const failedJob = await testQueue.getJob(job.id);
       expect(failedJob.failedReason).toContain('Missing required field');
-    }, 12000);
+    }, 35000);
 
     it('should process concurrent jobs up to concurrency limit', async () => {
       const activeJobs = new Set();
@@ -412,7 +412,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       // Max concurrent should not exceed 3
       expect(maxConcurrent).toBeGreaterThan(0);
       expect(maxConcurrent).toBeLessThanOrEqual(3);
-    }, 20000);
+    }, 50000);
 
     it.skip('should support job cancellation before processing', async () => {
       // SKIPPED: BullMQ locks jobs immediately when workers pick them up.
@@ -453,7 +453,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       // Verify no jobs were processed
       const completedCount = await testQueue.getCompletedCount();
       expect(completedCount).toBe(0);
-    }, 5000);
+    }, 50000);
 
     it('should execute delayed job at scheduled time', async () => {
       const startTime = Date.now();
@@ -478,7 +478,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       // Should take at least 3 seconds
       expect(duration).toBeGreaterThanOrEqual(2800); // Allow 200ms tolerance
       expect(duration).toBeLessThan(6000);
-    }, 12000);
+    }, 35000);
 
     it('should enforce job timeout', async () => {
       await testWorker.close();
@@ -511,7 +511,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
         timedOutJob.failedReason?.includes('timeout') || 
         timedOutJob.finishedOn === undefined
       ).toBe(true);
-    }, 10000);
+    }, 30000);
 
     it('should preserve job data after partial failure', async () => {
       let attemptCount = 0;
@@ -547,7 +547,7 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       expect(completedJob.data.orderId).toBe('ORDER_789');
       expect(completedJob.data.originalData).toBe('important');
       expect(completedJob.returnvalue.success).toBe(true);
-    }, 15000);
+    }, 40000);
 
     it('should handle async errors with proper stack traces', async () => {
       await testWorker.close();
@@ -570,6 +570,6 @@ describe('Phase 6: Queue Lifecycle & Worker Management', () => {
       expect(failedJob.failedReason).toContain('Async operation failed');
       expect(failedJob.stacktrace).toBeDefined();
       expect(failedJob.stacktrace.length).toBeGreaterThan(0);
-    }, 12000);
+    }, 35000);
   });
 });

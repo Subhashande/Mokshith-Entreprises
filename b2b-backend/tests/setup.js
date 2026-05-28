@@ -7,6 +7,7 @@ process.env.NODE_ENV = 'test';
 process.env.ENABLE_QUEUE = 'false';
 process.env.ENABLE_WORKERS = 'false';
 process.env.ENABLE_CRON = 'false';
+process.env.REDIS_MOCK = 'true'; // Signal to skip real Redis connection
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' });

@@ -50,10 +50,12 @@ export const validate = (schema) => (req, res, next) => {
     });
   }
 
-  // 🔥 Update req with validated/transformed values
-  req.body = value.body;
-  req.query = value.query;
-  req.params = value.params;
+  // 🔥 Update req.body with validated/transformed values
+  // Note: req.query and req.params are read-only getters in Express and cannot be reassigned
+  // The validation already processed them, so we only need to update req.body
+  if (value.body) {
+    req.body = value.body;
+  }
 
   next();
 };
