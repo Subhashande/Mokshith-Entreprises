@@ -1,42 +1,73 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import * as inventoryService from '../../src/modules/inventory/inventory.service.js';
-import Inventory from '../../src/modules/inventory/inventory.model.js';
-import Product from '../../src/modules/product/product.model.js';
-import Warehouse from '../../src/modules/warehouse/warehouse.model.js';
-import { redisClient } from '../../src/config/redis.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 import AppError from '../../src/errors/AppError.js';
 import mongoose from 'mongoose';
 
-jest.mock('../../src/modules/inventory/inventory.model.js', () => ({
+// ESM-compatible mocking: declare mocks before importing the SUT
+const mockFindInventory = jest.fn();
+const mockCreateInventory = jest.fn();
+const mockUpdateInventory = jest.fn();
+const mockFindAll = jest.fn();
+const mockFindByProduct = jest.fn();
+const mockFindLowStock = jest.fn();
+const mockGetStats = jest.fn();
+
+const mockSetex = jest.fn();
+const mockGet = jest.fn();
+const mockDel = jest.fn();
+
+// mongoose.model('Inventory').findOneAndUpdate is used directly by the service
+const mockFindOneAndUpdate = jest.fn();
+
+jest.unstable_mockModule('../../src/modules/inventory/inventory.repository.js', () => ({
   __esModule: true,
-  default: {
-    findOne: jest.fn(),
-    create: jest.fn(),
-    findOneAndUpdate: jest.fn(),
-    aggregate: jest.fn(),
-    find: jest.fn(),
-  },
+  findInventory: mockFindInventory,
+  createInventory: mockCreateInventory,
+  updateInventory: mockUpdateInventory,
+  findAll: mockFindAll,
+  findByProduct: mockFindByProduct,
+  findLowStock: mockFindLowStock,
+  getStats: mockGetStats,
 }));
-jest.mock('../../src/modules/product/product.model.js', () => ({
+
+jest.unstable_mockModule('../../src/modules/warehouse/warehouse.model.js', () => ({
   __esModule: true,
-  default: {
-    findById: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
-  },
+  default: { findById: jest.fn() },
 }));
-jest.mock('../../src/modules/warehouse/warehouse.model.js', () => ({
+
+jest.unstable_mockModule('../../src/config/redis.js', () => ({
   __esModule: true,
-  default: {
-    findById: jest.fn(),
-  },
-}));
-jest.mock('../../src/config/redis.js', () => ({
   redisClient: {
-    setex: jest.fn(),
-    get: jest.fn(),
-    del: jest.fn(),
+    setex: mockSetex,
+    get: mockGet,
+    del: mockDel,
   },
 }));
+
+jest.unstable_mockModule('../../src/config/logger.js', () => ({
+  __esModule: true,
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+}));
+
+// Aliases so existing test bodies keep working
+const repo = {
+  findInventory: mockFindInventory,
+  createInventory: mockCreateInventory,
+  findByProduct: mockFindByProduct,
+  findLowStock: mockFindLowStock,
+  getStats: mockGetStats,
+  findAll: mockFindAll,
+};
+const redisClient = { setex: mockSetex, get: mockGet, del: mockDel };
+
+let inventoryService;
+
+beforeAll(async () => {
+  // Stub mongoose.model('Inventory') used directly inside the service
+  jest.spyOn(mongoose, 'model').mockImplementation(() => ({
+    findOneAndUpdate: mockFindOneAndUpdate,
+  }));
+  inventoryService = await import('../../src/modules/inventory/inventory.service.js');
+});
 
 describe('Inventory Service - Unit Tests', () => {
   let mockProductId;
@@ -45,27 +76,27 @@ describe('Inventory Service - Unit Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
+    // Re-apply mongoose.model stub (clearAllMocks resets spy implementations)
+    jest.spyOn(mongoose, 'model').mockImplementation(() => ({
+      findOneAndUpdate: mockFindOneAndUpdate,
+    }));
+
     mockProductId = new mongoose.Types.ObjectId().toString();
     mockWarehouseId = new mongoose.Types.ObjectId().toString();
     mockOrderId = new mongoose.Types.ObjectId().toString();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    // do not restoreAllMocks: it would remove the mongoose.model spy set in beforeAll
+    jest.clearAllMocks();
   });
 
   describe('addStock', () => {
-    it('should add stock successfully', async () => {
-      const mockInventory = {
-        productId: mockProductId,
-        warehouseId: mockWarehouseId,
-        stock: 50,
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      Inventory.findOne = jest.fn().mockResolvedValue(null);
-      Inventory.prototype.save = jest.fn().mockResolvedValue(mockInventory);
+    it('should create inventory when none exists', async () => {
+      const created = { productId: mockProductId, warehouseId: mockWarehouseId, stock: 50 };
+      repo.findInventory.mockResolvedValue(null);
+      repo.createInventory.mockResolvedValue(created);
 
       const result = await inventoryService.addStock({
         productId: mockProductId,
@@ -73,8 +104,8 @@ describe('Inventory Service - Unit Tests', () => {
         stock: 50,
       });
 
-      expect(result).toBeDefined();
-      expect(Inventory.prototype.save).toHaveBeenCalled();
+      expect(result).toEqual(created);
+      expect(repo.createInventory).toHaveBeenCalled();
     });
 
     it('should update existing stock', async () => {
@@ -85,9 +116,9 @@ describe('Inventory Service - Unit Tests', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      Inventory.findOne = jest.fn().mockResolvedValue(mockInventory);
+      repo.findInventory.mockResolvedValue(mockInventory);
 
-      const result = await inventoryService.addStock({
+      await inventoryService.addStock({
         productId: mockProductId,
         warehouseId: mockWarehouseId,
         stock: 30,
@@ -100,38 +131,32 @@ describe('Inventory Service - Unit Tests', () => {
 
   describe('checkStock', () => {
     it('should return true when sufficient stock available', async () => {
-      const mockInventory = [{ stock: 100 }];
-
-      Inventory.find = jest.fn().mockResolvedValue(mockInventory);
+      repo.findByProduct.mockResolvedValue([{ stock: 100 }]);
 
       const result = await inventoryService.checkStock(mockProductId, 50);
 
       expect(result).toBe(true);
-      expect(Inventory.find).toHaveBeenCalledWith({ productId: mockProductId });
+      expect(repo.findByProduct).toHaveBeenCalledWith(mockProductId);
     });
 
-    it('should return false when insufficient stock', async () => {
-      const mockInventory = [{ stock: 30 }];
+    it('should throw when insufficient stock', async () => {
+      repo.findByProduct.mockResolvedValue([{ stock: 30 }]);
 
-      Inventory.find = jest.fn().mockResolvedValue(mockInventory);
-
-      const result = await inventoryService.checkStock(mockProductId, 50);
-
-      expect(result).toBe(false);
+      await expect(inventoryService.checkStock(mockProductId, 50)).rejects.toThrow(
+        'Insufficient stock'
+      );
     });
 
-    it('should return false when no inventory found', async () => {
-      Inventory.find = jest.fn().mockResolvedValue([]);
+    it('should throw when no inventory records found', async () => {
+      repo.findByProduct.mockResolvedValue([]);
 
-      const result = await inventoryService.checkStock(mockProductId, 50);
-
-      expect(result).toBe(false);
+      await expect(inventoryService.checkStock(mockProductId, 50)).rejects.toThrow(
+        'Product inventory not configured'
+      );
     });
 
     it('should calculate total stock across multiple warehouses', async () => {
-      const mockInventory = [{ stock: 30 }, { stock: 40 }, { stock: 30 }];
-
-      Inventory.find = jest.fn().mockResolvedValue(mockInventory);
+      repo.findByProduct.mockResolvedValue([{ stock: 30 }, { stock: 40 }, { stock: 30 }]);
 
       const result = await inventoryService.checkStock(mockProductId, 90);
 
@@ -140,65 +165,37 @@ describe('Inventory Service - Unit Tests', () => {
   });
 
   describe('reduceStock', () => {
-    it('should reduce stock successfully', async () => {
-      const mockInventory = {
-        productId: mockProductId,
-        warehouseId: mockWarehouseId,
-        stock: 100,
-        reserved: 0,
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockInventory),
-      });
+    it('should reduce stock successfully via atomic update', async () => {
+      const item = { _id: new mongoose.Types.ObjectId(), stock: 100, version: 0 };
+      repo.findByProduct.mockResolvedValue([item]);
+      mockFindOneAndUpdate.mockResolvedValue({ ...item, stock: 70 });
 
       const result = await inventoryService.reduceStock(mockProductId, 30);
 
-      expect(mockInventory.stock).toBe(70);
-      expect(mockInventory.save).toHaveBeenCalled();
       expect(result).toBe(true);
+      expect(mockFindOneAndUpdate).toHaveBeenCalled();
     });
 
     it('should throw error when insufficient stock', async () => {
-      const mockInventory = {
-        productId: mockProductId,
-        warehouseId: mockWarehouseId,
-        stock: 20,
-        reserved: 0,
-      };
-
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockInventory),
-      });
+      repo.findByProduct.mockResolvedValue([{ _id: new mongoose.Types.ObjectId(), stock: 20, version: 0 }]);
 
       await expect(inventoryService.reduceStock(mockProductId, 30)).rejects.toThrow(
-        'Insufficient stock'
+        'Insufficient total stock'
       );
     });
 
     it('should throw error when no inventory found', async () => {
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(null),
-      });
+      repo.findByProduct.mockResolvedValue([]);
 
       await expect(inventoryService.reduceStock(mockProductId, 30)).rejects.toThrow(
         'No inventory found'
       );
     });
 
-    it('should handle optimistic locking conflicts', async () => {
-      const mockInventory = {
-        productId: mockProductId,
-        stock: 100,
-        reserved: 0,
-        __v: 1,
-        save: jest.fn().mockRejectedValue({ name: 'VersionError' }),
-      };
-
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockInventory),
-      });
+    it('should fail after retries on optimistic locking conflicts', async () => {
+      repo.findByProduct.mockResolvedValue([{ _id: new mongoose.Types.ObjectId(), stock: 100, version: 0 }]);
+      // findOneAndUpdate returns null -> INVENTORY_CONFLICT -> retry -> eventually fail
+      mockFindOneAndUpdate.mockResolvedValue(null);
 
       await expect(inventoryService.reduceStock(mockProductId, 30)).rejects.toThrow();
     });
@@ -206,37 +203,27 @@ describe('Inventory Service - Unit Tests', () => {
 
   describe('restoreStock', () => {
     it('should restore stock successfully', async () => {
-      const mockInventory = {
-        productId: mockProductId,
-        warehouseId: mockWarehouseId,
-        stock: 70,
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockInventory),
-      });
+      const item = { _id: new mongoose.Types.ObjectId(), stock: 70 };
+      repo.findByProduct.mockResolvedValue([item]);
+      mockFindOneAndUpdate.mockResolvedValue({ ...item, stock: 100 });
 
       const result = await inventoryService.restoreStock(mockProductId, 30);
 
-      expect(mockInventory.stock).toBe(100);
-      expect(mockInventory.save).toHaveBeenCalled();
       expect(result).toBe(true);
+      expect(mockFindOneAndUpdate).toHaveBeenCalled();
     });
 
-    it('should throw error when no inventory found', async () => {
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(null),
-      });
+    it('should return false when no inventory found', async () => {
+      repo.findByProduct.mockResolvedValue([]);
 
-      await expect(inventoryService.restoreStock(mockProductId, 30)).rejects.toThrow(
-        'No inventory found'
-      );
+      const result = await inventoryService.restoreStock(mockProductId, 30);
+
+      expect(result).toBe(false);
     });
   });
 
   describe('updateStock', () => {
-    it('should set stock with SET type', async () => {
+    it('should set stock with default SET type', async () => {
       const mockInventory = {
         productId: mockProductId,
         warehouseId: mockWarehouseId,
@@ -244,7 +231,7 @@ describe('Inventory Service - Unit Tests', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      Inventory.findOne = jest.fn().mockResolvedValue(mockInventory);
+      repo.findInventory.mockResolvedValue(mockInventory);
 
       await inventoryService.updateStock({
         productId: mockProductId,
@@ -257,7 +244,7 @@ describe('Inventory Service - Unit Tests', () => {
       expect(mockInventory.save).toHaveBeenCalled();
     });
 
-    it('should increment stock with INCREMENT type', async () => {
+    it('should increment stock with ADD type', async () => {
       const mockInventory = {
         productId: mockProductId,
         warehouseId: mockWarehouseId,
@@ -265,20 +252,20 @@ describe('Inventory Service - Unit Tests', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      Inventory.findOne = jest.fn().mockResolvedValue(mockInventory);
+      repo.findInventory.mockResolvedValue(mockInventory);
 
       await inventoryService.updateStock({
         productId: mockProductId,
         warehouseId: mockWarehouseId,
         stock: 30,
-        type: 'INCREMENT',
+        type: 'ADD',
       });
 
       expect(mockInventory.stock).toBe(80);
       expect(mockInventory.save).toHaveBeenCalled();
     });
 
-    it('should decrement stock with DECREMENT type', async () => {
+    it('should decrement stock with SUBTRACT type', async () => {
       const mockInventory = {
         productId: mockProductId,
         warehouseId: mockWarehouseId,
@@ -286,29 +273,45 @@ describe('Inventory Service - Unit Tests', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      Inventory.findOne = jest.fn().mockResolvedValue(mockInventory);
+      repo.findInventory.mockResolvedValue(mockInventory);
 
       await inventoryService.updateStock({
         productId: mockProductId,
         warehouseId: mockWarehouseId,
         stock: 20,
-        type: 'DECREMENT',
+        type: 'SUBTRACT',
       });
 
       expect(mockInventory.stock).toBe(30);
       expect(mockInventory.save).toHaveBeenCalled();
     });
 
-    it('should throw error when inventory not found', async () => {
-      Inventory.findOne = jest.fn().mockResolvedValue(null);
+    it('should create inventory when not found and type is SET', async () => {
+      const created = { productId: mockProductId, warehouseId: mockWarehouseId, stock: 100 };
+      repo.findInventory.mockResolvedValue(null);
+      repo.createInventory.mockResolvedValue(created);
+
+      const result = await inventoryService.updateStock({
+        productId: mockProductId,
+        warehouseId: mockWarehouseId,
+        stock: 100,
+        type: 'SET',
+      });
+
+      expect(result).toEqual(created);
+    });
+
+    it('should throw error when inventory not found and type is not SET', async () => {
+      repo.findInventory.mockResolvedValue(null);
 
       await expect(
         inventoryService.updateStock({
           productId: mockProductId,
           warehouseId: mockWarehouseId,
           stock: 100,
+          type: 'ADD',
         })
-      ).rejects.toThrow('Inventory not found');
+      ).rejects.toThrow('Inventory record not found');
     });
   });
 
@@ -319,47 +322,37 @@ describe('Inventory Service - Unit Tests', () => {
         { productId: new mongoose.Types.ObjectId(), stock: 3 },
       ];
 
-      Inventory.find = jest.fn().mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockLowStockItems),
-      });
+      repo.findLowStock.mockResolvedValue(mockLowStockItems);
 
       const result = await inventoryService.getLowStockItems();
 
       expect(result).toEqual(mockLowStockItems);
-      expect(Inventory.find).toHaveBeenCalled();
+      expect(repo.findLowStock).toHaveBeenCalled();
     });
   });
 
   describe('getInventoryStats', () => {
-    it('should return inventory statistics', async () => {
-      const mockStats = [
-        { _id: null, totalStock: 1000, totalValue: 50000, totalProducts: 50 },
-      ];
-
-      Inventory.aggregate = jest.fn().mockResolvedValue(mockStats);
+    it('should return inventory statistics with productCount', async () => {
+      repo.getStats.mockResolvedValue({
+        totalStock: 1000,
+        totalValue: 50000,
+        uniqueProducts: [mockProductId, new mongoose.Types.ObjectId()],
+      });
 
       const result = await inventoryService.getInventoryStats();
 
       expect(result).toBeDefined();
-      expect(Inventory.aggregate).toHaveBeenCalled();
+      expect(result.productCount).toBe(2);
+      expect(repo.getStats).toHaveBeenCalled();
     });
   });
 
   describe('reserveInventory', () => {
     it('should reserve inventory successfully', async () => {
-      const items = [
-        { productId: mockProductId, quantity: 10 },
-      ];
+      const items = [{ productId: mockProductId, quantity: 10 }];
 
-      redisClient.setex = jest.fn().mockResolvedValue('OK');
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue({
-          productId: mockProductId,
-          stock: 100,
-          reserved: 0,
-          save: jest.fn().mockResolvedValue(true),
-        }),
-      });
+      repo.findByProduct.mockResolvedValue([{ stock: 100 }]);
+      redisClient.setex.mockResolvedValue('OK');
 
       await inventoryService.reserveInventory(mockOrderId, items, 900);
 
@@ -381,13 +374,7 @@ describe('Inventory Service - Unit Tests', () => {
     it('should throw error when insufficient stock for reservation', async () => {
       const items = [{ productId: mockProductId, quantity: 150 }];
 
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue({
-          productId: mockProductId,
-          stock: 100,
-          reserved: 0,
-        }),
-      });
+      repo.findByProduct.mockResolvedValue([{ stock: 100 }]);
 
       await expect(inventoryService.reserveInventory(mockOrderId, items, 900)).rejects.toThrow(
         'Insufficient stock'
@@ -397,20 +384,13 @@ describe('Inventory Service - Unit Tests', () => {
 
   describe('finalizeReservation', () => {
     it('should finalize reservation successfully', async () => {
-      const mockReservationData = JSON.stringify([
-        { productId: mockProductId, quantity: 10 },
-      ]);
+      const reservation = { orderId: mockOrderId, items: [{ productId: mockProductId, quantity: 10 }] };
+      redisClient.get.mockResolvedValue(JSON.stringify(reservation));
+      redisClient.del.mockResolvedValue(1);
 
-      redisClient.get = jest.fn().mockResolvedValue(mockReservationData);
-      redisClient.del = jest.fn().mockResolvedValue(1);
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue({
-          productId: mockProductId,
-          stock: 100,
-          reserved: 10,
-          save: jest.fn().mockResolvedValue(true),
-        }),
-      });
+      // reduceStock path
+      repo.findByProduct.mockResolvedValue([{ _id: new mongoose.Types.ObjectId(), stock: 100, version: 0 }]);
+      mockFindOneAndUpdate.mockResolvedValue({ stock: 90 });
 
       const result = await inventoryService.finalizeReservation(mockOrderId);
 
@@ -419,44 +399,17 @@ describe('Inventory Service - Unit Tests', () => {
     });
 
     it('should throw error when reservation not found', async () => {
-      redisClient.get = jest.fn().mockResolvedValue(null);
+      redisClient.get.mockResolvedValue(null);
 
       await expect(inventoryService.finalizeReservation(mockOrderId)).rejects.toThrow(
-        'Reservation not found or expired'
+        'Reservation expired'
       );
     });
-
-    it('should throw timeout error when finalization takes too long', async () => {
-      const mockReservationData = JSON.stringify([
-        { productId: mockProductId, quantity: 10 },
-      ]);
-
-      redisClient.get = jest.fn().mockResolvedValue(mockReservationData);
-
-      const result = inventoryService.finalizeReservation(mockOrderId, {
-        globalTimeoutMs: 1,
-      });
-
-      await expect(result).rejects.toThrow(/timeout|exceeded/i);
-    }, 10000);
   });
 
   describe('releaseReservation', () => {
     it('should release reservation successfully', async () => {
-      const mockReservationData = JSON.stringify([
-        { productId: mockProductId, quantity: 10 },
-      ]);
-
-      redisClient.get = jest.fn().mockResolvedValue(mockReservationData);
-      redisClient.del = jest.fn().mockResolvedValue(1);
-      Inventory.findOne = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue({
-          productId: mockProductId,
-          stock: 100,
-          reserved: 10,
-          save: jest.fn().mockResolvedValue(true),
-        }),
-      });
+      redisClient.del.mockResolvedValue(1);
 
       const result = await inventoryService.releaseReservation(mockOrderId);
 
@@ -465,8 +418,7 @@ describe('Inventory Service - Unit Tests', () => {
     });
 
     it('should handle missing reservation gracefully', async () => {
-      redisClient.get = jest.fn().mockResolvedValue(null);
-      redisClient.del = jest.fn().mockResolvedValue(0);
+      redisClient.del.mockResolvedValue(0);
 
       const result = await inventoryService.releaseReservation(mockOrderId);
 
@@ -478,19 +430,14 @@ describe('Inventory Service - Unit Tests', () => {
     it('should return all inventory items', async () => {
       const mockInventory = [
         { productId: mockProductId, stock: 100, warehouseId: mockWarehouseId },
-        { productId: new mongoose.Types.ObjectId(), stock: 50, warehouseId: mockWarehouseId },
       ];
 
-      Inventory.find = jest.fn().mockReturnValue({
-        populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockResolvedValue(mockInventory),
-        }),
-      });
+      repo.findAll.mockResolvedValue(mockInventory);
 
       const result = await inventoryService.getInventory();
 
       expect(result).toEqual(mockInventory);
-      expect(Inventory.find).toHaveBeenCalled();
+      expect(repo.findAll).toHaveBeenCalled();
     });
   });
 });

@@ -1,8 +1,46 @@
 import helmet from 'helmet';
-import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import { apiLimiter } from './rateLimiter.js';
 import { logger } from './logger.js';
+
+// 🔒 Express 5 compatible request sanitization.
+// In Express 5, req.query/req.params are getter-only and cannot be reassigned,
+// which crashes express-mongo-sanitize and xss-clean. We replicate their behavior
+// by sanitizing request objects IN PLACE (no property reassignment).
+
+// Escape HTML-significant characters to neutralize stored/reflected XSS (mirrors xss-clean).
+const escapeHtml = (str) =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+
+// Keys that enable NoSQL operator injection.
+const isForbiddenKey = (key) => key.startsWith('$') || key.includes('.');
+
+const sanitizeInPlace = (obj, onSanitizeKey) => {
+  if (!obj || typeof obj !== 'object') return;
+
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+
+    if (isForbiddenKey(key)) {
+      if (onSanitizeKey) onSanitizeKey(key);
+      const safeKey = key.replace(/\$/g, '_').replace(/\./g, '_');
+      delete obj[key];
+      obj[safeKey] = value;
+      if (value && typeof value === 'object') sanitizeInPlace(value, onSanitizeKey);
+      continue;
+    }
+
+    if (typeof value === 'string') {
+      obj[key] = escapeHtml(value);
+    } else if (value && typeof value === 'object') {
+      sanitizeInPlace(value, onSanitizeKey);
+    }
+  }
+};
 
 export const securityMiddleware = (app) => {
   // 🔥 Helmet: Secure HTTP headers with production-ready configuration
@@ -37,20 +75,31 @@ export const securityMiddleware = (app) => {
     dnsPrefetchControl: { allow: false }
   }));
 
-  // 🔥 Prevent NoSQL injection with enhanced logging
-  app.use(mongoSanitize({
-    replaceWith: '_',
-    onSanitize: ({ req, key }) => {
+  // 🔥 Prevent NoSQL injection + XSS (Express 5 compatible, in-place sanitization)
+  app.use((req, res, next) => {
+    const onSanitizeKey = (key) => {
       logger.warn('⚠️ Potential NoSQL injection attempt blocked', {
         ip: req.ip,
         path: req.originalUrl,
         key,
       });
-    },
-  }));
+    };
 
-  // 🔥 Prevent XSS attacks
-  app.use(xss());
+    if (req.body) sanitizeInPlace(req.body, onSanitizeKey);
+    // req.query / req.params are getters in Express 5 — mutate the returned object in place.
+    try {
+      if (req.query) sanitizeInPlace(req.query, onSanitizeKey);
+    } catch {
+      /* query getter not mutable in this context — body sanitization still applies */
+    }
+    try {
+      if (req.params) sanitizeInPlace(req.params, onSanitizeKey);
+    } catch {
+      /* params getter not mutable in this context */
+    }
+
+    next();
+  });
 
   // 🔥 Rate limiting (applied globally)
   app.use('/api', apiLimiter);

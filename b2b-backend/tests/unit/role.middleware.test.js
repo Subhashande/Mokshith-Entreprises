@@ -163,10 +163,10 @@ describe('Role Middleware - Unit Tests', () => {
       mockReq.user = {
         _id: 'customer123',
         email: 'customer@example.com',
-        role: ROLES.CUSTOMER,
+        role: ROLES.B2C_CUSTOMER,
       };
 
-      const middleware = authorize(ROLES.ADMIN, ROLES.MANAGER);
+      const middleware = authorize(ROLES.ADMIN, ROLES.VENDOR);
       middleware(mockReq, mockRes, mockNext);
 
       expect(mockNext).toHaveBeenCalledWith(

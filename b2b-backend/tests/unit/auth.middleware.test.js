@@ -1,33 +1,41 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import jwt from 'jsonwebtoken';
-import { protect, authenticate } from '../../src/middlewares/auth.middleware.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 import AppError from '../../src/errors/AppError.js';
 import { ROLES } from '../../src/constants/roles.js';
 import { USER_STATUS } from '../../src/constants/userStatus.js';
-import * as authRepo from '../../src/modules/auth/auth.repository.js';
-import * as settingsService from '../../src/modules/settings/settings.service.js';
-import { logger } from '../../src/config/logger.js';
 
-// Mock dependencies
-jest.mock('jsonwebtoken', () => ({
+// ESM-compatible module mocking: register mocks before dynamically importing the SUT
+const mockVerify = jest.fn();
+const mockFindUserById = jest.fn();
+const mockFetchSetting = jest.fn();
+
+jest.unstable_mockModule('jsonwebtoken', () => ({
   __esModule: true,
-  default: {
-    verify: jest.fn(),
-  },
+  default: { verify: mockVerify },
 }));
-jest.mock('../../src/modules/auth/auth.repository.js', () => ({
-  findUserById: jest.fn(),
+jest.unstable_mockModule('../../src/modules/auth/auth.repository.js', () => ({
+  __esModule: true,
+  findUserById: mockFindUserById,
 }));
-jest.mock('../../src/modules/settings/settings.service.js', () => ({
-  fetchSetting: jest.fn(),
+jest.unstable_mockModule('../../src/modules/settings/settings.service.js', () => ({
+  __esModule: true,
+  fetchSetting: mockFetchSetting,
 }));
-jest.mock('../../src/config/logger.js', () => ({
-  logger: {
-    error: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
-  },
+jest.unstable_mockModule('../../src/config/logger.js', () => ({
+  __esModule: true,
+  logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
+
+// Aliases so existing test bodies referencing these names continue to work
+const jwt = { default: { verify: mockVerify } };
+const authRepo = { findUserById: mockFindUserById };
+const settingsService = { fetchSetting: mockFetchSetting };
+
+let protect;
+let authenticate;
+
+beforeAll(async () => {
+  ({ protect, authenticate } = await import('../../src/middlewares/auth.middleware.js'));
+});
 
 describe('Authentication Middleware - Unit Tests', () => {
   let mockReq;
@@ -37,11 +45,7 @@ describe('Authentication Middleware - Unit Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup mock functions
-    authRepo.findUserById = jest.fn();
-    settingsService.fetchSetting = jest.fn();
-    
+
     originalEnv = process.env.JWT_SECRET;
 
     // Setup mock request/response
@@ -211,7 +215,14 @@ describe('Authentication Middleware - Unit Tests', () => {
 
       await protect(mockReq, mockRes, mockNext);
 
-      expect(jwt.default.verify).toHaveBeenCalled();
+      // 'Bearer    ' yields an empty token, which is rejected before verification
+      expect(jwt.default.verify).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Not authorized - Invalid token',
+          statusCode: 401,
+        })
+      );
     });
   });
 
@@ -379,8 +390,8 @@ describe('Authentication Middleware - Unit Tests', () => {
       
       jwt.default.verify.mockReturnValue({ id: 'user123' });
       authRepo.findUserById.mockResolvedValue(mockUser);
-      settingsService.settingsService.fetchSetting.mockResolvedValueOnce({ value: true }); // maintenanceMode
-      settingsService.settingsService.fetchSetting.mockResolvedValueOnce(null); // MAINTENANCE_MODE
+      settingsService.fetchSetting.mockResolvedValueOnce({ value: true }); // maintenanceMode
+      settingsService.fetchSetting.mockResolvedValueOnce(null); // MAINTENANCE_MODE
 
       await protect(mockReq, mockRes, mockNext);
 
@@ -404,8 +415,8 @@ describe('Authentication Middleware - Unit Tests', () => {
       
       jwt.default.verify.mockReturnValue({ id: 'user123' });
       authRepo.findUserById.mockResolvedValue(mockUser);
-      settingsService.settingsService.fetchSetting.mockResolvedValueOnce(null); // maintenanceMode
-      settingsService.settingsService.fetchSetting.mockResolvedValueOnce({ value: true }); // MAINTENANCE_MODE
+      settingsService.fetchSetting.mockResolvedValueOnce(null); // maintenanceMode
+      settingsService.fetchSetting.mockResolvedValueOnce({ value: true }); // MAINTENANCE_MODE
 
       await protect(mockReq, mockRes, mockNext);
 
@@ -439,7 +450,7 @@ describe('Authentication Middleware - Unit Tests', () => {
       mockReq.headers.authorization = 'Bearer valid-token';
       
       jwt.default.verify.mockReturnValue({ id: 'user123' });
-      findUserById.mockRejectedValue(new Error('Database connection failed'));
+      authRepo.findUserById.mockRejectedValue(new Error('Database connection failed'));
 
       await protect(mockReq, mockRes, mockNext);
 

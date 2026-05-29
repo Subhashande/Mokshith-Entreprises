@@ -1,17 +1,39 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import * as cartService from '../../src/modules/cart/cart.service.js';
-import * as cartRepo from '../../src/modules/cart/cart.repository.js';
-import Product from '../../src/modules/product/product.model.js';
-import AppError from '../../src/errors/AppError.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 import mongoose from 'mongoose';
 
-jest.mock('../../src/modules/cart/cart.repository.js', () => ({
-  findCartByUser: jest.fn(),
-  createCart: jest.fn(),
-  updateCart: jest.fn(),
-  deleteCartItem: jest.fn(),
+// ESM-compatible module mocking: register mocks before dynamically importing the SUT
+const mockFindCartByUser = jest.fn();
+const mockCreateCart = jest.fn();
+const mockUpdateCart = jest.fn();
+const mockDeleteCartItem = jest.fn();
+const mockFindById = jest.fn();
+
+jest.unstable_mockModule('../../src/modules/cart/cart.repository.js', () => ({
+  __esModule: true,
+  findCartByUser: mockFindCartByUser,
+  createCart: mockCreateCart,
+  updateCart: mockUpdateCart,
+  deleteCartItem: mockDeleteCartItem,
 }));
-jest.mock('../../src/modules/product/product.model.js');
+jest.unstable_mockModule('../../src/modules/product/product.model.js', () => ({
+  __esModule: true,
+  default: { findById: mockFindById },
+}));
+
+// Aliases so existing test bodies referencing these names continue to work
+const cartRepo = {
+  findCartByUser: mockFindCartByUser,
+  createCart: mockCreateCart,
+  updateCart: mockUpdateCart,
+  deleteCartItem: mockDeleteCartItem,
+};
+const Product = { findById: mockFindById };
+
+let cartService;
+
+beforeAll(async () => {
+  cartService = await import('../../src/modules/cart/cart.service.js');
+});
 
 describe('Cart Service - Unit Tests', () => {
   let mockUserId;
@@ -20,10 +42,10 @@ describe('Cart Service - Unit Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup Product model mock functions
-    Product.findById = jest.fn();
-    
+    Product.findById = mockFindById;
+
     mockUserId = new mongoose.Types.ObjectId().toString();
     mockProductId = new mongoose.Types.ObjectId().toString();
     mockProduct = {

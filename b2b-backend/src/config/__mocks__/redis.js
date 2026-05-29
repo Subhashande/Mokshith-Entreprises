@@ -160,16 +160,76 @@ const wrappedRedis = {
     return mockRedis.decrby(key, decrement);
   },
   
+  async persist(key) {
+    return mockRedis.persist(key);
+  },
+
+  async eval(...args) {
+    if (typeof mockRedis.eval === 'function') {
+      return mockRedis.eval(...args);
+    }
+    return null;
+  },
+
+  // 🔒 Distributed lock primitives (mirror production redisClient semantics)
+  async acquireLock(key, value, ttlSeconds = 30) {
+    const result = await mockRedis.set(key, value, 'NX', 'EX', ttlSeconds);
+    return result === 'OK';
+  },
+
+  async releaseLock(key, value) {
+    const current = await mockRedis.get(key);
+    if (current === value) {
+      await mockRedis.del(key);
+      return true;
+    }
+    return false;
+  },
+
+  async extendLock(key, value, additionalSeconds = 30) {
+    const current = await mockRedis.get(key);
+    if (current === value) {
+      await mockRedis.expire(key, additionalSeconds);
+      return true;
+    }
+    return false;
+  },
+
+  async detectStaleLock(key) {
+    const ttl = await mockRedis.ttl(key);
+    // -1 => key exists without expiration (stale); -2 => key missing
+    if (ttl === -1) {
+      await mockRedis.del(key);
+      return true;
+    }
+    return false;
+  },
+
+  getCircuitBreakerStatus() {
+    return {
+      state: mockCircuitBreaker.state,
+      failureCount: mockCircuitBreaker.failureCount,
+      successCount: mockCircuitBreaker.successCount,
+      isHealthy: mockCircuitBreaker.state === 'CLOSED',
+      nextAttemptTime:
+        mockCircuitBreaker.state === 'OPEN' ? new Date(mockCircuitBreaker.nextAttempt) : null,
+    };
+  },
+
+  async cleanupExpiredLocks() {
+    return { deleted: 0 };
+  },
+
   // Expose circuit breaker for tests
   circuitBreaker: mockCircuitBreaker,
-  
+
   // Connection status methods
   status: 'ready',
-  
+
   async quit() {
     return 'OK';
   },
-  
+
   async disconnect() {
     return 'OK';
   }

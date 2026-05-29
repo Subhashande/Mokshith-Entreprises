@@ -3,6 +3,7 @@ import * as gateway from './payment.gateway.js';
 import AppError from '../../errors/AppError.js';
 import mongoose from 'mongoose';
 import { getTransactionSupport } from '../../config/db.js';
+import { logger } from '../../config/logger.js';
 
 import Order from '../order/order.model.js';
 import * as creditRepo from '../credit/credit.repository.js';

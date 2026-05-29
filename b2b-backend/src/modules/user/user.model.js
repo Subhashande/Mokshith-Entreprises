@@ -166,9 +166,10 @@ const userSchema = new mongoose.Schema(
 );
 
 // 🔥 Soft delete filter
-userSchema.pre(/^find/, function (next) {
-  this.find({ isDeleted: { $ne: true } });
-  next();
+userSchema.pre(/^find/, function () {
+  // Synchronous query middleware (no `next`) — compatible across Mongoose versions
+  // that no longer pass a next callback to regex query hooks.
+  this.where({ isDeleted: { $ne: true } });
 });
 
 export default mongoose.model('User', userSchema);

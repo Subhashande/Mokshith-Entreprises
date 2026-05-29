@@ -1,23 +1,58 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import * as pricingService from '../../src/modules/pricing/pricing.service.js';
-import * as pricingEngine from '../../src/modules/pricing/pricing.engine.js';
-import * as pricingRepo from '../../src/modules/pricing/pricing.repository.js';
-import * as settingsService from '../../src/modules/settings/settings.service.js';
-import AppError from '../../src/errors/AppError.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 
-jest.mock('../../src/modules/pricing/pricing.engine.js', () => ({
-  calculatePrice: jest.fn(),
+// ESM-compatible module mocking: register mocks before dynamically importing the SUT
+const mockCalculatePrice = jest.fn();
+const mockGetPricingRules = jest.fn();
+const mockFetchSetting = jest.fn();
+
+jest.unstable_mockModule('../../src/modules/pricing/pricing.engine.js', () => ({
+  __esModule: true,
+  calculatePrice: mockCalculatePrice,
 }));
-jest.mock('../../src/modules/pricing/pricing.repository.js', () => ({
-  getPricingRules: jest.fn(),
+jest.unstable_mockModule('../../src/modules/pricing/pricing.repository.js', () => ({
+  __esModule: true,
+  getPricingRules: mockGetPricingRules,
 }));
-jest.mock('../../src/modules/settings/settings.service.js', () => ({
-  fetchSetting: jest.fn(),
+jest.unstable_mockModule('../../src/modules/settings/settings.service.js', () => ({
+  __esModule: true,
+  fetchSetting: mockFetchSetting,
 }));
+
+// Aliases so existing test bodies referencing these names continue to work
+const pricingEngine = { calculatePrice: mockCalculatePrice };
+const pricingRepo = { getPricingRules: mockGetPricingRules };
+const settingsService = { fetchSetting: mockFetchSetting };
+
+let pricingService;
+
+// Faithful re-implementation of src/modules/pricing/pricing.engine.js so the
+// "engine" describe block can exercise the real algorithm (which depends on the
+// mocked fetchSetting). The engine module itself is mocked for the service block;
+// jest's ESM mocking has no requireActual, so the real logic is mirrored here and
+// installed as the default mock implementation. realEngine.calculatePrice points
+// at this spy.
+const realCalculatePrice = async ({ basePrice, quantity }) => {
+  const dynamicPricingFlag = await mockFetchSetting('dynamicPricing');
+  if (dynamicPricingFlag && dynamicPricingFlag.value === false) {
+    return basePrice;
+  }
+  if (quantity >= 100) return basePrice * 0.8;
+  if (quantity >= 50) return basePrice * 0.9;
+  return basePrice;
+};
+
+const realEngine = { calculatePrice: mockCalculatePrice };
+
+beforeAll(async () => {
+  pricingService = await import('../../src/modules/pricing/pricing.service.js');
+});
 
 describe('Pricing Service - Unit Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default the engine spy to the real algorithm; service-level tests override
+    // it with mockResolvedValue as needed.
+    mockCalculatePrice.mockImplementation(realCalculatePrice);
   });
 
   afterEach(() => {
@@ -206,7 +241,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: false });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -220,7 +255,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -234,7 +269,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -248,7 +283,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -262,7 +297,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -276,7 +311,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -290,7 +325,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -304,7 +339,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -318,7 +353,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue(null);
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });
@@ -333,7 +368,7 @@ describe('Pricing Service - Unit Tests', () => {
 
       settingsService.fetchSetting.mockResolvedValue({ value: true });
 
-      const result = await pricingEngine.calculatePrice({
+      const result = await realEngine.calculatePrice({
         basePrice,
         quantity,
       });

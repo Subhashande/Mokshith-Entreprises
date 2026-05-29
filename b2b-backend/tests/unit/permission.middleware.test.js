@@ -1,23 +1,47 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { requirePermission, requireAnyPermission, requireAllPermissions, requireOwnershipOr } from '../../src/middlewares/permission.middleware.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 import { ROLES } from '../../src/constants/roles.js';
 import AppError from '../../src/errors/AppError.js';
 import PermissionError from '../../src/errors/PermissionError.js';
-import * as permissions from '../../src/constants/permissions.js';
-import * as securityAudit from '../../src/middlewares/securityAudit.middleware.js';
 
-// Mock dependencies
-jest.mock('../../src/constants/permissions.js', () => ({
-  hasPermission: jest.fn(),
-  hasAnyPermission: jest.fn(),
-  hasAllPermissions: jest.fn(),
+// ESM-compatible module mocking: register mocks before dynamically importing the SUT
+const mockHasPermission = jest.fn();
+const mockHasAnyPermission = jest.fn();
+const mockHasAllPermissions = jest.fn();
+const mockLogSecurityEvent = jest.fn();
+
+jest.unstable_mockModule('../../src/constants/permissions.js', () => ({
+  __esModule: true,
+  hasPermission: mockHasPermission,
+  hasAnyPermission: mockHasAnyPermission,
+  hasAllPermissions: mockHasAllPermissions,
 }));
-jest.mock('../../src/middlewares/securityAudit.middleware.js', () => ({
-  logSecurityEvent: jest.fn(),
+jest.unstable_mockModule('../../src/middlewares/securityAudit.middleware.js', () => ({
+  __esModule: true,
+  logSecurityEvent: mockLogSecurityEvent,
   SECURITY_EVENTS: {
     PERMISSION_DENIED: 'PERMISSION_DENIED',
   },
 }));
+
+// Aliases so existing test bodies referencing these names continue to work
+const permissions = {
+  hasPermission: mockHasPermission,
+  hasAnyPermission: mockHasAnyPermission,
+  hasAllPermissions: mockHasAllPermissions,
+};
+const hasPermission = mockHasPermission;
+const hasAnyPermission = mockHasAnyPermission;
+const hasAllPermissions = mockHasAllPermissions;
+
+let requirePermission;
+let requireAnyPermission;
+let requireAllPermissions;
+let requireOwnershipOr;
+
+beforeAll(async () => {
+  ({ requirePermission, requireAnyPermission, requireAllPermissions, requireOwnershipOr } =
+    await import('../../src/middlewares/permission.middleware.js'));
+});
 
 describe('Permission Middleware - Unit Tests', () => {
   let mockReq;
