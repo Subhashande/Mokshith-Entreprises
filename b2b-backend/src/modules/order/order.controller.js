@@ -8,7 +8,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     req.body
   );
 
-  successResponse(res, order, 'Order created');
+  successResponse(res, order, 'Order created', 201);
 });
 
 export const getOrders = asyncHandler(async (req, res) => {

@@ -13,7 +13,7 @@ const companySchema = new mongoose.Schema(
       required: true,
       lowercase: true,
       trim: true,
-      index: true,
+      // Indexed via the unique compound declaration below (avoids duplicate index)
     },
 
     phone: {

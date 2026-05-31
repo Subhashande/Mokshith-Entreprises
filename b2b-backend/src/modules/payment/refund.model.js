@@ -49,8 +49,7 @@ const refundSchema = new mongoose.Schema(
     razorpayRefundId: {
       type: String,
       unique: true,
-      sparse: true,
-      index: true,
+      sparse: true, // unique already creates an index
     },
 
     razorpayPaymentId: {

@@ -238,8 +238,7 @@ const wrappedRedis = {
 export const redisClient = wrappedRedis;
 export const circuitBreaker = mockCircuitBreaker;
 
-// Export default for compatibility
-export default {
-  redisClient,
-  circuitBreaker
-};
+// Default export mirrors production (src/config/redis.js exports the redis client
+// as default), so modules that `import redis from '../config/redis.js'` and call
+// list/primitive methods (lpush, ltrim, get, ...) work against the mock too.
+export default wrappedRedis;

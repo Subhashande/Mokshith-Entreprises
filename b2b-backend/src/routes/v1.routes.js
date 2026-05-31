@@ -56,7 +56,7 @@ router.use('/companies', authenticate, injectCsrfToken, companyRoutes);
 router.use('/vendors', authenticate, injectCsrfToken, vendorRoutes);
 
 // 🛍️ Catalog
-router.use('/categories', authenticate, injectCsrfToken, categoryRoutes);
+router.use('/categories', categoryRoutes); // Category browsing is public; mutations are protected per-route
 router.use('/products', productRoutes); // Products list is public
 router.use('/pricing', pricingRoutes);
 router.use('/promotions', authenticate, injectCsrfToken, promotionRoutes);

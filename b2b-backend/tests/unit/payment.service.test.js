@@ -1,52 +1,166 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import * as paymentService from '../../src/modules/payment/payment.service.js';
-import * as paymentRepo from '../../src/modules/payment/payment.repository.js';
-import * as paymentGateway from '../../src/modules/payment/payment.gateway.js';
-import * as creditRepo from '../../src/modules/credit/credit.repository.js';
-import Order from '../../src/modules/order/order.model.js';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
 import AppError from '../../src/errors/AppError.js';
 import mongoose from 'mongoose';
 
-jest.mock('../../src/modules/payment/payment.repository.js', () => ({
-  createPaymentRecord: jest.fn(),
-  updatePaymentStatus: jest.fn(),
-  findPaymentById: jest.fn(),
-  findPaymentsByOrder: jest.fn(),
+// ----- Mock functions (declared before SUT import) -----
+// Payment gateway
+const mockCreatePaymentOrder = jest.fn();
+const mockVerifyPayment = jest.fn();
+const mockVerifyWebhookSignature = jest.fn();
+const mockGatewayCreateRefund = jest.fn();
+const mockFetchRefund = jest.fn();
+
+// Payment repository
+const mockCreatePayment = jest.fn();
+const mockUpdatePayment = jest.fn();
+const mockFindByOrderId = jest.fn();
+const mockFindByTransactionId = jest.fn();
+const mockFindByRazorpayPaymentId = jest.fn();
+
+// Credit repository
+const mockFindByUser = jest.fn();
+const mockAddLedger = jest.fn();
+
+// Order model
+const mockOrderFindById = jest.fn();
+const mockOrderFindByIdAndUpdate = jest.fn();
+
+// Refund model
+const mockRefundFind = jest.fn();
+const mockRefundFindById = jest.fn();
+const mockRefundCreate = jest.fn();
+
+// Redis client
+const mockAcquireLock = jest.fn();
+const mockReleaseLock = jest.fn();
+const mockDetectStaleLock = jest.fn();
+const mockRedisGet = jest.fn();
+const mockRedisSet = jest.fn();
+const mockRedisSetex = jest.fn();
+const mockRedisDel = jest.fn();
+
+// Other dependencies
+const mockGetTransactionSupport = jest.fn(() => false);
+const mockFinalizeReservation = jest.fn();
+const mockReleaseReservation = jest.fn();
+const mockRestoreStock = jest.fn();
+const mockQueuePostPaymentJobs = jest.fn();
+const mockGenerateInvoice = jest.fn();
+const mockSendNotification = jest.fn();
+
+// ----- Register module mocks before importing the SUT -----
+jest.unstable_mockModule('../../src/modules/payment/payment.gateway.js', () => ({
+  __esModule: true,
+  createPaymentOrder: mockCreatePaymentOrder,
+  verifyPayment: mockVerifyPayment,
+  verifyWebhookSignature: mockVerifyWebhookSignature,
+  createRefund: mockGatewayCreateRefund,
+  fetchRefund: mockFetchRefund,
 }));
-jest.mock('../../src/modules/payment/payment.gateway.js', () => ({
-  createRazorpayOrder: jest.fn(),
-  verifyPaymentSignature: jest.fn(),
-  verifyWebhookSignature: jest.fn(),
-  createRefund: jest.fn(),
+jest.unstable_mockModule('../../src/modules/payment/payment.repository.js', () => ({
+  __esModule: true,
+  createPayment: mockCreatePayment,
+  updatePayment: mockUpdatePayment,
+  findByOrderId: mockFindByOrderId,
+  findByTransactionId: mockFindByTransactionId,
+  findByRazorpayPaymentId: mockFindByRazorpayPaymentId,
 }));
-jest.mock('../../src/modules/credit/credit.repository.js', () => ({
-  updateCredit: jest.fn(),
-  getCreditStatus: jest.fn(),
+jest.unstable_mockModule('../../src/modules/credit/credit.repository.js', () => ({
+  __esModule: true,
+  findByUser: mockFindByUser,
+  addLedger: mockAddLedger,
 }));
-jest.mock('../../src/modules/order/order.model.js');
-jest.mock('../../src/config/redis.js', () => ({
+jest.unstable_mockModule('../../src/modules/order/order.model.js', () => ({
+  __esModule: true,
+  default: {
+    findById: mockOrderFindById,
+    findByIdAndUpdate: mockOrderFindByIdAndUpdate,
+  },
+}));
+jest.unstable_mockModule('../../src/modules/payment/refund.model.js', () => ({
+  __esModule: true,
+  default: {
+    find: mockRefundFind,
+    findById: mockRefundFindById,
+    create: mockRefundCreate,
+  },
+}));
+jest.unstable_mockModule('../../src/config/redis.js', () => ({
+  __esModule: true,
   redisClient: {
-    acquireLock: jest.fn(),
-    releaseLock: jest.fn(),
-    detectStaleLock: jest.fn(),
-    get: jest.fn(),
-    set: jest.fn(),
-    setex: jest.fn(),
-    del: jest.fn(),
+    acquireLock: mockAcquireLock,
+    releaseLock: mockReleaseLock,
+    detectStaleLock: mockDetectStaleLock,
+    get: mockRedisGet,
+    set: mockRedisSet,
+    setex: mockRedisSetex,
+    del: mockRedisDel,
   },
 }));
-jest.mock('../../src/config/db.js', () => ({
-  getTransactionSupport: jest.fn(() => false),
+jest.unstable_mockModule('../../src/config/db.js', () => ({
+  __esModule: true,
+  getTransactionSupport: mockGetTransactionSupport,
 }));
-jest.mock('../../src/modules/invoice/invoice.service.js');
-jest.mock('../../src/modules/notification/notification.service.js');
-jest.mock('../../src/config/logger.js', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-  },
+jest.unstable_mockModule('../../src/config/logger.js', () => ({
+  __esModule: true,
+  logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn() },
 }));
+jest.unstable_mockModule('../../src/modules/inventory/inventory.service.js', () => ({
+  __esModule: true,
+  finalizeReservation: mockFinalizeReservation,
+  releaseReservation: mockReleaseReservation,
+}));
+jest.unstable_mockModule('../../src/modules/product/product.service.js', () => ({
+  __esModule: true,
+  restoreStock: mockRestoreStock,
+}));
+jest.unstable_mockModule('../../src/services/queueManager.service.js', () => ({
+  __esModule: true,
+  queuePostPaymentJobs: mockQueuePostPaymentJobs,
+}));
+jest.unstable_mockModule('../../src/modules/invoice/invoice.service.js', () => ({
+  __esModule: true,
+  generateInvoice: mockGenerateInvoice,
+}));
+jest.unstable_mockModule('../../src/modules/notification/notification.service.js', () => ({
+  __esModule: true,
+  sendNotification: mockSendNotification,
+}));
+
+// ----- Aliases so existing test bodies keep working -----
+const paymentGateway = {
+  createPaymentOrder: mockCreatePaymentOrder,
+  verifyPayment: mockVerifyPayment,
+  verifyWebhookSignature: mockVerifyWebhookSignature,
+  createRefund: mockGatewayCreateRefund,
+  fetchRefund: mockFetchRefund,
+};
+const paymentRepo = {
+  createPayment: mockCreatePayment,
+  updatePayment: mockUpdatePayment,
+  findByOrderId: mockFindByOrderId,
+  findByTransactionId: mockFindByTransactionId,
+  findByRazorpayPaymentId: mockFindByRazorpayPaymentId,
+};
+const creditRepo = {
+  findByUser: mockFindByUser,
+  addLedger: mockAddLedger,
+};
+const Refund = {
+  find: mockRefundFind,
+  findById: mockRefundFindById,
+  create: mockRefundCreate,
+};
+const Order = {
+  findById: mockOrderFindById,
+  findByIdAndUpdate: mockOrderFindByIdAndUpdate,
+};
+
+let paymentService;
+
+beforeAll(async () => {
+  paymentService = await import('../../src/modules/payment/payment.service.js');
+});
 
 describe('Payment Service - Unit Tests', () => {
   let mockUserId;
@@ -54,17 +168,14 @@ describe('Payment Service - Unit Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup Order model mock functions
-    Order.findById = jest.fn();
-    Order.findByIdAndUpdate = jest.fn();
-    
+    mockGetTransactionSupport.mockReturnValue(false);
+
     mockUserId = new mongoose.Types.ObjectId().toString();
     mockOrderId = new mongoose.Types.ObjectId().toString();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('createRazorpayOrder', () => {
@@ -134,6 +245,9 @@ describe('Payment Service - Unit Tests', () => {
       jest.clearAllMocks();
       paymentGateway.createPaymentOrder.mockResolvedValue(mockRazorpayOrder);
 
+      // Ensure a different timestamp portion
+      await new Promise((r) => setTimeout(r, 5));
+
       await paymentService.createRazorpayOrder(amount, mockUserId);
       const secondCall = paymentGateway.createPaymentOrder.mock.calls[0][0].receipt;
 
@@ -143,38 +257,32 @@ describe('Payment Service - Unit Tests', () => {
 
   describe('hybridPayment', () => {
     it('should throw error for invalid order ID', async () => {
-      const { redisClient } = await import('../../src/config/redis.js');
-      redisClient.detectStaleLock.mockResolvedValue(false);
-      redisClient.acquireLock.mockResolvedValue(true);
+      mockDetectStaleLock.mockResolvedValue(false);
+      mockAcquireLock.mockResolvedValue(true);
 
       await expect(
         paymentService.hybridPayment('invalid-id', mockUserId, 100, 1000, 'HYBRID')
       ).rejects.toThrow('Invalid order ID format');
 
-      expect(redisClient.releaseLock).toHaveBeenCalled();
+      expect(mockReleaseLock).toHaveBeenCalled();
     });
 
     it('should throw error when order not found', async () => {
-      const { redisClient } = await import('../../src/config/redis.js');
-      redisClient.detectStaleLock.mockResolvedValue(false);
-      redisClient.acquireLock.mockResolvedValue(true);
+      mockDetectStaleLock.mockResolvedValue(false);
+      mockAcquireLock.mockResolvedValue(true);
 
-      Order.findById.mockReturnValue({
-        session: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(null),
-      });
+      Order.findById.mockResolvedValue(null);
 
       await expect(
         paymentService.hybridPayment(mockOrderId, mockUserId, 100, 1000, 'HYBRID')
       ).rejects.toThrow('Order not found');
 
-      expect(redisClient.releaseLock).toHaveBeenCalled();
+      expect(mockReleaseLock).toHaveBeenCalled();
     });
 
     it('should throw error when order is already paid', async () => {
-      const { redisClient } = await import('../../src/config/redis.js');
-      redisClient.detectStaleLock.mockResolvedValue(false);
-      redisClient.acquireLock.mockResolvedValue(true);
+      mockDetectStaleLock.mockResolvedValue(false);
+      mockAcquireLock.mockResolvedValue(true);
 
       const mockOrder = {
         _id: mockOrderId,
@@ -183,22 +291,18 @@ describe('Payment Service - Unit Tests', () => {
         paymentStatus: 'PAID',
       };
 
-      Order.findById.mockReturnValue({
-        session: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockOrder),
-      });
+      Order.findById.mockResolvedValue(mockOrder);
 
       await expect(
         paymentService.hybridPayment(mockOrderId, mockUserId, 100, 1000, 'HYBRID')
       ).rejects.toThrow('Order is already paid');
 
-      expect(redisClient.releaseLock).toHaveBeenCalled();
+      expect(mockReleaseLock).toHaveBeenCalled();
     });
 
     it('should throw error when payment lock cannot be acquired', async () => {
-      const { redisClient } = await import('../../src/config/redis.js');
-      redisClient.detectStaleLock.mockResolvedValue(false);
-      redisClient.acquireLock.mockResolvedValue(false);
+      mockDetectStaleLock.mockResolvedValue(false);
+      mockAcquireLock.mockResolvedValue(false);
 
       await expect(
         paymentService.hybridPayment(mockOrderId, mockUserId, 100, 1000, 'HYBRID')
@@ -206,9 +310,8 @@ describe('Payment Service - Unit Tests', () => {
     });
 
     it('should detect and clean stale locks', async () => {
-      const { redisClient } = await import('../../src/config/redis.js');
-      redisClient.detectStaleLock.mockResolvedValue(true);
-      redisClient.acquireLock.mockResolvedValue(true);
+      mockDetectStaleLock.mockResolvedValue(true);
+      mockAcquireLock.mockResolvedValue(true);
 
       const mockOrder = {
         _id: mockOrderId,
@@ -218,12 +321,9 @@ describe('Payment Service - Unit Tests', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      Order.findById.mockReturnValue({
-        session: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockOrder),
-      });
+      Order.findById.mockResolvedValue(mockOrder);
 
-      creditRepo.getUserCredit.mockResolvedValue({ balance: 200 });
+      creditRepo.findByUser.mockResolvedValue({ availableCredit: 200, usedCredit: 0, status: 'ACTIVE', save: jest.fn() });
       paymentGateway.createPaymentOrder.mockResolvedValue({
         id: 'order_123',
         amount: 90000,
@@ -232,10 +332,10 @@ describe('Payment Service - Unit Tests', () => {
       try {
         await paymentService.hybridPayment(mockOrderId, mockUserId, 100, 1000, 'HYBRID');
       } catch (error) {
-        // Expected to fail due to incomplete mocking
+        // Expected to potentially fail due to incomplete mocking
       }
 
-      expect(redisClient.detectStaleLock).toHaveBeenCalled();
+      expect(mockDetectStaleLock).toHaveBeenCalled();
     });
   });
 
@@ -247,9 +347,7 @@ describe('Payment Service - Unit Tests', () => {
     });
 
     it('should throw error when order not found', async () => {
-      Order.findById.mockReturnValue({
-        lean: jest.fn().mockResolvedValue(null),
-      });
+      Order.findById.mockResolvedValue(null);
 
       await expect(
         paymentService.initiatePayment(mockOrderId, mockUserId)
@@ -264,9 +362,7 @@ describe('Payment Service - Unit Tests', () => {
         paymentStatus: 'PAID',
       };
 
-      Order.findById.mockReturnValue({
-        lean: jest.fn().mockResolvedValue(mockOrder),
-      });
+      Order.findById.mockResolvedValue(mockOrder);
 
       await expect(
         paymentService.initiatePayment(mockOrderId, mockUserId)
@@ -279,23 +375,23 @@ describe('Payment Service - Unit Tests', () => {
         userId: mockUserId,
         totalAmount: 1000,
         paymentStatus: 'PENDING',
+        paymentMethod: 'ONLINE',
       };
 
       const mockRazorpayOrder = {
         id: 'order_razorpay123',
+        gatewayOrderId: 'order_razorpay123',
         amount: 100000,
         currency: 'INR',
       };
 
-      Order.findById.mockReturnValue({
-        lean: jest.fn().mockResolvedValue(mockOrder),
-      });
-
+      Order.findById.mockResolvedValue(mockOrder);
       paymentGateway.createPaymentOrder.mockResolvedValue(mockRazorpayOrder);
+      paymentRepo.createPayment.mockResolvedValue({ _id: new mongoose.Types.ObjectId() });
 
       const result = await paymentService.initiatePayment(mockOrderId, mockUserId);
 
-      expect(result).toHaveProperty('razorpayOrderId');
+      expect(result).toHaveProperty('gateway');
       expect(paymentGateway.createPaymentOrder).toHaveBeenCalled();
     });
   });
@@ -303,9 +399,19 @@ describe('Payment Service - Unit Tests', () => {
   describe('verifyPayment', () => {
     it('should throw error for missing signature', async () => {
       const payload = {
+        orderId: mockOrderId,
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
       };
+
+      mockRedisGet.mockResolvedValue(null);
+      mockFindByRazorpayPaymentId.mockResolvedValue(null);
+      Order.findById.mockResolvedValue({
+        _id: mockOrderId,
+        paymentStatus: 'PENDING',
+        save: jest.fn().mockResolvedValue(true),
+      });
+      paymentGateway.verifyPayment.mockResolvedValue(false);
 
       await expect(
         paymentService.verifyPayment(payload)
@@ -314,12 +420,20 @@ describe('Payment Service - Unit Tests', () => {
 
     it('should throw error for invalid signature', async () => {
       const payload = {
+        orderId: mockOrderId,
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: 'invalid_signature',
       };
 
-      paymentGateway.verifySignature.mockReturnValue(false);
+      mockRedisGet.mockResolvedValue(null);
+      mockFindByRazorpayPaymentId.mockResolvedValue(null);
+      Order.findById.mockResolvedValue({
+        _id: mockOrderId,
+        paymentStatus: 'PENDING',
+        save: jest.fn().mockResolvedValue(true),
+      });
+      paymentGateway.verifyPayment.mockResolvedValue(false);
 
       await expect(
         paymentService.verifyPayment(payload)
@@ -328,6 +442,7 @@ describe('Payment Service - Unit Tests', () => {
 
     it('should verify payment successfully with valid signature', async () => {
       const payload = {
+        orderId: mockOrderId,
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: 'valid_signature',
@@ -337,19 +452,32 @@ describe('Payment Service - Unit Tests', () => {
         _id: new mongoose.Types.ObjectId(),
         orderId: mockOrderId,
         razorpayOrderId: 'order_123',
+        status: 'PENDING',
+        paymentMethod: 'ONLINE',
         save: jest.fn().mockResolvedValue(true),
       };
 
       const mockOrder = {
         _id: mockOrderId,
+        userId: mockUserId,
+        totalAmount: 1000,
         paymentStatus: 'PENDING',
-        orderStatus: 'PENDING',
+        status: 'PENDING',
         save: jest.fn().mockResolvedValue(true),
       };
 
-      paymentGateway.verifySignature.mockReturnValue(true);
-      paymentRepo.findPaymentByRazorpayOrderId.mockResolvedValue(mockPayment);
+      mockRedisGet.mockResolvedValue(null);
+      mockRedisSetex.mockResolvedValue(true);
+      mockFindByRazorpayPaymentId.mockResolvedValue(null);
       Order.findById.mockResolvedValue(mockOrder);
+      paymentGateway.verifyPayment.mockResolvedValue(true);
+      paymentRepo.findByTransactionId.mockResolvedValue(mockPayment);
+      mockSendNotification.mockResolvedValue(true);
+      mockFinalizeReservation.mockResolvedValue(true);
+      mockQueuePostPaymentJobs.mockResolvedValue(true);
+      jest.spyOn(mongoose, 'model').mockReturnValue({
+        findOneAndUpdate: jest.fn().mockResolvedValue(true),
+      });
 
       const result = await paymentService.verifyPayment(payload);
 
@@ -378,11 +506,13 @@ describe('Payment Service - Unit Tests', () => {
       const mockOrder = {
         _id: mockOrderId,
         paymentStatus: 'PENDING',
-        orderStatus: 'PENDING',
+        status: 'PENDING',
+        paymentMethod: 'ONLINE',
         save: jest.fn().mockResolvedValue(true),
       };
 
       Order.findById.mockResolvedValue(mockOrder);
+      mockReleaseReservation.mockResolvedValue(true);
 
       await paymentService.failPayment(mockOrderId, 'Payment declined');
 
@@ -392,6 +522,17 @@ describe('Payment Service - Unit Tests', () => {
   });
 
   describe('handleWebhook', () => {
+    let originalSecret;
+
+    beforeEach(() => {
+      originalSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+      process.env.RAZORPAY_WEBHOOK_SECRET = 'test-webhook-secret';
+    });
+
+    afterEach(() => {
+      process.env.RAZORPAY_WEBHOOK_SECRET = originalSecret;
+    });
+
     it('should throw error for invalid signature', async () => {
       const rawBody = JSON.stringify({ event: 'payment.captured' });
       const signature = 'invalid_signature';
@@ -411,6 +552,7 @@ describe('Payment Service - Unit Tests', () => {
             entity: {
               id: 'pay_123',
               order_id: 'order_123',
+              amount: 100000,
               status: 'captured',
             },
           },
@@ -419,18 +561,18 @@ describe('Payment Service - Unit Tests', () => {
       const signature = 'valid_signature';
 
       paymentGateway.verifyWebhookSignature.mockReturnValue(true);
-      paymentRepo.findPaymentByRazorpayOrderId.mockResolvedValue({
-        _id: new mongoose.Types.ObjectId(),
-        orderId: mockOrderId,
-        save: jest.fn().mockResolvedValue(true),
-      });
+      mockRedisGet.mockResolvedValue(null);
+      mockRedisSetex.mockResolvedValue(true);
+      mockFindByRazorpayPaymentId.mockResolvedValue(null);
+      paymentRepo.findByTransactionId.mockResolvedValue(null);
 
       const result = await paymentService.handleWebhook(rawBody, signature);
 
       expect(result).toBeDefined();
       expect(paymentGateway.verifyWebhookSignature).toHaveBeenCalledWith(
         rawBody,
-        signature
+        signature,
+        'test-webhook-secret'
       );
     });
 
@@ -450,12 +592,8 @@ describe('Payment Service - Unit Tests', () => {
       const signature = 'valid_signature';
 
       paymentGateway.verifyWebhookSignature.mockReturnValue(true);
-      paymentRepo.findPaymentByRazorpayOrderId.mockResolvedValue({
-        _id: new mongoose.Types.ObjectId(),
-        orderId: mockOrderId,
-        status: 'PENDING',
-        save: jest.fn().mockResolvedValue(true),
-      });
+      mockRedisGet.mockResolvedValue(null);
+      mockRedisSetex.mockResolvedValue(true);
 
       const result = await paymentService.handleWebhook(rawBody, signature);
 
@@ -464,6 +602,8 @@ describe('Payment Service - Unit Tests', () => {
   });
 
   describe('createRefund', () => {
+    const adminUser = { _id: new mongoose.Types.ObjectId(), role: 'ADMIN' };
+
     it('should throw error for invalid order ID', async () => {
       await expect(
         paymentService.createRefund(
@@ -471,12 +611,13 @@ describe('Payment Service - Unit Tests', () => {
           mockUserId,
           100,
           'Customer request',
-          'ADMIN'
+          adminUser
         )
       ).rejects.toThrow('Invalid order ID format');
     });
 
     it('should throw error when order not found', async () => {
+      mockRedisGet.mockResolvedValue(null);
       Order.findById.mockResolvedValue(null);
 
       await expect(
@@ -485,7 +626,7 @@ describe('Payment Service - Unit Tests', () => {
           mockUserId,
           100,
           'Customer request',
-          'ADMIN'
+          adminUser
         )
       ).rejects.toThrow('Order not found');
     });
@@ -493,19 +634,26 @@ describe('Payment Service - Unit Tests', () => {
     it('should throw error for invalid refund amount', async () => {
       const mockOrder = {
         _id: mockOrderId,
+        userId: mockUserId,
         totalAmount: 1000,
         paymentStatus: 'PAID',
       };
 
+      mockRedisGet.mockResolvedValue(null);
       Order.findById.mockResolvedValue(mockOrder);
+      paymentRepo.findByOrderId.mockResolvedValue({
+        _id: new mongoose.Types.ObjectId(),
+        razorpayPaymentId: 'pay_123',
+      });
+      Refund.find.mockResolvedValue([]);
 
       await expect(
         paymentService.createRefund(
           mockOrderId,
           mockUserId,
-          0,
+          -5,
           'Customer request',
-          'ADMIN'
+          adminUser
         )
       ).rejects.toThrow();
     });
@@ -513,8 +661,11 @@ describe('Payment Service - Unit Tests', () => {
     it('should create refund successfully', async () => {
       const mockOrder = {
         _id: mockOrderId,
+        userId: mockUserId,
         totalAmount: 1000,
         paymentStatus: 'PAID',
+        items: [],
+        save: jest.fn().mockResolvedValue(true),
       };
 
       const mockPayment = {
@@ -522,16 +673,26 @@ describe('Payment Service - Unit Tests', () => {
         razorpayPaymentId: 'pay_123',
       };
 
-      Order.findById.mockResolvedValue(mockOrder);
-      paymentRepo.findPaymentByOrderId.mockResolvedValue(mockPayment);
-      paymentGateway.createRefund.mockResolvedValue({
-        id: 'rfnd_123',
-        status: 'processed',
-      });
-      paymentRepo.createRefund.mockResolvedValue({
+      const mockRefund = {
         _id: new mongoose.Types.ObjectId(),
         orderId: mockOrderId,
         amount: 100,
+        status: 'INITIATED',
+        save: jest.fn().mockResolvedValue(true),
+        markSuccess: jest.fn().mockResolvedValue(true),
+        markInventoryRestored: jest.fn().mockResolvedValue(true),
+        markFailed: jest.fn().mockResolvedValue(true),
+      };
+
+      mockRedisGet.mockResolvedValue(null);
+      mockRedisSetex.mockResolvedValue(true);
+      Order.findById.mockResolvedValue(mockOrder);
+      paymentRepo.findByOrderId.mockResolvedValue(mockPayment);
+      Refund.find.mockResolvedValue([]);
+      Refund.create.mockResolvedValue(mockRefund);
+      paymentGateway.createRefund.mockResolvedValue({
+        refund_id: 'rfnd_123',
+        status: 'processed',
       });
 
       const result = await paymentService.createRefund(
@@ -539,7 +700,7 @@ describe('Payment Service - Unit Tests', () => {
         mockUserId,
         100,
         'Customer request',
-        'ADMIN'
+        adminUser
       );
 
       expect(result).toBeDefined();
@@ -564,16 +725,22 @@ describe('Payment Service - Unit Tests', () => {
         },
       ];
 
-      paymentRepo.getRefundsByOrderId.mockResolvedValue(mockRefunds);
+      Refund.find.mockReturnValue({
+        sort: jest.fn().mockReturnThis(),
+        populate: jest.fn().mockResolvedValue(mockRefunds),
+      });
 
       const result = await paymentService.getRefundHistory(mockOrderId);
 
       expect(result).toEqual(mockRefunds);
-      expect(paymentRepo.getRefundsByOrderId).toHaveBeenCalledWith(mockOrderId);
+      expect(Refund.find).toHaveBeenCalledWith({ orderId: mockOrderId });
     });
 
     it('should return empty array when no refunds exist', async () => {
-      paymentRepo.getRefundsByOrderId.mockResolvedValue([]);
+      Refund.find.mockReturnValue({
+        sort: jest.fn().mockReturnThis(),
+        populate: jest.fn().mockResolvedValue([]),
+      });
 
       const result = await paymentService.getRefundHistory(mockOrderId);
 
@@ -589,7 +756,17 @@ describe('Payment Service - Unit Tests', () => {
     });
 
     it('should throw error when refund not found', async () => {
-      paymentRepo.getRefundById.mockResolvedValue(null);
+      Refund.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+      });
+      // last populate resolves to null
+      Refund.findById.mockReturnValue({
+        populate: jest.fn().mockReturnValueOnce({
+          populate: jest.fn().mockReturnValueOnce({
+            populate: jest.fn().mockResolvedValue(null),
+          }),
+        }),
+      });
 
       await expect(
         paymentService.getRefundById(new mongoose.Types.ObjectId().toString())
@@ -597,19 +774,26 @@ describe('Payment Service - Unit Tests', () => {
     });
 
     it('should return refund for valid ID', async () => {
+      const refundId = new mongoose.Types.ObjectId().toString();
       const mockRefund = {
-        _id: new mongoose.Types.ObjectId(),
+        _id: refundId,
         orderId: mockOrderId,
         amount: 100,
         status: 'PROCESSED',
       };
 
-      paymentRepo.getRefundById.mockResolvedValue(mockRefund);
+      Refund.findById.mockReturnValue({
+        populate: jest.fn().mockReturnValueOnce({
+          populate: jest.fn().mockReturnValueOnce({
+            populate: jest.fn().mockResolvedValue(mockRefund),
+          }),
+        }),
+      });
 
-      const result = await paymentService.getRefundById(mockRefund._id.toString());
+      const result = await paymentService.getRefundById(refundId);
 
       expect(result).toEqual(mockRefund);
-      expect(paymentRepo.getRefundById).toHaveBeenCalledWith(mockRefund._id.toString());
+      expect(Refund.findById).toHaveBeenCalledWith(refundId);
     });
   });
 });

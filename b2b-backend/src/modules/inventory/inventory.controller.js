@@ -4,7 +4,7 @@ import { successResponse } from '../../utils/responseHandler.js';
 
 export const addStock = asyncHandler(async (req, res) => {
   const data = await service.addStock(req.body);
-  successResponse(res, data, 'Stock updated');
+  successResponse(res, data, 'Stock added', 201);
 });
 
 export const getInventory = asyncHandler(async (req, res) => {

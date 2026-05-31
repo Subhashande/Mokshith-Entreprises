@@ -6,6 +6,7 @@ import { getTransactionSupport } from '../../config/db.js';
 import { logger } from '../../config/logger.js';
 
 import Order from '../order/order.model.js';
+import Refund from './refund.model.js';
 import * as creditRepo from '../credit/credit.repository.js';
 import { generateInvoice } from '../invoice/invoice.service.js';
 
@@ -316,12 +317,16 @@ export const hybridPayment = async (orderId, userId, useCredit, totalAmount, pay
 };
 
 export const initiatePayment = async (orderId, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new AppError('Invalid order ID format', 400);
+  }
+
   const order = await Order.findById(orderId);
 
   if (!order) throw new AppError('Order not found', 404);
 
   if (order.paymentStatus === 'PAID') {
-    throw new AppError('Order already paid', 400);
+    throw new AppError('Order is already paid', 400);
   }
 
   if (order.paymentMethod === 'CREDIT') {
@@ -510,6 +515,10 @@ export const verifyPayment = async (payload) => {
 };
 
 export const failPayment = async (orderId, reason) => {
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new AppError('Invalid order ID format', 400);
+  }
+
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found', 404);
 
@@ -704,9 +713,12 @@ export const handleWebhook = async (rawBody, signature) => {
 export const createRefund = async (orderId, userId, refundAmount, reason, initiatedBy) => {
   const { redisClient } = await import('../../config/redis.js');
   const { logger } = await import('../../config/logger.js');
-  const Refund = (await import('./refund.model.js')).default;
   const { restoreStock } = await import('../inventory/inventory.service.js');
   const { createRefund: gatewayCreateRefund } = await import('./payment.gateway.js');
+
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new AppError('Invalid order ID format', 400);
+  }
 
   // 1. Validate order exists
   const order = await Order.findById(orderId);
@@ -864,6 +876,10 @@ export const createRefund = async (orderId, userId, refundAmount, reason, initia
  * Get refund history for an order
  */
 export const getRefundHistory = async (orderId) => {
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new AppError('Invalid order ID format', 400);
+  }
+
   const refunds = await Refund.find({ orderId }).sort({ createdAt: -1 }).populate('initiatedBy', 'name email');
 
   return refunds;
@@ -873,6 +889,10 @@ export const getRefundHistory = async (orderId) => {
  * Get refund by ID
  */
 export const getRefundById = async (refundId) => {
+  if (!mongoose.Types.ObjectId.isValid(refundId)) {
+    throw new AppError('Invalid refund ID format', 400);
+  }
+
   const refund = await Refund.findById(refundId)
     .populate('orderId')
     .populate('paymentId')
