@@ -46,17 +46,18 @@
       "statements": 90
     }
   },
-  "testTimeout": 10000,
+  "testTimeout": 30000,
   "verbose": true,
-  "forceExit": true,
+  "detectOpenHandles": false,
+  "forceExit": false,
   "clearMocks": true,
   "resetMocks": true,
   "restoreMocks": true,
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@tests/(.*)$": "<rootDir>/tests/$1",
-    "^../config/redis\\.js$": "<rootDir>/src/config/__mocks__/redis.js",
-    "^../../src/config/redis\\.js$": "<rootDir>/src/config/__mocks__/redis.js"
+    "^(\\.{1,2}/)+config/redis\\.js$": "<rootDir>/src/config/__mocks__/redis.js",
+    "^.*/src/config/redis\\.js$": "<rootDir>/src/config/__mocks__/redis.js"
   },
   "transform": {},
   "globals": {

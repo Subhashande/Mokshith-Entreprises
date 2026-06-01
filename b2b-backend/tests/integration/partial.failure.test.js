@@ -8,8 +8,9 @@ import Product from '../../src/modules/product/product.model.js';
 import Payment from '../../src/modules/payment/payment.model.js';
 import Cart from '../../src/modules/cart/cart.model.js';
 import Shipment from '../../src/modules/shipment/shipment.model.js';
-import { clearDatabase } from '../helpers/testUtils.js';
+import { clearDatabase, cleanupQueuesAndWorkers } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 /**
  * 🔒 CRITICAL: Partial Failure Tests
@@ -32,7 +33,7 @@ describe('Partial Failure Tests', () => {
       name: 'Partial Failure Test User',
       email: 'partial@test.com',
       password: 'Test@1234',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });
@@ -443,8 +444,11 @@ describe('Partial Failure Tests', () => {
 
       // Cleanup
       await worker.close();
-      await testQueue.obliterate({ force: true });
-      await testQueue.close();
+      await cleanupQueuesAndWorkers({
+        queues: [testQueue].filter(Boolean),
+        obliterate: true,
+        timeout: 5000
+      });
     }, 10000);
 
     it('should isolate failures to prevent cascading', async () => {
@@ -496,8 +500,11 @@ describe('Partial Failure Tests', () => {
 
       // Cleanup
       await worker.close();
-      await testQueue.obliterate({ force: true });
-      await testQueue.close();
+      await cleanupQueuesAndWorkers({
+        queues: [testQueue].filter(Boolean),
+        obliterate: true,
+        timeout: 5000
+      });
     }, 10000);
   });
 

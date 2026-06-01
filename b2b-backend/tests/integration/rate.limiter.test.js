@@ -5,6 +5,7 @@ import User from '../../src/modules/user/user.model.js';
 import Product from '../../src/modules/product/product.model.js';
 import { clearDatabase } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 /**
  * 🔒 CRITICAL: Rate Limiter Tests
@@ -25,7 +26,7 @@ describe('Rate Limiter Tests', () => {
       name: 'Rate Limit Test User',
       email: 'ratelimit@test.com',
       password: 'Test@1234',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });
@@ -169,7 +170,7 @@ describe('Rate Limiter Tests', () => {
         name: 'User 2',
         email: 'user2@test.com',
         password: 'Test@1234',
-        role: 'USER',
+        role: ROLES.B2B_CUSTOMER,
         mobile: '9876543211',
         status: 'ACTIVE',
       });

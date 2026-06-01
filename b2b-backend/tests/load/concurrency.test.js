@@ -14,6 +14,7 @@ import Order from '../../src/modules/order/order.model.js';
 import Payment from '../../src/modules/payment/payment.model.js';
 import Inventory from '../../src/modules/inventory/inventory.model.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 describe('Load & Concurrency Tests', () => {
   let authToken;
@@ -27,7 +28,7 @@ describe('Load & Concurrency Tests', () => {
       name: 'Load Test User',
       email: 'loadtest@example.com',
       password: 'Password123!',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });

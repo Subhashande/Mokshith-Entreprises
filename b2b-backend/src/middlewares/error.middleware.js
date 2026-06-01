@@ -2,6 +2,8 @@ import { logger } from '../config/logger.js';
 import AppError from '../errors/AppError.js';
 
 export const errorHandler = (err, req, res, next) => {
+  // Guard against null/undefined errors reaching the handler
+  err = err || {};
   let error = { ...err };
   error.message = err.message;
   error.statusCode = err.statusCode || 500;

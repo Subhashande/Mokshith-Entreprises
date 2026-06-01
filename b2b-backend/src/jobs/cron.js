@@ -5,9 +5,22 @@ import { reconcilePayments } from './paymentReconcile.job.js';
 /**
  * 🔥 CRITICAL: Payment Timeout Reconciliation
  * Runs every 5 minutes to mark stuck payments as FAILED
+ * 
+ * 🔥 PHASE 2.5: Enhanced environment checks
  */
 export const startCronJobs = () => {
-  // Only run cron jobs if enabled via environment variable
+  // 🔥 CRITICAL: Multiple layers of protection
+  if (process.env.NODE_ENV === 'test') {
+    logger.info('🧪 Test environment detected - cron jobs disabled');
+    return;
+  }
+
+  if (process.env.ENABLE_CRON === 'false') {
+    logger.info('⏸️ Cron jobs disabled via environment flag');
+    return;
+  }
+
+  // Only run cron jobs in production or when explicitly enabled
   if (process.env.ENABLE_CRON !== 'true' && process.env.NODE_ENV !== 'production') {
     logger.info('⏰ Cron jobs disabled (set ENABLE_CRON=true to enable)');
     return;

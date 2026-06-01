@@ -38,7 +38,7 @@ describe('Webhook Replay Attack Tests', () => {
     // Create test order
     testOrder = await Order.create({
       ...generateTestOrder({
-        customerId: testUser._id,
+        userId: testUser._id,
         totalAmount: 10000,
       }),
       userId: testUser._id,
@@ -334,7 +334,7 @@ describe('Webhook Replay Attack Tests', () => {
       // Create second order
       const order2 = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 5000,
         }),
         userId: testUser._id,
@@ -493,7 +493,7 @@ describe('Webhook Replay Attack Tests', () => {
       // Create second order and payment
       const order2 = await Order.create({
         ...generateTestOrder({
-          customerId: testUser._id,
+          userId: testUser._id,
           totalAmount: 5000,
         }),
         userId: testUser._id,

@@ -2,6 +2,13 @@ import Redis from 'ioredis';
 import { env } from './env.js';
 import { logger } from './logger.js';
 
+// 🧪 CHECK TEST MODE FIRST (before any Redis initialization)
+const isTestMode = process.env.NODE_ENV === 'test' || process.env.REDIS_MOCK === 'true';
+
+if (isTestMode) {
+  logger.info('🧪 Test mode detected - using Redis mock');
+}
+
 // 🔒 Circuit Breaker State for Redis Resilience
 const circuitBreaker = {
   state: 'CLOSED', // CLOSED (working), OPEN (failing), HALF_OPEN (testing)
@@ -129,39 +136,79 @@ if (env.REDIS_CLUSTER === 'true') {
   logger.info('Redis Cluster mode requested');
 }
 
-const redis = new Redis(redisConfig);
+// Create Redis instance
+let redis;
 
-redis.on('connect', () => {
-  logger.info('✅ Redis connected', {
-    mode: redisConfig.sentinels ? 'sentinel' : 'standalone',
-    host: redisConfig.host || 'sentinel',
-  });
-});
-redis.on('ready', () => {
-  logger.info('✅ Redis ready');
-  circuitBreaker.recordSuccess();
-});
-redis.on('error', (err) => {
-  circuitBreaker.recordFailure();
-  if (err.code === 'ECONNREFUSED') {
-    logger.warn('⚠️ Redis connection refused - running in degraded mode');
-    return;
+// 🧪 TEST MODE: Skip real Redis connection in test environment  
+if (isTestMode) {
+  logger.info('🧪 Initializing mock Redis client for tests');
+  // Import the mock from ioredis-mock for better testing
+  try {
+    const IoRedisMock = (await import('ioredis-mock')).default;
+    redis = new IoRedisMock();
+    redis.status = 'ready';
+    logger.info('✅ Mock Redis initialized successfully');
+  } catch (error) {
+    logger.warn('ioredis-mock not found, using minimal mock');
+    // Fallback minimal mock
+    redis = {
+      on: () => {},
+      get: async () => null,
+      set: async () => 'OK',
+      setex: async () => 'OK',
+      del: async () => 1,
+      incr: async () => 1,
+      decr: async () => 0,
+      expire: async () => 1,
+      ttl: async () => -1,
+      lpush: async () => 1,
+      rpush: async () => 1,
+      ltrim: async () => 'OK',
+      lrange: async () => [],
+      keys: async () => [],
+      flushdb: async () => 'OK',
+      quit: async () => 'OK',
+      status: 'ready',
+    };
   }
-  logger.error('❌ Redis error:', err.message);
-});
-redis.on('close', () => {
-  logger.warn('⚠️ Redis connection closed');
-});
-redis.on('reconnecting', (delay) => {
-  logger.info(`🔄 Redis reconnecting in ${delay}ms...`);
-});
-redis.on('end', () => {
-  logger.warn('⚠️ Redis connection ended');
-});
+} else {
+  // Production/Development: Create real Redis connection
+  redis = new Redis(redisConfig);
+
+  redis.on('connect', () => {
+    logger.info('✅ Redis connected', {
+      mode: redisConfig.sentinels ? 'sentinel' : 'standalone',
+      host: redisConfig.host || 'sentinel',
+    });
+  });
+  redis.on('ready', () => {
+    logger.info('✅ Redis ready');
+    circuitBreaker.recordSuccess();
+  });
+  redis.on('error', (err) => {
+    circuitBreaker.recordFailure();
+    if (err.code === 'ECONNREFUSED') {
+      logger.warn('⚠️ Redis connection refused - running in degraded mode');
+      return;
+    }
+    logger.error('❌ Redis error:', err.message);
+  });
+  redis.on('close', () => {
+    logger.warn('⚠️ Redis connection closed');
+  });
+  redis.on('reconnecting', (delay) => {
+    logger.info(`🔄 Redis reconnecting in ${delay}ms...`);
+  });
+  redis.on('end', () => {
+    logger.warn('⚠️ Redis connection ended');
+  });
+}
 
 // Graceful error handling wrapper with circuit breaker
 export const redisClient = {
   async get(key) {
+    if (isTestMode) return redis.get(key);
+    
     if (!circuitBreaker.canAttempt()) {
       logger.debug('Redis circuit breaker OPEN, skipping GET', { key });
       return null;
@@ -179,6 +226,8 @@ export const redisClient = {
   },
   
   async set(...args) {
+    if (isTestMode) return redis.set(...args);
+    
     if (!circuitBreaker.canAttempt()) {
       logger.debug('Redis circuit breaker OPEN, skipping SET');
       return null;
@@ -194,8 +243,89 @@ export const redisClient = {
       return null;
     }
   },
+
+  /**
+   * 🔥 List operations for security audit logs
+   */
+  async lpush(key, ...values) {
+    if (isTestMode) return redis.lpush(key, ...values);
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping LPUSH');
+      return null;
+    }
+    
+    try {
+      const result = await redis.lpush(key, ...values);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis LPUSH error:', error.message);
+      return null;
+    }
+  },
+
+  async rpush(key, ...values) {
+    if (isTestMode) return redis.rpush(key, ...values);
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping RPUSH');
+      return null;
+    }
+    
+    try {
+      const result = await redis.rpush(key, ...values);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis RPUSH error:', error.message);
+      return null;
+    }
+  },
+
+  async ltrim(key, start, stop) {
+    if (isTestMode) return redis.ltrim(key, start, stop);
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping LTRIM');
+      return null;
+    }
+    
+    try {
+      const result = await redis.ltrim(key, start, stop);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis LTRIM error:', error.message);
+      return null;
+    }
+  },
+
+  async lrange(key, start, stop) {
+    if (isTestMode) return redis.lrange(key, start, stop);
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping LRANGE');
+      return [];
+    }
+    
+    try {
+      const result = await redis.lrange(key, start, stop);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis LRANGE error:', error.message);
+      return [];
+    }
+  },
   
   async setex(key, ttl, value) {
+    if (isTestMode) return redis.setex(key, ttl, value);
+    
     if (!circuitBreaker.canAttempt()) {
       logger.debug('Redis circuit breaker OPEN, skipping SETEX', { key });
       return null;
@@ -213,6 +343,8 @@ export const redisClient = {
   },
   
   async del(key) {
+    if (isTestMode) return redis.del(key);
+    
     if (!circuitBreaker.canAttempt()) {
       logger.debug('Redis circuit breaker OPEN, skipping DEL', { key });
       return null;
@@ -229,7 +361,58 @@ export const redisClient = {
     }
   },
   
+  async keys(pattern) {
+    if (isTestMode) return redis.keys(pattern);
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping KEYS');
+      return [];
+    }
+    
+    try {
+      const result = await redis.keys(pattern);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis KEYS error:', error.message);
+      return [];
+    }
+  },
+  
+  async ttl(key) {
+    if (isTestMode) return redis.ttl ? await redis.ttl(key) : -1;
+    
+    if (!circuitBreaker.canAttempt()) {
+      logger.debug('Redis circuit breaker OPEN, skipping TTL');
+      return -1;
+    }
+    
+    try {
+      const result = await redis.ttl(key);
+      circuitBreaker.recordSuccess();
+      return result;
+    } catch (error) {
+      circuitBreaker.recordFailure();
+      logger.error('Redis TTL error:', error.message);
+      return -1;
+    }
+  },
+  
+  async flushdb() {
+    if (isTestMode) return redis.flushdb();
+    
+    try {
+      return await redis.flushdb();
+    } catch (error) {
+      logger.error('Redis FLUSHDB error:', error.message);
+      return 'OK';
+    }
+  },
+  
   async incr(key) {
+    if (isTestMode) return redis.incr(key);
+    
     if (!circuitBreaker.canAttempt()) {
       logger.debug('Redis circuit breaker OPEN, skipping INCR', { key });
       return 0;
@@ -246,6 +429,8 @@ export const redisClient = {
     }
   },
   async decr(key) {
+    if (isTestMode) return redis.decr(key);
+    
     try {
       return await redis.decr(key);
     } catch (error) {
@@ -254,6 +439,8 @@ export const redisClient = {
     }
   },
   async expire(key, seconds) {
+    if (isTestMode) return redis.expire(key, seconds);
+    
     try {
       return await redis.expire(key, seconds);
     } catch (error) {
@@ -505,6 +692,11 @@ export const redisClient = {
    * Required to be called before using Redis operations
    */
   async connect() {
+    if (isTestMode) {
+      logger.debug('Test mode: Skipping Redis connect');
+      return true;
+    }
+    
     try {
       if (redis.status === 'ready') {
         logger.info('Redis already connected');
@@ -522,6 +714,11 @@ export const redisClient = {
    * Gracefully disconnect from Redis
    */
   async quit() {
+    if (isTestMode) {
+      logger.debug('Test mode: Skipping Redis quit');
+      return true;
+    }
+    
     try {
       await redis.quit();
       return true;
@@ -530,6 +727,9 @@ export const redisClient = {
       return false;
     }
   },
+  
+  // Expose circuit breaker for monitoring and testing
+  circuitBreaker: circuitBreaker,
 };
 
 export default redis;

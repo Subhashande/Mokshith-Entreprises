@@ -133,21 +133,35 @@ const startServer = async () => {
       });
     });
 
-    // � Start cron jobs for payment reconciliation
+    // ⏰ Start cron jobs for payment reconciliation
     try {
-      const { startCronJobs } = await import('./src/jobs/cron.js');
-      startCronJobs();
+      // Only start cron jobs if not in test environment
+      if (process.env.NODE_ENV !== 'test' && process.env.ENABLE_CRON !== 'false') {
+        const { startCronJobs } = await import('./src/jobs/cron.js');
+        startCronJobs();
+      } else {
+        logger.info('⏸️ Cron jobs disabled in test environment');
+      }
     } catch (err) {
       logger.warn('⚠️ Cron jobs not started:', err.message);
     }
-    // Start BullMQ workers
+
+    // 🚀 Start BullMQ workers
     try {
-      await import('./src/workers/index.js');
-      logger.info('✅ BullMQ workers initialized');
+      // Only start workers if explicitly enabled and not in test
+      if (process.env.NODE_ENV !== 'test' && 
+          process.env.ENABLE_QUEUE !== 'false' && 
+          process.env.ENABLE_WORKERS !== 'false') {
+        const { startWorkers } = await import('./src/workers/index.js');
+        startWorkers();
+      } else {
+        logger.info('⏸️ Workers disabled in test environment');
+      }
     } catch (err) {
       logger.warn('⚠️ Workers not started:', err.message);
     }
-    // �🚀 Start server
+
+    // 🚀 Start server
     server = httpServer.listen(PORT, '0.0.0.0', () => {
       logger.info(`🚀 Server running on http://localhost:${PORT}`);
     });
@@ -185,8 +199,12 @@ const shutdown = async (signal) => {
 
     // 3. Shutdown BullMQ workers
     try {
-      const { shutdownWorkers } = await import('./src/workers/index.js');
-      await shutdownWorkers();
+      if (process.env.NODE_ENV !== 'test' && 
+          process.env.ENABLE_QUEUE !== 'false' && 
+          process.env.ENABLE_WORKERS !== 'false') {
+        const { shutdownWorkers } = await import('./src/workers/index.js');
+        await shutdownWorkers();
+      }
     } catch (err) {
       logger.warn('Workers shutdown skipped:', err.message);
     }

@@ -12,6 +12,7 @@ import Order from '../../src/modules/order/order.model.js';
 import Payment from '../../src/modules/payment/payment.model.js';
 import Inventory from '../../src/modules/inventory/inventory.model.js';
 import Refund from '../../src/modules/payment/refund.model.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 describe('Refund System Load Tests', () => {
   let authToken;
@@ -29,7 +30,7 @@ describe('Refund System Load Tests', () => {
       name: 'Refund Test User',
       email: 'refundtest@example.com',
       password: 'Password123!',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543211',
       status: 'ACTIVE',
     });
@@ -40,7 +41,7 @@ describe('Refund System Load Tests', () => {
       name: 'Admin User',
       email: 'admin@example.com',
       password: 'Admin123!',
-      role: 'ADMIN',
+      role: ROLES.ADMIN,
       mobile: '9876543212',
       status: 'ACTIVE',
     });
@@ -309,7 +310,7 @@ describe('Refund System Load Tests', () => {
         name: 'Other User',
         email: 'other@example.com',
         password: 'Password123!',
-        role: 'USER',
+        role: ROLES.B2B_CUSTOMER,
         mobile: '9876543213',
         status: 'ACTIVE',
       });

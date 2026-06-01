@@ -3,7 +3,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { redisClient } from '../../src/config/redis.js';
-import { clearDatabase } from '../helpers/testUtils.js';
+import { clearDatabase, cleanupQueuesAndWorkers } from '../helpers/testUtils.js';
 
 /**
  * 🔒 CRITICAL: Health Check Endpoint Tests
@@ -243,9 +243,12 @@ describe('Health Check Endpoint Tests', () => {
         expect(res.body.checks.queues.status).toMatch(/degraded|unhealthy/);
       }
 
-      // Cleanup
-      await testQueue.obliterate({ force: true });
-      await testQueue.close();
+      // Safe cleanup
+      await cleanupQueuesAndWorkers({
+        queues: [testQueue].filter(Boolean),
+        obliterate: true,
+        timeout: 5000
+      });
     });
 
     it('should detect failed job accumulation', async () => {

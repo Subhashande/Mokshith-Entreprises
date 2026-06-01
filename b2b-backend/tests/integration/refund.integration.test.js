@@ -10,6 +10,7 @@ import Product from '../../src/modules/product/product.model.js';
 import Inventory from '../../src/modules/inventory/inventory.model.js';
 import { clearDatabase } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 /**
  * 🔒 CRITICAL: Refund System Integration Tests
@@ -35,7 +36,7 @@ describe('Refund Integration Tests', () => {
       name: 'Refund Test User',
       email: 'refund@test.com',
       password: 'Test@1234',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });
@@ -44,7 +45,7 @@ describe('Refund Integration Tests', () => {
       name: 'Admin User',
       email: 'admin@test.com',
       password: 'Admin@1234',
-      role: 'ADMIN',
+      role: ROLES.ADMIN,
       mobile: '9876543211',
       status: 'ACTIVE',
     });
@@ -232,7 +233,7 @@ describe('Refund Integration Tests', () => {
         name: 'Other User',
         email: 'other@test.com',
         password: 'Test@1234',
-        role: 'USER',
+        role: ROLES.B2B_CUSTOMER,
         mobile: '9876543212',
         status: 'ACTIVE',
       });

@@ -1,0 +1,1929 @@
+﻿
+> b2b-backend@1.0.0 test
+> cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.json tests/unit --testPathIgnorePatterns=queue|worker|redis|rate --maxWorkers=2
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ override existing { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γùê secrets for agents [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+node.exe : (node:14656) ExperimentalWarning: VM Modules is an experimental 
+feature and might change at any time
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:14656) Ex...nge at any time 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34532) ExperimentalWarning: VM Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+16:21:47 [[32minfo[39m]: MongoDB connection established successfully {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:47 [[32minfo[39m]: Inventory reservation released on payment failure {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "orderId": "6a196fc38d7c35cad3909e09"
+  }
+}
+16:21:47 [[33mwarn[39m]: MongoDB disconnected. Reconnecting... {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:48 [[32minfo[39m]: Login with backup code {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+FAIL tests/unit/payment.service.test.js
+  Payment Service - Unit Tests
+    createRazorpayOrder
+      ├ù should create Razorpay order successfully (3 ms)
+      ΓêÜ should throw error for amount less than minimum (2 ms)
+      ΓêÜ should throw error when amount is null or undefined
+      ├ù should handle Razorpay gateway errors (1 ms)
+      ├ù should generate unique receipt for each order
+    hybridPayment
+      ├ù should throw error for invalid order ID (1 ms)
+      ├ù should throw error when order not found (1 ms)
+      ├ù should throw error when order is already paid
+      ├ù should throw error when payment lock cannot be acquired (1 ms)
+      ├ù should detect and clean stale locks
+    initiatePayment
+      ├ù should throw error for invalid order ID (7 ms)
+      ├ù should throw error when order not found (3 ms)
+      ├ù should throw error when order already paid (2 ms)
+      ├ù should create Razorpay order for valid request (1 ms)
+    verifyPayment
+      ΓêÜ should throw error for missing signature (31 ms)
+      ├ù should throw error for invalid signature
+      ├ù should verify payment successfully with valid signature
+    failPayment
+      ├ù should throw error for invalid order ID (6 ms)
+      ΓêÜ should throw error when order not found (1 ms)
+      ΓêÜ should mark payment as failed (9 ms)
+    handleWebhook
+      ├ù should throw error for invalid signature (1 ms)
+      ├ù should process webhook with valid signature
+      ├ù should handle payment.failed event
+    createRefund
+      ├ù should throw error for invalid order ID (9 ms)
+      ΓêÜ should throw error when order not found (2 ms)
+      ΓêÜ should throw error for invalid refund amount (1 ms)
+      ├ù should create refund successfully
+    getRefundHistory
+      ├ù should throw error for invalid order ID (6 ms)
+      ├ù should return refund history for valid order (1 ms)
+      ├ù should return empty array when no refunds exist (1 ms)
+    getRefundById
+      ├ù should throw error for invalid refund ID (9 ms)
+      ├ù should throw error when refund not found
+      ├ù should return refund for valid ID
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ createRazorpayOrder ΓÇ║ should create 
+Razorpay order successfully
+
+    TypeError: paymentGateway.createPaymentOrder.mockResolvedValue is not a 
+function
+
+    [0m [90m 78 |[39m       }[33m;[39m
+     [90m 79 |[39m
+    [31m[1m>[22m[39m[90m 80 |[39m       paymentGateway[33m.[39mcreatePa
+ymentOrder[33m.[39mmockResolvedValue(mockRazorpayOrder)[33m;[39m
+     [90m    |[39m                                         
+[31m[1m^[22m[39m
+     [90m 81 |[39m
+     [90m 82 |[39m       [36mconst[39m result [33m=[39m [36mawait[39m 
+paymentService[33m.[39mcreateRazorpayOrder(amount[33m,[39m 
+mockUserId)[33m;[39m
+     [90m 83 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:80:41)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ createRazorpayOrder ΓÇ║ should handle 
+Razorpay gateway errors
+
+    TypeError: paymentGateway.createPaymentOrder.mockRejectedValue is not a 
+function
+
+    [0m [90m 111 |[39m     it([32m'should handle Razorpay gateway 
+errors'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 112 |[39m       [36mconst[39m amount [33m=[39m 
+[35m1000[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 113 |[39m       
+paymentGateway[33m.[39mcreatePaymentOrder[33m.[39mmockRejectedValue(
+     [90m     |[39m                                         
+[31m[1m^[22m[39m
+     [90m 114 |[39m         [36mnew[39m [33mError[39m([32m'Gateway 
+connection failed'[39m)
+     [90m 115 |[39m       )[33m;[39m
+     [90m 116 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:113:41)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ createRazorpayOrder ΓÇ║ should generate 
+unique receipt for each order
+
+    TypeError: paymentGateway.createPaymentOrder.mockResolvedValue is not a 
+function
+
+    [0m [90m 128 |[39m       }[33m;[39m
+     [90m 129 |[39m
+    [31m[1m>[22m[39m[90m 130 |[39m       paymentGateway[33m.[39mcreateP
+aymentOrder[33m.[39mmockResolvedValue(mockRazorpayOrder)[33m;[39m
+     [90m     |[39m                                         
+[31m[1m^[22m[39m
+     [90m 131 |[39m
+     [90m 132 |[39m       [36mawait[39m 
+paymentService[33m.[39mcreateRazorpayOrder(amount[33m,[39m 
+mockUserId)[33m;[39m
+     [90m 133 |[39m       [36mconst[39m firstCall [33m=[39m paymentGatewa
+y[33m.[39mcreatePaymentOrder[33m.[39mmock[33m.[39mcalls[[35m0[39m][[35
+m0[39m][33m.[39mreceipt[33m;[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:130:41)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ hybridPayment ΓÇ║ should throw error 
+for invalid order ID
+
+    TypeError: redisClient.detectStaleLock.mockResolvedValue is not a function
+
+    [0m [90m 146 |[39m     it([32m'should throw error for invalid order 
+ID'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 147 |[39m       [36mconst[39m { redisClient } [33m=[39m 
+[36mawait[39m 
+[36mimport[39m([32m'../../src/config/redis.js'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 148 |[39m       redisClient[33m.[39mdetectStal
+eLock[33m.[39mmockResolvedValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 149 |[39m       redisClient[33m.[39macquireLock[33m.[39mmockRes
+olvedValue([36mtrue[39m)[33m;[39m
+     [90m 150 |[39m
+     [90m 151 |[39m       [36mawait[39m expect([0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:148:35)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ hybridPayment ΓÇ║ should throw error 
+when order not found
+
+    TypeError: redisClient.detectStaleLock.mockResolvedValue is not a function
+
+    [0m [90m 158 |[39m     it([32m'should throw error when order not 
+found'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 159 |[39m       [36mconst[39m { redisClient } [33m=[39m 
+[36mawait[39m 
+[36mimport[39m([32m'../../src/config/redis.js'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 160 |[39m       redisClient[33m.[39mdetectStal
+eLock[33m.[39mmockResolvedValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 161 |[39m       redisClient[33m.[39macquireLock[33m.[39mmockRes
+olvedValue([36mtrue[39m)[33m;[39m
+     [90m 162 |[39m
+     [90m 163 |[39m       
+[33mOrder[39m[33m.[39mfindById[33m.[39mmockReturnValue({[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:160:35)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ hybridPayment ΓÇ║ should throw error 
+when order is already paid
+
+    TypeError: redisClient.detectStaleLock.mockResolvedValue is not a function
+
+    [0m [90m 175 |[39m     it([32m'should throw error when order is 
+already paid'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 176 |[39m       [36mconst[39m { redisClient } [33m=[39m 
+[36mawait[39m 
+[36mimport[39m([32m'../../src/config/redis.js'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 177 |[39m       redisClient[33m.[39mdetectStal
+eLock[33m.[39mmockResolvedValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 178 |[39m       redisClient[33m.[39macquireLock[33m.[39mmockRes
+olvedValue([36mtrue[39m)[33m;[39m
+     [90m 179 |[39m
+     [90m 180 |[39m       [36mconst[39m mockOrder [33m=[39m {[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:177:35)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ hybridPayment ΓÇ║ should throw error 
+when payment lock cannot be acquired
+
+    TypeError: redisClient.detectStaleLock.mockResolvedValue is not a function
+
+    [0m [90m 199 |[39m     it([32m'should throw error when payment lock 
+cannot be acquired'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 200 |[39m       [36mconst[39m { redisClient } [33m=[39m 
+[36mawait[39m 
+[36mimport[39m([32m'../../src/config/redis.js'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 201 |[39m       redisClient[33m.[39mdetectStal
+eLock[33m.[39mmockResolvedValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 202 |[39m       redisClient[33m.[39macquireLock[33m.[39mmockRes
+olvedValue([36mfalse[39m)[33m;[39m
+     [90m 203 |[39m
+     [90m 204 |[39m       [36mawait[39m expect([0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:201:35)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ hybridPayment ΓÇ║ should detect and 
+clean stale locks
+
+    TypeError: redisClient.detectStaleLock.mockResolvedValue is not a function
+
+    [0m [90m 209 |[39m     it([32m'should detect and clean stale 
+locks'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 210 |[39m       [36mconst[39m { redisClient } [33m=[39m 
+[36mawait[39m 
+[36mimport[39m([32m'../../src/config/redis.js'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 211 |[39m       redisClient[33m.[39mdetectStal
+eLock[33m.[39mmockResolvedValue([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 212 |[39m       redisClient[33m.[39macquireLock[33m.[39mmockRes
+olvedValue([36mtrue[39m)[33m;[39m
+     [90m 213 |[39m
+     [90m 214 |[39m       [36mconst[39m mockOrder [33m=[39m {[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:211:35)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ initiatePayment ΓÇ║ should throw error 
+for invalid order ID
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Invalid order ID format"
+    Received message:   "Order not found"
+
+        [0m [90m 319 |[39m   [36mconst[39m order [33m=[39m 
+[36mawait[39m [33mOrder[39m[33m.[39mfindById(orderId)[33m;[39m
+         [90m 320 |[39m
+        [31m[1m>[22m[39m[90m 321 |[39m   [36mif[39m ([33m![39morder) 
+[36mthrow[39m [36mnew[39m [33mAppError[39m([32m'Order not 
+found'[39m[33m,[39m [35m404[39m)[33m;[39m
+         [90m     |[39m                     [31m[1m^[22m[39m
+         [90m 322 |[39m
+         [90m 323 |[39m   [36mif[39m (order[33m.[39mpaymentStatus 
+[33m===[39m [32m'PAID'[39m) {
+         [90m 324 |[39m     [36mthrow[39m [36mnew[39m 
+[33mAppError[39m([32m'Order already paid'[39m[33m,[39m 
+[35m400[39m)[33m;[39m[0m
+
+      at Module.initiatePayment (src/modules/payment/payment.service.js:321:21)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:245:7)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:247:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ initiatePayment ΓÇ║ should throw error 
+when order not found
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Order not found"
+    Received message:   "Invalid amount provided for payment"
+
+        [0m [90m 16 |[39m   [36mconst[39m numericAmount [33m=[39m 
+[33mNumber[39m(amount)[33m;[39m
+         [90m 17 |[39m   [36mif[39m (isNaN(numericAmount) [33m||[39m 
+numericAmount [33m<[39m [35m0[39m) {
+        [31m[1m>[22m[39m[90m 18 |[39m     [36mthrow[39m [36mnew[39m 
+[33mError[39m([32m'Invalid amount provided for payment'[39m)[33m;[39m
+         [90m    |[39m           [31m[1m^[22m[39m
+         [90m 19 |[39m   }
+         [90m 20 |[39m
+         [90m 21 |[39m   [90m// Razorpay minimum is Γé╣1 (100 
+paise)[39m[0m
+
+      at Module.createPaymentOrder 
+(src/modules/payment/payment.gateway.js:18:11)
+      at Module.initiatePayment (src/modules/payment/payment.service.js:333:38)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:255:7)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:257:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ initiatePayment ΓÇ║ should throw error 
+when order already paid
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Order is already paid"
+    Received message:   "Invalid amount provided for payment"
+
+        [0m [90m 16 |[39m   [36mconst[39m numericAmount [33m=[39m 
+[33mNumber[39m(amount)[33m;[39m
+         [90m 17 |[39m   [36mif[39m (isNaN(numericAmount) [33m||[39m 
+numericAmount [33m<[39m [35m0[39m) {
+        [31m[1m>[22m[39m[90m 18 |[39m     [36mthrow[39m [36mnew[39m 
+[33mError[39m([32m'Invalid amount provided for payment'[39m)[33m;[39m
+         [90m    |[39m           [31m[1m^[22m[39m
+         [90m 19 |[39m   }
+         [90m 20 |[39m
+         [90m 21 |[39m   [90m// Razorpay minimum is Γé╣1 (100 
+paise)[39m[0m
+
+      at Module.createPaymentOrder 
+(src/modules/payment/payment.gateway.js:18:11)
+      at Module.initiatePayment (src/modules/payment/payment.service.js:333:38)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:272:7)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:274:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ initiatePayment ΓÇ║ should create 
+Razorpay order for valid request
+
+    TypeError: paymentGateway.createPaymentOrder.mockResolvedValue is not a 
+function
+
+    [0m [90m 293 |[39m       })[33m;[39m
+     [90m 294 |[39m
+    [31m[1m>[22m[39m[90m 295 |[39m       paymentGateway[33m.[39mcreateP
+aymentOrder[33m.[39mmockResolvedValue(mockRazorpayOrder)[33m;[39m
+     [90m     |[39m                                         
+[31m[1m^[22m[39m
+     [90m 296 |[39m
+     [90m 297 |[39m       [36mconst[39m result [33m=[39m [36mawait[39m 
+paymentService[33m.[39minitiatePayment(mockOrderId[33m,[39m 
+mockUserId)[33m;[39m
+     [90m 298 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:295:41)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ verifyPayment ΓÇ║ should throw error 
+for invalid signature
+
+    TypeError: paymentGateway.verifyPayment.mockResolvedValue is not a function
+
+    [0m [90m 321 |[39m       }[33m;[39m
+     [90m 322 |[39m
+    [31m[1m>[22m[39m[90m 323 |[39m       paymentGateway[33m.[39mverifyP
+ayment[33m.[39mmockResolvedValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                    [31m[1m^[22m[39m
+     [90m 324 |[39m
+     [90m 325 |[39m       [36mawait[39m expect(
+     [90m 326 |[39m         
+paymentService[33m.[39mverifyPayment(payload)[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:323:36)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ verifyPayment ΓÇ║ should verify payment 
+successfully with valid signature
+
+    TypeError: paymentGateway.verifyPayment.mockResolvedValue is not a function
+
+    [0m [90m 349 |[39m       }[33m;[39m
+     [90m 350 |[39m
+    [31m[1m>[22m[39m[90m 351 |[39m       paymentGateway[33m.[39mverifyP
+ayment[33m.[39mmockResolvedValue([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                    [31m[1m^[22m[39m
+     [90m 352 |[39m       paymentRepo[33m.[39mfindPaymentByRazorpayOrderId
+[33m.[39mmockResolvedValue(mockPayment)[33m;[39m
+     [90m 353 |[39m       [33mOrder[39m[33m.[39mfindById[33m.[39mmockRe
+solvedValue(mockOrder)[33m;[39m
+     [90m 354 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:351:36)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ failPayment ΓÇ║ should throw error for 
+invalid order ID
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Invalid order ID format"
+    Received message:   "Order not found"
+
+        [0m [90m 512 |[39m [36mexport[39m [36mconst[39m failPayment 
+[33m=[39m [36masync[39m (orderId[33m,[39m reason) [33m=>[39m {
+         [90m 513 |[39m   [36mconst[39m order [33m=[39m [36mawait[39m 
+[33mOrder[39m[33m.[39mfindById(orderId)[33m;[39m
+        [31m[1m>[22m[39m[90m 514 |[39m   [36mif[39m ([33m![39morder) 
+[36mthrow[39m [36mnew[39m [33mAppError[39m([32m'Order not 
+found'[39m[33m,[39m [35m404[39m)[33m;[39m
+         [90m     |[39m                     [31m[1m^[22m[39m
+         [90m 515 |[39m
+         [90m 516 |[39m   order[33m.[39mpaymentStatus [33m=[39m 
+[33mPAYMENT_STATUS[39m[33m.[39m[33mFAILED[39m[33m;[39m
+         [90m 517 |[39m   order[33m.[39mstatus [33m=[39m 
+[33mORDER_STATUS[39m[33m.[39m[33mFAILED[39m[33m;[39m[0m
+
+      at Module.failPayment (src/modules/payment/payment.service.js:514:21)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:365:7)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:367:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ handleWebhook ΓÇ║ should throw error 
+for invalid signature
+
+    TypeError: paymentGateway.verifyWebhookSignature.mockReturnValue is not a 
+function
+
+    [0m [90m 398 |[39m       [36mconst[39m signature [33m=[39m 
+[32m'invalid_signature'[39m[33m;[39m
+     [90m 399 |[39m
+    [31m[1m>[22m[39m[90m 400 |[39m       paymentGateway[33m.[39mverifyW
+ebhookSignature[33m.[39mmockReturnValue([36mfalse[39m)[33m;[39m
+     [90m     |[39m                                             
+[31m[1m^[22m[39m
+     [90m 401 |[39m
+     [90m 402 |[39m       [36mawait[39m expect(
+     [90m 403 |[39m         
+paymentService[33m.[39mhandleWebhook(rawBody[33m,[39m signature)[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:400:45)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ handleWebhook ΓÇ║ should process 
+webhook with valid signature
+
+    TypeError: paymentGateway.verifyWebhookSignature.mockReturnValue is not a 
+function
+
+    [0m [90m 420 |[39m       [36mconst[39m signature [33m=[39m 
+[32m'valid_signature'[39m[33m;[39m
+     [90m 421 |[39m
+    [31m[1m>[22m[39m[90m 422 |[39m       paymentGateway[33m.[39mverifyW
+ebhookSignature[33m.[39mmockReturnValue([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                             
+[31m[1m^[22m[39m
+     [90m 423 |[39m       paymentRepo[33m.[39mfindPaymentByRazorpayOrderId
+[33m.[39mmockResolvedValue({
+     [90m 424 |[39m         _id[33m:[39m [36mnew[39m 
+mongoose[33m.[39m[33mTypes[39m[33m.[39m[33mObjectId[39m()[33m,[39m
+     [90m 425 |[39m         orderId[33m:[39m mockOrderId[33m,[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:422:45)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ handleWebhook ΓÇ║ should handle 
+payment.failed event
+
+    TypeError: paymentGateway.verifyWebhookSignature.mockReturnValue is not a 
+function
+
+    [0m [90m 451 |[39m       [36mconst[39m signature [33m=[39m 
+[32m'valid_signature'[39m[33m;[39m
+     [90m 452 |[39m
+    [31m[1m>[22m[39m[90m 453 |[39m       paymentGateway[33m.[39mverifyW
+ebhookSignature[33m.[39mmockReturnValue([36mtrue[39m)[33m;[39m
+     [90m     |[39m                                             
+[31m[1m^[22m[39m
+     [90m 454 |[39m       paymentRepo[33m.[39mfindPaymentByRazorpayOrderId
+[33m.[39mmockResolvedValue({
+     [90m 455 |[39m         _id[33m:[39m [36mnew[39m 
+mongoose[33m.[39m[33mTypes[39m[33m.[39m[33mObjectId[39m()[33m,[39m
+     [90m 456 |[39m         orderId[33m:[39m mockOrderId[33m,[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:453:45)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ createRefund ΓÇ║ should throw error for 
+invalid order ID
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Invalid order ID format"
+    Received message:   "Order not found"
+
+        [0m [90m 712 |[39m   [36mconst[39m order [33m=[39m 
+[36mawait[39m [33mOrder[39m[33m.[39mfindById(orderId)[33m;[39m
+         [90m 713 |[39m   [36mif[39m ([33m![39morder) {
+        [31m[1m>[22m[39m[90m 714 |[39m     [36mthrow[39m [36mnew[39m 
+[33mAppError[39m([32m'Order not found'[39m[33m,[39m 
+[35m404[39m)[33m;[39m
+         [90m     |[39m           [31m[1m^[22m[39m
+         [90m 715 |[39m   }
+         [90m 716 |[39m
+         [90m 717 |[39m   [90m// 2. Verify user authorization (admin or 
+order owner)[39m[0m
+
+      at Module.createRefund (src/modules/payment/payment.service.js:714:11)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:469:7)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:477:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ createRefund ΓÇ║ should create refund 
+successfully
+
+    TypeError: Cannot read properties of undefined (reading 
+'mockResolvedValue')
+
+    [0m [90m 525 |[39m
+     [90m 526 |[39m       [33mOrder[39m[33m.[39mfindById[33m.[39mmockRe
+solvedValue(mockOrder)[33m;[39m
+    [31m[1m>[22m[39m[90m 527 |[39m       paymentRepo[33m.[39mfindPaymen
+tByOrderId[33m.[39mmockResolvedValue(mockPayment)[33m;[39m
+     [90m     |[39m                                        
+[31m[1m^[22m[39m
+     [90m 528 |[39m       
+paymentGateway[33m.[39mcreateRefund[33m.[39mmockResolvedValue({
+     [90m 529 |[39m         id[33m:[39m [32m'rfnd_123'[39m[33m,[39m
+     [90m 530 |[39m         status[33m:[39m 
+[32m'processed'[39m[33m,[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:527:40)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundHistory ΓÇ║ should throw error 
+for invalid order ID
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Invalid order ID format"
+    Received message:   "Refund is not defined"
+
+        [0m [90m 865 |[39m [90m */[39m
+         [90m 866 |[39m [36mexport[39m [36mconst[39m getRefundHistory 
+[33m=[39m [36masync[39m (orderId) [33m=>[39m {
+        [31m[1m>[22m[39m[90m 867 |[39m   [36mconst[39m refunds 
+[33m=[39m [36mawait[39m [33mRefund[39m[33m.[39mfind({ orderId 
+})[33m.[39msort({ createdAt[33m:[39m [33m-[39m[35m1[39m 
+})[33m.[39mpopulate([32m'initiatedBy'[39m[33m,[39m [32m'name 
+email'[39m)[33m;[39m
+         [90m     |[39m                   [31m[1m^[22m[39m
+         [90m 868 |[39m
+         [90m 869 |[39m   [36mreturn[39m refunds[33m;[39m
+         [90m 870 |[39m }[33m;[39m[0m
+
+      at Module.getRefundHistory 
+(src/modules/payment/payment.service.js:867:19)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:554:24)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:555:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundHistory ΓÇ║ should return 
+refund history for valid order
+
+    TypeError: Cannot read properties of undefined (reading 
+'mockResolvedValue')
+
+    [0m [90m 566 |[39m       ][33m;[39m
+     [90m 567 |[39m
+    [31m[1m>[22m[39m[90m 568 |[39m       paymentRepo[33m.[39mgetRefunds
+ByOrderId[33m.[39mmockResolvedValue(mockRefunds)[33m;[39m
+     [90m     |[39m                                       
+[31m[1m^[22m[39m
+     [90m 569 |[39m
+     [90m 570 |[39m       [36mconst[39m result [33m=[39m [36mawait[39m 
+paymentService[33m.[39mgetRefundHistory(mockOrderId)[33m;[39m
+     [90m 571 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:568:39)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundHistory ΓÇ║ should return 
+empty array when no refunds exist
+
+    TypeError: Cannot read properties of undefined (reading 
+'mockResolvedValue')
+
+    [0m [90m 575 |[39m
+     [90m 576 |[39m     it([32m'should return empty array when no refunds 
+exist'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 577 |[39m       paymentRepo[33m.[39mgetRefunds
+ByOrderId[33m.[39mmockResolvedValue([])[33m;[39m
+     [90m     |[39m                                       
+[31m[1m^[22m[39m
+     [90m 578 |[39m
+     [90m 579 |[39m       [36mconst[39m result [33m=[39m [36mawait[39m 
+paymentService[33m.[39mgetRefundHistory(mockOrderId)[33m;[39m
+     [90m 580 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:577:39)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundById ΓÇ║ should throw error 
+for invalid refund ID
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected substring: "Invalid refund ID format"
+    Received message:   "Refund is not defined"
+
+        [0m [90m 874 |[39m [90m */[39m
+         [90m 875 |[39m [36mexport[39m [36mconst[39m getRefundById 
+[33m=[39m [36masync[39m (refundId) [33m=>[39m {
+        [31m[1m>[22m[39m[90m 876 |[39m   [36mconst[39m refund 
+[33m=[39m [36mawait[39m [33mRefund[39m[33m.[39mfindById(refundId)
+         [90m     |[39m                  [31m[1m^[22m[39m
+         [90m 877 |[39m     [33m.[39mpopulate([32m'orderId'[39m)
+         [90m 878 |[39m     [33m.[39mpopulate([32m'paymentId'[39m)
+         [90m 879 |[39m     
+[33m.[39mpopulate([32m'initiatedBy'[39m[33m,[39m [32m'name 
+email'[39m)[33m;[39m[0m
+
+      at Module.getRefundById (src/modules/payment/payment.service.js:876:18)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:588:24)
+      at Object.<anonymous> (tests/unit/payment.service.test.js:589:17)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundById ΓÇ║ should throw error 
+when refund not found
+
+    TypeError: Cannot read properties of undefined (reading 
+'mockResolvedValue')
+
+    [0m [90m 591 |[39m
+     [90m 592 |[39m     it([32m'should throw error when refund not 
+found'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 593 |[39m       paymentRepo[33m.[39mgetRefundB
+yId[33m.[39mmockResolvedValue([36mnull[39m)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m 594 |[39m
+     [90m 595 |[39m       [36mawait[39m expect(
+     [90m 596 |[39m         
+paymentService[33m.[39mgetRefundById([36mnew[39m mongoose[33m.[39m[33mTy
+pes[39m[33m.[39m[33mObjectId[39m()[33m.[39mtoString())[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:593:33)
+
+  ΓùÅ Payment Service - Unit Tests ΓÇ║ getRefundById ΓÇ║ should return refund 
+for valid ID
+
+    TypeError: Cannot read properties of undefined (reading 
+'mockResolvedValue')
+
+    [0m [90m 606 |[39m       }[33m;[39m
+     [90m 607 |[39m
+    [31m[1m>[22m[39m[90m 608 |[39m       paymentRepo[33m.[39mgetRefundB
+yId[33m.[39mmockResolvedValue(mockRefund)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m 609 |[39m
+     [90m 610 |[39m       [36mconst[39m result [33m=[39m [36mawait[39m 
+paymentService[33m.[39mgetRefundById(mockRefund[33m.[39m_id[33m.[39mtoStr
+ing())[33m;[39m
+     [90m 611 |[39m[0m
+
+      at Object.<anonymous> (tests/unit/payment.service.test.js:608:33)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+16:21:49 [[32minfo[39m]: Login with backup code {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:49 [[33mwarn[39m]: Login attempt threshold exceeded {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "identifier": "user_blocked",
+    "ip": "192.168.1.1",
+    "attempts": "6"
+  }
+}
+16:21:49 [[33mwarn[39m]: OTP attempt threshold exceeded {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "identifier": "user_otp_blocked",
+    "attempts": "4"
+  }
+}
+16:21:49 [[31merror[39m]: Payment attempt threshold exceeded {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "user_payment_spam",
+    "attempts": "4"
+  }
+}
+16:21:49 [[33mwarn[39m]: Suspicious payment amount {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "user_large_payment",
+    "amount": 1000001,
+    "threshold": 1000000
+  }
+}
+16:21:49 [[31merror[39m]: User temporarily blocked {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "user_to_block",
+    "reason": "Suspicious activity",
+    "duration": 3600
+  }
+}
+16:21:49 [[31merror[39m]: User temporarily blocked {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "user_with_reason",
+    "reason": "Multiple failed login attempts",
+    "duration": 3600
+  }
+}
+16:21:49 [[31merror[39m]: User temporarily blocked {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "blocked_user",
+    "reason": "Test block",
+    "duration": 3600
+  }
+}
+16:21:49 [[31merror[39m]: User temporarily blocked {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "temp_blocked",
+    "reason": "Temp block",
+    "duration": 1
+  }
+}
+16:21:50 [[33mwarn[39m]: Login attempt threshold exceeded {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "identifier": "velocity_abuser",
+    "ip": "192.168.1.1",
+    "attempts": "6"
+  }
+}
+16:21:50 [[33mwarn[39m]: Suspicious activity detected {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "userId": "suspicious_user",
+    "flags": [
+      "multiple_failed_logins",
+      "unusual_payment_amount"
+    ],
+    "data": {
+      "paymentAmount": 10
+    }
+  }
+}
+PASS tests/unit/twoFactorAuth.test.js (6.715 s)
+  Two-Factor Authentication Service - Unit Tests
+    generateSecret()
+      ΓêÜ should generate a valid secret (5 ms)
+      ΓêÜ should generate different secrets each time
+      ΓêÜ should generate secret with email parameter (1 ms)
+    generateQRCode()
+      ΓêÜ should generate QR code data URL (281 ms)
+      ΓêÜ should handle empty email/secret (220 ms)
+    verifyToken()
+      ΓêÜ should verify valid TOTP token (4 ms)
+      ΓêÜ should reject invalid token (1 ms)
+      ΓêÜ should reject expired token
+      ΓêÜ should reject malformed token
+      ΓêÜ should handle empty token
+      ΓêÜ should handle null token
+      ΓêÜ should allow window tolerance for time drift (1 ms)
+    generateBackupCodes()
+      ΓêÜ should generate 10 backup codes by default
+      ΓêÜ should generate requested number of codes
+      ΓêÜ should generate unique codes
+      ΓêÜ should generate codes in correct format (1 ms)
+      ΓêÜ should generate different codes on each call (1 ms)
+    validateLogin2FA()
+      ΓêÜ should validate correct TOTP token (1 ms)
+      ΓêÜ should validate backup code (733 ms)
+      ΓêÜ should identify used backup code index (1120 ms)
+      ΓêÜ should reject invalid token (1562 ms)
+      ΓêÜ should reject empty token (1 ms)
+    Token Generation
+      ΓêÜ should generate 6-digit token via authenticator (1 ms)
+      ΓêÜ should generate valid token format over time (102 ms)
+    Security
+      ΓêÜ should verify token independently (1 ms)
+      ΓêÜ should reject invalid tokens consistently (1 ms)
+    Edge Cases
+      ΓêÜ should handle invalid secret format gracefully
+      ΓêÜ should handle very long tokens
+      ΓêÜ should handle special characters in token
+      ΓêÜ should handle concurrent verification attempts (1 ms)
+
+PASS tests/unit/fraudDetection.test.js
+  Fraud Detection Service - Unit Tests
+    trackLoginAttempt()
+      ΓêÜ should allow first login attempt (2 ms)
+      ΓêÜ should block after 5 failed attempts (7 ms)
+      ΓêÜ should reset attempts after expiry time (2 ms)
+    trackOTPAttempt()
+      ΓêÜ should allow OTP verification attempts (1 ms)
+      ΓêÜ should block after 3 failed OTP attempts (1 ms)
+    trackPaymentAttempt()
+      ΓêÜ should allow normal payment attempts (1 ms)
+      ΓêÜ should block excessive payment attempts per hour (1 ms)
+      ΓêÜ should flag large amount transactions (2 ms)
+      ΓêÜ should flag rapid payment attempts
+    blockUser()
+      ΓêÜ should block user for specified duration (1 ms)
+      ΓêÜ should store block reason (2 ms)
+    isUserBlocked()
+      ΓêÜ should return false for non-blocked user (1 ms)
+      ΓêÜ should return true for blocked user (1 ms)
+      ΓêÜ should return false after block expires (1103 ms)
+    Pattern Detection
+      ΓêÜ should detect velocity abuse (1 ms)
+      ΓêÜ should track suspicious patterns (2 ms)
+    Edge Cases
+      ΓêÜ should handle Redis connection errors gracefully
+      ΓêÜ should handle invalid user IDs (1 ms)
+      ΓêÜ should handle negative amounts
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.email",
+        "type": "any.required"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.age",
+        "type": "number.base"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.email",
+        "type": "string.email"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.quantity",
+        "type": "number.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.limit",
+        "type": "number.max"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.status",
+        "type": "any.only"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.name",
+        "type": "string.empty"
+      },
+      {
+        "field": "body.email",
+        "type": "string.email"
+      },
+      {
+        "field": "body.age",
+        "type": "number.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.items",
+        "type": "array.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.address.city",
+        "type": "any.required"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.value",
+        "type": "number.base"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+PASS tests/unit/validate.middleware.test.js
+  Validation Middleware - Unit Tests
+    Successful Validation
+      ΓêÜ should pass validation with valid data (5 ms)
+      ΓêÜ should transform stringified boolean "true" to true (1 ms)
+      ΓêÜ should transform stringified boolean "false" to false (2 ms)
+      ΓêÜ should convert numeric strings to numbers (1 ms)
+      ΓêÜ should NOT convert ID fields to numbers
+      ΓêÜ should NOT convert phone numbers to numbers
+      ΓêÜ should validate query parameters (2 ms)
+      ΓêÜ should validate route parameters (1 ms)
+      ΓêÜ should handle nested object validation (1 ms)
+      ΓêÜ should handle array validation (1 ms)
+    Validation Failures
+      ΓêÜ should reject missing required field (5 ms)
+      ΓêÜ should reject invalid data type (2 ms)
+      ΓêÜ should reject invalid email format (2 ms)
+      ΓêÜ should reject value below minimum (1 ms)
+      ΓêÜ should reject value above maximum
+      ΓêÜ should reject invalid enum value (2 ms)
+      ΓêÜ should aggregate multiple validation errors (1 ms)
+      ΓêÜ should reject empty array when minimum items required (1 ms)
+      ΓêÜ should reject nested object validation failures (1 ms)
+    Edge Cases
+      ΓêÜ should handle empty request body (1 ms)
+      ΓêÜ should handle null body values
+      ΓêÜ should handle empty string (1 ms)
+      ΓêÜ should NOT convert empty numeric string
+      ΓêÜ should handle pincode as string (1 ms)
+      ΓêÜ should allow unknown fields with allowUnknown option
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/inventory.service.test.js
+  Inventory Service - Unit Tests
+    addStock
+      ΓêÜ should create inventory when none exists (2 ms)
+      ΓêÜ should update existing stock
+    checkStock
+      ΓêÜ should return true when sufficient stock available (1 ms)
+      ΓêÜ should throw when insufficient stock (3 ms)
+      ΓêÜ should throw when no inventory records found (1 ms)
+      ΓêÜ should calculate total stock across multiple warehouses (1 ms)
+    reduceStock
+      ΓêÜ should reduce stock successfully via atomic update (1 ms)
+      ΓêÜ should throw error when insufficient stock
+      ΓêÜ should throw error when no inventory found
+      ΓêÜ should fail after retries on optimistic locking conflicts (669 ms)
+    restoreStock
+      ΓêÜ should restore stock successfully (1 ms)
+      ΓêÜ should return false when no inventory found
+    updateStock
+      ΓêÜ should set stock with default SET type
+      ΓêÜ should increment stock with ADD type
+      ΓêÜ should decrement stock with SUBTRACT type
+      ΓêÜ should create inventory when not found and type is SET (1 ms)
+      ΓêÜ should throw error when inventory not found and type is not SET
+    getLowStockItems
+      ΓêÜ should return products with low stock (1 ms)
+    getInventoryStats
+      ΓêÜ should return inventory statistics with productCount
+    reserveInventory
+      ΓêÜ should reserve inventory successfully (1 ms)
+      ΓêÜ should throw error when items array is empty (1 ms)
+      ΓêÜ should throw error when items is null
+      ΓêÜ should throw error when insufficient stock for reservation (1 ms)
+    finalizeReservation
+      ΓêÜ should finalize reservation successfully (1 ms)
+      ΓêÜ should throw error when reservation not found
+    releaseReservation
+      ΓêÜ should release reservation successfully (1 ms)
+      ΓêÜ should handle missing reservation gracefully
+    getInventory
+      ΓêÜ should return all inventory items (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/pricing.service.test.js
+  Pricing Service - Unit Tests
+    getPrice
+      ΓêÜ should calculate price successfully for valid inputs (3 ms)
+      ΓêÜ should throw error for invalid price (zero) (8 ms)
+      ΓêÜ should throw error for invalid price (negative) (1 ms)
+      ΓêÜ should throw error for invalid price (null)
+      ΓêÜ should throw error for invalid quantity (zero)
+      ΓêÜ should throw error for invalid quantity (negative) (1 ms)
+      ΓêÜ should throw error for invalid quantity (null) (1 ms)
+      ΓêÜ should fetch pricing rules before calculation
+      ΓêÜ should handle bulk quantity discount (100+ units) (1 ms)
+      ΓêÜ should handle medium quantity discount (50-99 units)
+      ΓêÜ should return base price for small quantities (<50 units) (1 ms)
+      ΓêÜ should calculate discount correctly
+      ΓêÜ should handle zero discount scenario
+      ΓêÜ should handle decimal prices (1 ms)
+    calculatePrice (engine)
+      ΓêÜ should return base price when dynamic pricing is disabled
+      ΓêÜ should apply 20% discount for quantity >= 100 (1 ms)
+      ΓêÜ should apply 10% discount for quantity >= 50 and < 100
+      ΓêÜ should return base price for quantity < 50
+      ΓêÜ should handle exact boundary quantity of 50
+      ΓêÜ should handle exact boundary quantity of 100 (1 ms)
+      ΓêÜ should handle large quantities
+      ΓêÜ should handle single unit quantity
+      ΓêÜ should handle dynamic pricing flag not set
+      ΓêÜ should handle decimal base prices correctly
+
+16:21:55 [[33mwarn[39m]: Magic number validation failed {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "mimetype": "image/jpeg",
+    "actualHeader": "89504E470D0A",
+    "expectedSignatures": [
+      "FFD8FF"
+    ]
+  }
+}
+16:21:55 [[33mwarn[39m]: Magic number validation failed {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "mimetype": "image/jpeg",
+    "actualHeader": "89504E470D0A",
+    "expectedSignatures": [
+      "FFD8FF"
+    ]
+  }
+}
+16:21:55 [[31merror[39m]: Dangerous filename pattern detected {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "filename": "file<script>.jpg"
+  }
+}
+16:21:55 [[31merror[39m]: Dangerous filename pattern detected {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "filename": "con.jpg"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:21:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ enable debugging { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/fileValidation.test.js
+  File Validation Service - Unit Tests
+    validateFileUpload()
+      ΓêÜ should accept valid image file (2 ms)
+      ΓêÜ should reject file exceeding size limit (5 ms)
+      ΓêÜ should reject disallowed file type (1 ms)
+      ΓêÜ should reject blocked file extensions (2 ms)
+      ΓêÜ should validate magic numbers for images
+      ΓêÜ should detect MIME type mismatch (5 ms)
+      ΓêÜ should reject empty file (1 ms)
+      ΓêÜ should reject file with no extension
+      ΓêÜ should sanitize dangerous filenames (2 ms)
+    sanitizeFilename()
+      ΓêÜ should remove path traversal attempts
+      ΓêÜ should handle special characters
+      ΓêÜ should handle Unicode characters
+      ΓêÜ should preserve valid filename with unique prefix (1 ms)
+      ΓêÜ should handle very long filenames
+      ΓêÜ should handle edge case filenames
+    basicMalwareCheck()
+      ΓêÜ should detect suspicious file signatures (1 ms)
+      ΓêÜ should detect script injection attempts (1 ms)
+      ΓêÜ should accept normal image file (1 ms)
+      ΓêÜ should detect embedded executables in images (1 ms)
+      ΓêÜ should reject vbaProject files (2 ms)
+    Security & Edge Cases
+      ΓêÜ should handle null file (1 ms)
+      ΓêÜ should handle missing originalname (1 ms)
+      ΓêÜ should validate documents category
+      ΓêÜ should validate spreadsheets category (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/passwordPolicy.test.js
+  Password Policy Service - Unit Tests
+    validatePassword()
+      ΓêÜ should accept strong password (2 ms)
+      ΓêÜ should reject password shorter than 12 characters (7 ms)
+      ΓêÜ should reject password without uppercase letter (1 ms)
+      ΓêÜ should reject password without lowercase letter (1 ms)
+      ΓêÜ should reject password without number
+      ΓêÜ should reject password without special character
+      ΓêÜ should reject sequential characters (1 ms)
+      ΓêÜ should reject password with repeated characters (1 ms)
+    calculatePasswordStrength()
+      ΓêÜ should rate strong password as 80-100
+      ΓêÜ should rate medium password as 40-80
+      ΓêÜ should rate weak password as 0-60
+      ΓêÜ should return low score for very weak password (1 ms)
+    checkPasswordBreach()
+      ΓêÜ should return breach info object (354 ms)
+      ΓêÜ should handle API errors gracefully (33 ms)
+    validatePasswordChange()
+      ΓêÜ should accept valid password change
+      ΓêÜ should reject if new password same as old
+      ΓêÜ should reject if new password fails validation (1 ms)
+
+PASS tests/unit/permission.middleware.test.js
+  Permission Middleware - Unit Tests
+    requirePermission()
+      ΓêÜ should allow access when user has required permission (4 ms)
+      ΓêÜ should allow super admin without permission check (1 ms)
+      ΓêÜ should block access when user lacks permission (1 ms)
+      ΓêÜ should reject unauthenticated request
+      ΓêÜ should handle undefined user
+    requireAnyPermission()
+      ΓêÜ should allow access when user has one of multiple permissions (2 ms)
+      ΓêÜ should allow super admin without permission check
+      ΓêÜ should block access when user lacks all permissions (1 ms)
+      ΓêÜ should reject unauthenticated request
+      ΓêÜ should handle single permission
+      ΓêÜ should handle three or more permissions
+    requireAllPermissions()
+      ΓêÜ should allow access when user has all required permissions
+      ΓêÜ should allow super admin without permission check (1 ms)
+      ΓêÜ should block access when user lacks some permissions (1 ms)
+      ΓêÜ should reject unauthenticated request (1 ms)
+      ΓêÜ should handle single permission (1 ms)
+    requireOwnershipOr()
+      ΓêÜ should allow access when user owns the resource (3 ms)
+      ΓêÜ should allow access when user has fallback permission (1 ms)
+      ΓêÜ should allow super admin without checks (3 ms)
+      ΓêÜ should block access when user is not owner and lacks permission (1 
+ms)
+      ΓêÜ should reject unauthenticated request
+      ΓêÜ should handle missing resource
+      ΓêÜ should handle ownership with ObjectId objects
+      ΓêÜ should work without fallback permission (1 ms)
+    Edge Cases
+      ΓêÜ should handle user with undefined role (1 ms)
+      ΓêÜ should handle null permission
+      ΓêÜ should handle empty permission array (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîü auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ enable debugging { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/cart.service.test.js
+  Cart Service - Unit Tests
+    addToCart
+      ΓêÜ should add product to cart successfully (4 ms)
+      ΓêÜ should throw error for invalid product ID (5 ms)
+      ΓêÜ should throw error when quantity is less than 1 (2 ms)
+      ΓêÜ should throw error when product not found (1 ms)
+      ΓêÜ should throw error when product is not active
+      ΓêÜ should throw error when quantity is less than MOQ (1 ms)
+      ΓêÜ should throw error when quantity exceeds stock
+      ΓêÜ should add to existing cart item quantity (1 ms)
+      ΓêÜ should create new cart item when product not in cart (1 ms)
+      ΓêÜ should handle products without MOQ (1 ms)
+      ΓêÜ should adjust quantity to MOQ if below minimum after addition (1 ms)
+    getCart
+      ΓêÜ should return user cart (1 ms)
+      ΓêÜ should return null when cart does not exist
+    removeFromCart
+      ΓêÜ should remove product from cart successfully (1 ms)
+      ΓêÜ should throw error for invalid product ID
+      ΓêÜ should throw error when cart not found (1 ms)
+      ΓêÜ should handle removing non-existent product from cart
+      ΓêÜ should handle empty cart after removal
+
+PASS tests/unit/auth.middleware.test.js
+  Authentication Middleware - Unit Tests
+    protect() - Valid Authentication
+      ΓêÜ should authenticate valid JWT token and attach user to request (4 ms)
+      ΓêÜ should allow super admin during maintenance mode (1 ms)
+      ΓêÜ should handle inactive super admin users
+    protect() - Missing or Invalid Tokens
+      ΓêÜ should reject request with no authorization header (1 ms)
+      ΓêÜ should reject request with malformed authorization header
+      ΓêÜ should reject request with missing Bearer prefix
+      ΓêÜ should reject request with null token (1 ms)
+      ΓêÜ should reject request with undefined token
+      ΓêÜ should reject request with empty token
+      ΓêÜ should reject request with whitespace token (1 ms)
+    protect() - Token Verification Errors
+      ΓêÜ should reject expired JWT token (1 ms)
+      ΓêÜ should reject JWT with invalid signature
+      ΓêÜ should handle generic token verification errors
+      ΓêÜ should reject token with corrupted payload
+      ΓêÜ should reject token with null payload
+    protect() - User Validation
+      ΓêÜ should reject when user no longer exists (1 ms)
+      ΓêÜ should reject inactive user account
+      ΓêÜ should reject pending user account (1 ms)
+      ΓêÜ should block non-admin users during maintenance mode (1 ms)
+      ΓêÜ should block non-admin users during legacy maintenance mode
+    protect() - Configuration Errors
+      ΓêÜ should handle missing JWT_SECRET (1 ms)
+    protect() - Exception Handling
+      ΓêÜ should handle unexpected errors gracefully
+    authenticate() - Alias
+      ΓêÜ should be an alias for protect() (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîü auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/role.middleware.test.js
+  Role Middleware - Unit Tests
+    Single Role Authorization
+      ΓêÜ should allow admin role access (2 ms)
+      ΓêÜ should allow super admin role access (1 ms)
+      ΓêÜ should allow manager role access
+      ΓêÜ should allow customer role access
+      ΓêÜ should block customer from admin routes (1 ms)
+      ΓêÜ should block manager from super admin routes
+    Multiple Role Authorization
+      ΓêÜ should allow admin when admin or manager required (1 ms)
+      ΓêÜ should allow manager when admin or manager required
+      ΓêÜ should allow any of three roles
+      ΓêÜ should block role not in allowed list
+    Edge Cases
+      ΓêÜ should handle undefined user role
+      ΓêÜ should handle null user role (1 ms)
+      ΓêÜ should handle invalid role string
+      ΓêÜ should handle empty roles array (1 ms)
+      ΓêÜ should handle case-sensitive role comparison
+    Role Hierarchy
+      ΓêÜ should NOT allow admin automatic super admin access (1 ms)
+      ΓêÜ should require explicit role match
+    Multiple Middleware Calls
+      ΓêÜ should work correctly when called multiple times
+
+PASS tests/unit/auth.test.js
+  Authentication Service - Unit Tests
+    ΓêÜ placeholder - auth service requires integration testing (2 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γùê secrets for agents [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/user.test.js
+  User Module - Unit Tests
+    Placeholder
+      ΓêÜ should pass (3 ms)
+
+PASS tests/unit/product.test.js
+  Product Module - Unit Tests
+    Product Data Validation
+      ΓêÜ should validate required product fields (3 ms)
+      ΓêÜ should generate unique SKU for each product (1 ms)
+      ΓêÜ should handle MOQ (Minimum Order Quantity) validation (1 ms)
+      ΓêÜ should allow order quantity equal to or above MOQ
+    Product Price Calculations
+      ΓêÜ should calculate correct total price for quantity (1 ms)
+      ΓêÜ should handle bulk pricing tiers
+    Product Stock Management
+      ΓêÜ should validate stock availability (1 ms)
+      ΓêÜ should detect insufficient stock
+      ΓêÜ should calculate remaining stock after reservation
+    Product Status
+      ΓêÜ should validate active product status (1 ms)
+      ΓêÜ should handle inactive products
+    Product Category Assignment
+      ΓêÜ should have valid category reference
+    Product Vendor Assignment
+      ΓêÜ should have valid vendor reference (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ enable debugging { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ override existing { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+16:22:06 [[33mwarn[39m]: Custom error message {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Resource not found {
+  "metadata": {
+    "statusCode": 404,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Unauthorized access {
+  "metadata": {
+    "statusCode": 401,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Access forbidden {
+  "metadata": {
+    "statusCode": 403,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Cast to ObjectId failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Duplicate key error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: jwt malformed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: jwt expired {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: File too large {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Unexpected field {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Upload failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Internal database error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Detailed error message {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "stack": "Error: Detailed error message\n    at Object.<anonymous> (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\tests\\unit\\error.middleware.test.js:286:21)\n    at Promise.finally.completed (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1561:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1501:10)\n    at _callCircusTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:951:3)\n    at C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at run (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1993:21)\n    at jestAdapter (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\runner.js:111:19)\n    at runTestInternal (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:276:16)\n    at runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:344:7)\n    at Object.worker (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:498:12)",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "stack": "ValidationError: Validation failed\n    at Object.<anonymous> (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\tests\\unit\\error.middleware.test.js:300:21)\n    at Promise.finally.completed (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1561:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1501:10)\n    at _callCircusTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:951:3)\n    at C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at run (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1993:21)\n    at jestAdapter (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\runner.js:111:19)\n    at runTestInternal (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:276:16)\n    at runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:344:7)\n    at Object.worker (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:498:12)",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Unknown error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: Generic error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/products/123",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Custom error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:22:06 [[33mwarn[39m]: Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error  {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+PASS tests/unit/order.service.test.js
+  Order Service - Unit Tests
+    createOrder
+      ΓêÜ should create order successfully with valid COD data (24 ms)
+      ΓêÜ should throw error when shipping address is missing (6 ms)
+      ΓêÜ should throw error when user ID is invalid (2 ms)
+      ΓêÜ should throw error when system is in maintenance mode (2 ms)
+      ΓêÜ should throw error when COD is disabled (2 ms)
+      ΓêÜ should throw error when order cutoff time has passed (1 ms)
+      ΓêÜ should throw error when cart is empty and no items provided (1 ms)
+      ΓêÜ should throw error when using CREDIT payment and credit system is 
+disabled (1 ms)
+      ΓêÜ should handle idempotency correctly (2 ms)
+    getOrders
+      ΓêÜ should return filtered orders for regular user (1 ms)
+      ΓêÜ should return all orders for admin user (1 ms)
+    getOrderById
+      ΓêÜ should return order by ID (1 ms)
+      ΓêÜ should throw error when order not found
+    updateOrderStatus
+      ΓêÜ should update order status successfully on a valid transition
+      ΓêÜ should throw error when order not found (1 ms)
+      ΓêÜ should throw on an invalid status transition (2 ms)
+    markOrderAsFailed
+      ΓêÜ should mark order as failed and restore inventory (2 ms)
+      ΓêÜ should throw error for invalid order ID (1 ms)
+      ΓêÜ should throw error when order not found (1 ms)
+    downloadInvoice
+      ΓêÜ should generate invoice when existing invoice lacks a fileUrl (1 ms)
+
+PASS tests/unit/error.middleware.test.js
+  Error Middleware - Unit Tests
+    AppError Handling
+      ΓêÜ should handle AppError with custom status code and message (5 ms)
+      ΓêÜ should handle AppError 404 not found (1 ms)
+      ΓêÜ should handle AppError 401 unauthorized (1 ms)
+      ΓêÜ should handle AppError 403 forbidden (1 ms)
+      ΓêÜ should include timestamp in error response (1 ms)
+    Mongoose Errors
+      ΓêÜ should handle Mongoose CastError (invalid ObjectId) (2 ms)
+      ΓêÜ should handle Mongoose duplicate key error (code 11000) (1 ms)
+      ΓêÜ should handle Mongoose ValidationError (1 ms)
+    JWT Errors
+      ΓêÜ should handle JsonWebTokenError (1 ms)
+      ΓêÜ should handle TokenExpiredError (1 ms)
+    Multer File Upload Errors
+      ΓêÜ should handle LIMIT_FILE_SIZE error (1 ms)
+      ΓêÜ should handle LIMIT_UNEXPECTED_FILE error
+      ΓêÜ should handle generic MulterError
+    Production vs Development Mode
+      ΓêÜ should hide internal error details in production (1 ms)
+      ΓêÜ should show error details in development (3 ms)
+      ΓêÜ should include validation details in development mode (1 ms)
+      ΓêÜ should NOT include validation details in production mode
+    Default Error Handling
+      ΓêÜ should default to 500 status code for unknown errors (1 ms)
+      ΓêÜ should handle errors without statusCode property
+      ΓêÜ should handle errors without message property (1 ms)
+    Response Format
+      ΓêÜ should include success: false in all error responses (1 ms)
+      ΓêÜ should include data: null in error responses
+      ΓêÜ should include request path in error response (1 ms)
+      ΓêÜ should include timestamp in error response
+    Edge Cases
+      ΓêÜ should handle null error object (1 ms)
+      ΓêÜ should handle undefined error object
+      ΓêÜ should handle error with custom properties (1 ms)
+      ΓêÜ should handle very long error messages
+
+A worker process has failed to exit gracefully and has been force exited. This 
+is likely caused by tests leaking due to improper teardown. Try running with 
+--detectOpenHandles to find leaks. Active timers can also cause this, ensure 
+that .unref() was called on them.
+Test Suites: 1 failed, 16 passed, 17 total
+Tests:       26 failed, 323 passed, 349 total
+Snapshots:   0 total
+Time:        23.318 s
+Ran all test suites matching tests/unit.

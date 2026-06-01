@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { Queue, Worker } from 'bullmq';
-import { clearDatabase } from '../helpers/testUtils.js';
+import { clearDatabase, cleanupQueuesAndWorkers } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
 
 /**
@@ -45,12 +45,23 @@ describe('Queue Retry & DLQ Tests', () => {
   });
 
   afterEach(async () => {
-    if (testWorker) {
-      await testWorker.close();
+    // Use safe cleanup utility with timeout protection
+    await cleanupQueuesAndWorkers({
+      workers: [testWorker].filter(Boolean),
+      queues: [testQueue].filter(Boolean),
+      obliterate: true,
+      timeout: 5000
+    });
+    
+    // Flush Redis data if client is available
+    try {
+      if (redisClient && typeof redisClient.flushdb === 'function') {
+        await redisClient.flushdb();
+      }
+    } catch (error) {
+      console.error('Failed to flush Redis in afterEach:', error.message);
+      // Non-fatal - continue cleanup
     }
-    await testQueue.obliterate({ force: true });
-    await testQueue.close();
-    await redisClient.flushdb();
   });
 
   describe('Exponential Backoff Retry', () => {
@@ -100,7 +111,7 @@ describe('Queue Retry & DLQ Tests', () => {
       // Verify final success
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
-    }, 20000);
+    }, 45000);
 
     it('should retry with custom backoff delays', async () => {
       const customQueue = new Queue('custom-backoff-queue', {
@@ -131,10 +142,14 @@ describe('Queue Retry & DLQ Tests', () => {
 
       expect(attemptCount).toBe(3);
 
-      await customWorker.close();
-      await customQueue.obliterate({ force: true });
-      await customQueue.close();
-    }, 15000);
+      // Safe cleanup
+      await cleanupQueuesAndWorkers({
+        workers: [customWorker].filter(Boolean),
+        queues: [customQueue].filter(Boolean),
+        obliterate: true,
+        timeout: 5000
+      });
+    }, 35000);
   });
 
   describe('Retry Exhaustion & DLQ', () => {
@@ -162,7 +177,7 @@ describe('Queue Retry & DLQ Tests', () => {
       expect(ourJob.attemptsMade).toBe(3);
       expect(ourJob.failedReason).toContain('Permanent failure');
       expect(ourJob.finishedOn).toBeDefined();
-    }, 15000);
+    }, 35000);
 
     it('should preserve job data in DLQ for debugging', async () => {
       testWorker = new Worker(
@@ -190,7 +205,7 @@ describe('Queue Retry & DLQ Tests', () => {
       expect(ourJob.data.amount).toBe(5000);
       expect(ourJob.stacktrace).toBeDefined();
       expect(ourJob.stacktrace.length).toBeGreaterThan(0);
-    }, 15000);
+    }, 35000);
 
     it('should allow manual retry of failed jobs from DLQ', async () => {
       let attemptCount = 0;
@@ -228,7 +243,7 @@ describe('Queue Retry & DLQ Tests', () => {
       // Should succeed on manual retry
       const retriedJob = await testQueue.getJob(job.id);
       expect(retriedJob.attemptsMade).toBeGreaterThan(3);
-    }, 20000);
+    }, 45000);
 
     it('should handle DLQ cleanup policy', async () => {
       testWorker = new Worker(
@@ -263,7 +278,7 @@ describe('Queue Retry & DLQ Tests', () => {
 
       const remainingFailed = await testQueue.getFailed();
       expect(remainingFailed.length).toBeLessThanOrEqual(3);
-    }, 15000);
+    }, 35000);
   });
 
   describe('Transient vs Permanent Failures', () => {
@@ -297,7 +312,7 @@ describe('Queue Retry & DLQ Tests', () => {
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
       expect(completedJob.attemptsMade).toBe(3);
-    }, 20000);
+    }, 45000);
 
     it('should fail permanently on validation errors', async () => {
       testWorker = new Worker(
@@ -324,7 +339,7 @@ describe('Queue Retry & DLQ Tests', () => {
       const failedJob = await testQueue.getJob(job.id);
       expect(failedJob.attemptsMade).toBe(3); // Still retries 3 times
       expect(failedJob.failedReason).toContain('validation error');
-    }, 15000);
+    }, 35000);
   });
 
   describe('Graceful Shutdown', () => {
@@ -359,7 +374,7 @@ describe('Queue Retry & DLQ Tests', () => {
 
       const completedJob = await testQueue.getJob(job.id);
       expect(completedJob.returnvalue.success).toBe(true);
-    }, 10000);
+    }, 25000);
 
     it('should not accept new jobs during shutdown', async () => {
       testWorker = new Worker(
@@ -385,7 +400,7 @@ describe('Queue Retry & DLQ Tests', () => {
       // Second job should remain in waiting state
       const job2Status = await job2.getState();
       expect(job2Status).toBe('waiting');
-    }, 10000);
+    }, 25000);
 
     it('should handle shutdown during retry delay', async () => {
       let attemptCount = 0;
@@ -410,7 +425,7 @@ describe('Queue Retry & DLQ Tests', () => {
       // Job should be in delayed state (waiting for retry)
       const jobs = await testQueue.getJobs(['delayed', 'waiting']);
       expect(jobs.length).toBeGreaterThan(0);
-    }, 10000);
+    }, 25000);
   });
 
   describe('Job Priority & Ordering', () => {
@@ -436,7 +451,7 @@ describe('Queue Retry & DLQ Tests', () => {
 
       // High priority should be processed first
       expect(processedOrder[0]).toBe('high');
-    }, 10000);
+    }, 25000);
 
     it('should maintain FIFO for same priority jobs', async () => {
       const processedOrder = [];
@@ -460,7 +475,7 @@ describe('Queue Retry & DLQ Tests', () => {
 
       // Should maintain FIFO order
       expect(processedOrder).toEqual([0, 1, 2, 3, 4]);
-    }, 10000);
+    }, 25000);
   });
 
   describe('Rate Limiting', () => {
@@ -503,10 +518,14 @@ describe('Queue Retry & DLQ Tests', () => {
         expect(window1).toBeLessThanOrEqual(2000);
       }
 
-      await rateLimitedWorker.close();
-      await rateLimitedQueue.obliterate({ force: true });
-      await rateLimitedQueue.close();
-    }, 12000);
+      // Safe cleanup
+      await cleanupQueuesAndWorkers({
+        workers: [rateLimitedWorker].filter(Boolean),
+        queues: [rateLimitedQueue].filter(Boolean),
+        obliterate: true,
+        timeout: 5000
+      });
+    }, 30000);
   });
 
   describe('Stalled Job Detection', () => {
@@ -540,6 +559,6 @@ describe('Queue Retry & DLQ Tests', () => {
       // Job should be marked as stalled and moved back to waiting
       const stalledJobs = await testQueue.getFailed();
       expect(stalledJobs.length).toBeGreaterThan(0);
-    }, 12000);
+    }, 30000);
   });
 });

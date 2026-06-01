@@ -1,0 +1,1148 @@
+﻿
+> b2b-backend@1.0.0 test
+> cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.json tests/unit --testPathIgnorePatterns=queue|worker|redis|rate|payment.service|fraudDetection --maxWorkers=2 --coverage=false
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γùê secrets for agents [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+node.exe : (node:22740) ExperimentalWarning: VM Modules is an experimental 
+feature and might change at any time
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:22740) Ex...nge at any time 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31764) ExperimentalWarning: VM Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/unit/inventory.service.test.js
+  Inventory Service - Unit Tests
+    addStock
+      ΓêÜ should create inventory when none exists (9 ms)
+      ΓêÜ should update existing stock (1 ms)
+    checkStock
+      ΓêÜ should return true when sufficient stock available (2 ms)
+      ΓêÜ should throw when insufficient stock (4 ms)
+      ΓêÜ should throw when no inventory records found (1 ms)
+      ΓêÜ should calculate total stock across multiple warehouses (1 ms)
+    reduceStock
+      ΓêÜ should reduce stock successfully via atomic update (1 ms)
+      ΓêÜ should throw error when insufficient stock
+      ΓêÜ should throw error when no inventory found (1 ms)
+      ΓêÜ should fail after retries on optimistic locking conflicts (647 ms)
+    restoreStock
+      ΓêÜ should restore stock successfully (1 ms)
+      ΓêÜ should return false when no inventory found
+    updateStock
+      ΓêÜ should set stock with default SET type (1 ms)
+      ΓêÜ should increment stock with ADD type
+      ΓêÜ should decrement stock with SUBTRACT type (1 ms)
+      ΓêÜ should create inventory when not found and type is SET
+      ΓêÜ should throw error when inventory not found and type is not SET (1 
+ms)
+    getLowStockItems
+      ΓêÜ should return products with low stock (1 ms)
+    getInventoryStats
+      ΓêÜ should return inventory statistics with productCount (1 ms)
+    reserveInventory
+      ΓêÜ should reserve inventory successfully (1 ms)
+      ΓêÜ should throw error when items array is empty
+      ΓêÜ should throw error when items is null (1 ms)
+      ΓêÜ should throw error when insufficient stock for reservation
+    finalizeReservation
+      ΓêÜ should finalize reservation successfully (1 ms)
+      ΓêÜ should throw error when reservation not found
+    releaseReservation
+      ΓêÜ should release reservation successfully (1 ms)
+      ΓêÜ should handle missing reservation gracefully
+    getInventory
+      ΓêÜ should return all inventory items (1 ms)
+
+16:32:49 [[32minfo[39m]: Login with backup code {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ override existing { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+16:32:50 [[32minfo[39m]: Login with backup code {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+PASS tests/unit/passwordPolicy.test.js
+  Password Policy Service - Unit Tests
+    validatePassword()
+      ΓêÜ should accept strong password (3 ms)
+      ΓêÜ should reject password shorter than 12 characters (9 ms)
+      ΓêÜ should reject password without uppercase letter (2 ms)
+      ΓêÜ should reject password without lowercase letter (1 ms)
+      ΓêÜ should reject password without number (1 ms)
+      ΓêÜ should reject password without special character (1 ms)
+      ΓêÜ should reject sequential characters (1 ms)
+      ΓêÜ should reject password with repeated characters (1 ms)
+    calculatePasswordStrength()
+      ΓêÜ should rate strong password as 80-100 (1 ms)
+      ΓêÜ should rate medium password as 40-80 (1 ms)
+      ΓêÜ should rate weak password as 0-60 (1 ms)
+      ΓêÜ should return low score for very weak password
+    checkPasswordBreach()
+      ΓêÜ should return breach info object (89 ms)
+      ΓêÜ should handle API errors gracefully (28 ms)
+    validatePasswordChange()
+      ΓêÜ should accept valid password change (1 ms)
+      ΓêÜ should reject if new password same as old (1 ms)
+      ΓêÜ should reject if new password fails validation (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîü auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/twoFactorAuth.test.js (9.165 s)
+  Two-Factor Authentication Service - Unit Tests
+    generateSecret()
+      ΓêÜ should generate a valid secret (8 ms)
+      ΓêÜ should generate different secrets each time (1 ms)
+      ΓêÜ should generate secret with email parameter (1 ms)
+    generateQRCode()
+      ΓêÜ should generate QR code data URL (502 ms)
+      ΓêÜ should handle empty email/secret (330 ms)
+    verifyToken()
+      ΓêÜ should verify valid TOTP token (3 ms)
+      ΓêÜ should reject invalid token (1 ms)
+      ΓêÜ should reject expired token (1 ms)
+      ΓêÜ should reject malformed token (1 ms)
+      ΓêÜ should handle empty token
+      ΓêÜ should handle null token (1 ms)
+      ΓêÜ should allow window tolerance for time drift
+    generateBackupCodes()
+      ΓêÜ should generate 10 backup codes by default (1 ms)
+      ΓêÜ should generate requested number of codes
+      ΓêÜ should generate unique codes (1 ms)
+      ΓêÜ should generate codes in correct format (1 ms)
+      ΓêÜ should generate different codes on each call (1 ms)
+    validateLogin2FA()
+      ΓêÜ should validate correct TOTP token (1 ms)
+      ΓêÜ should validate backup code (1037 ms)
+      ΓêÜ should identify used backup code index (1109 ms)
+      ΓêÜ should reject invalid token (1710 ms)
+      ΓêÜ should reject empty token
+    Token Generation
+      ΓêÜ should generate 6-digit token via authenticator (1 ms)
+      ΓêÜ should generate valid token format over time (101 ms)
+    Security
+      ΓêÜ should verify token independently
+      ΓêÜ should reject invalid tokens consistently (1 ms)
+    Edge Cases
+      ΓêÜ should handle invalid secret format gracefully
+      ΓêÜ should handle very long tokens
+      ΓêÜ should handle special characters in token
+      ΓêÜ should handle concurrent verification attempts
+
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.email",
+        "type": "any.required"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.age",
+        "type": "number.base"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.email",
+        "type": "string.email"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.quantity",
+        "type": "number.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.limit",
+        "type": "number.max"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.status",
+        "type": "any.only"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.name",
+        "type": "string.empty"
+      },
+      {
+        "field": "body.email",
+        "type": "string.email"
+      },
+      {
+        "field": "body.age",
+        "type": "number.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.items",
+        "type": "array.min"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.address.city",
+        "type": "any.required"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:53 [[33mwarn[39m]: Validation failed {
+  "metadata": {
+    "path": "/api/test",
+    "method": "POST",
+    "errors": [
+      {
+        "field": "body.value",
+        "type": "number.base"
+      }
+    ],
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/validate.middleware.test.js
+  Validation Middleware - Unit Tests
+    Successful Validation
+      ΓêÜ should pass validation with valid data (8 ms)
+      ΓêÜ should transform stringified boolean "true" to true (2 ms)
+      ΓêÜ should transform stringified boolean "false" to false (2 ms)
+      ΓêÜ should convert numeric strings to numbers (1 ms)
+      ΓêÜ should NOT convert ID fields to numbers (1 ms)
+      ΓêÜ should NOT convert phone numbers to numbers (1 ms)
+      ΓêÜ should validate query parameters (2 ms)
+      ΓêÜ should validate route parameters (1 ms)
+      ΓêÜ should handle nested object validation (2 ms)
+      ΓêÜ should handle array validation (4 ms)
+    Validation Failures
+      ΓêÜ should reject missing required field (9 ms)
+      ΓêÜ should reject invalid data type (1 ms)
+      ΓêÜ should reject invalid email format (3 ms)
+      ΓêÜ should reject value below minimum (1 ms)
+      ΓêÜ should reject value above maximum (2 ms)
+      ΓêÜ should reject invalid enum value (3 ms)
+      ΓêÜ should aggregate multiple validation errors (3 ms)
+      ΓêÜ should reject empty array when minimum items required (1 ms)
+      ΓêÜ should reject nested object validation failures (2 ms)
+    Edge Cases
+      ΓêÜ should handle empty request body
+      ΓêÜ should handle null body values (1 ms)
+      ΓêÜ should handle empty string (1 ms)
+      ΓêÜ should NOT convert empty numeric string (1 ms)
+      ΓêÜ should handle pincode as string (1 ms)
+      ΓêÜ should allow unknown fields with allowUnknown option
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+16:32:54 [[33mwarn[39m]: Custom error message {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Resource not found {
+  "metadata": {
+    "statusCode": 404,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Unauthorized access {
+  "metadata": {
+    "statusCode": 401,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Access forbidden {
+  "metadata": {
+    "statusCode": 403,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Cast to ObjectId failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Duplicate key error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: jwt malformed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: jwt expired {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: File too large {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Unexpected field {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Upload failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Internal database error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Detailed error message {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "stack": "Error: Detailed error message\n    at Object.<anonymous> (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\tests\\unit\\error.middleware.test.js:286:21)\n    at Promise.finally.completed (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1561:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1501:10)\n    at _callCircusTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:951:3)\n    at C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at run (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1993:21)\n    at jestAdapter (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\runner.js:111:19)\n    at runTestInternal (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:276:16)\n    at runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:344:7)\n    at Object.worker (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:498:12)",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "stack": "ValidationError: Validation failed\n    at Object.<anonymous> (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\tests\\unit\\error.middleware.test.js:300:21)\n    at Promise.finally.completed (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1561:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1501:10)\n    at _callCircusTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:951:3)\n    at C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:861:11)\n    at run (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1993:21)\n    at jestAdapter (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-circus\\build\\runner.js:111:19)\n    at runTestInternal (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:276:16)\n    at runTest (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:344:7)\n    at Object.worker (C:\\Users\\rdodla\\Mokshith-Entreprises\\b2b-backend\\node_modules\\jest-runner\\build\\testWorker.js:498:12)",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Validation failed {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Unknown error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: Generic error {
+  "metadata": {
+    "statusCode": 500,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/products/123",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Test error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[31merror[39m]: [object Object] {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Custom error {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:54 [[33mwarn[39m]: Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error Error  {
+  "metadata": {
+    "statusCode": 400,
+    "path": "/api/test",
+    "method": "POST",
+    "ip": "127.0.0.1",
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+PASS tests/unit/error.middleware.test.js
+  Error Middleware - Unit Tests
+    AppError Handling
+      ΓêÜ should handle AppError with custom status code and message (9 ms)
+      ΓêÜ should handle AppError 404 not found (2 ms)
+      ΓêÜ should handle AppError 401 unauthorized (1 ms)
+      ΓêÜ should handle AppError 403 forbidden (1 ms)
+      ΓêÜ should include timestamp in error response (1 ms)
+    Mongoose Errors
+      ΓêÜ should handle Mongoose CastError (invalid ObjectId) (1 ms)
+      ΓêÜ should handle Mongoose duplicate key error (code 11000) (2 ms)
+      ΓêÜ should handle Mongoose ValidationError (1 ms)
+    JWT Errors
+      ΓêÜ should handle JsonWebTokenError (1 ms)
+      ΓêÜ should handle TokenExpiredError (2 ms)
+    Multer File Upload Errors
+      ΓêÜ should handle LIMIT_FILE_SIZE error (1 ms)
+      ΓêÜ should handle LIMIT_UNEXPECTED_FILE error
+      ΓêÜ should handle generic MulterError (1 ms)
+    Production vs Development Mode
+      ΓêÜ should hide internal error details in production
+      ΓêÜ should show error details in development (5 ms)
+      ΓêÜ should include validation details in development mode (3 ms)
+      ΓêÜ should NOT include validation details in production mode (2 ms)
+    Default Error Handling
+      ΓêÜ should default to 500 status code for unknown errors (2 ms)
+      ΓêÜ should handle errors without statusCode property (1 ms)
+      ΓêÜ should handle errors without message property (1 ms)
+    Response Format
+      ΓêÜ should include success: false in all error responses (1 ms)
+      ΓêÜ should include data: null in error responses
+      ΓêÜ should include request path in error response
+      ΓêÜ should include timestamp in error response
+    Edge Cases
+      ΓêÜ should handle null error object (1 ms)
+      ΓêÜ should handle undefined error object (2 ms)
+      ΓêÜ should handle error with custom properties (1 ms)
+      ΓêÜ should handle very long error messages (1 ms)
+
+16:32:55 [[33mwarn[39m]: Magic number validation failed {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "mimetype": "image/jpeg",
+    "actualHeader": "89504E470D0A",
+    "expectedSignatures": [
+      "FFD8FF"
+    ]
+  }
+}
+16:32:55 [[33mwarn[39m]: Magic number validation failed {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "mimetype": "image/jpeg",
+    "actualHeader": "89504E470D0A",
+    "expectedSignatures": [
+      "FFD8FF"
+    ]
+  }
+}
+16:32:55 [[31merror[39m]: Dangerous filename pattern detected {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "filename": "file<script>.jpg"
+  }
+}
+16:32:55 [[31merror[39m]: Dangerous filename pattern detected {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0",
+    "filename": "con.jpg"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+16:32:55 [[31merror[39m]: Suspicious content detected in file upload {
+  "metadata": {
+    "service": "b2b-backend",
+    "environment": "test",
+    "version": "1.0.0"
+  }
+}
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γùê encrypted .env [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/fileValidation.test.js
+  File Validation Service - Unit Tests
+    validateFileUpload()
+      ΓêÜ should accept valid image file (2 ms)
+      ΓêÜ should reject file exceeding size limit (7 ms)
+      ΓêÜ should reject disallowed file type (1 ms)
+      ΓêÜ should reject blocked file extensions (2 ms)
+      ΓêÜ should validate magic numbers for images (1 ms)
+      ΓêÜ should detect MIME type mismatch (4 ms)
+      ΓêÜ should reject empty file (1 ms)
+      ΓêÜ should reject file with no extension (1 ms)
+      ΓêÜ should sanitize dangerous filenames (2 ms)
+    sanitizeFilename()
+      ΓêÜ should remove path traversal attempts (2 ms)
+      ΓêÜ should handle special characters (1 ms)
+      ΓêÜ should handle Unicode characters (1 ms)
+      ΓêÜ should preserve valid filename with unique prefix (1 ms)
+      ΓêÜ should handle very long filenames (1 ms)
+      ΓêÜ should handle edge case filenames
+    basicMalwareCheck()
+      ΓêÜ should detect suspicious file signatures (2 ms)
+      ΓêÜ should detect script injection attempts (3 ms)
+      ΓêÜ should accept normal image file
+      ΓêÜ should detect embedded executables in images (1 ms)
+      ΓêÜ should reject vbaProject files (2 ms)
+    Security & Edge Cases
+      ΓêÜ should handle null file (1 ms)
+      ΓêÜ should handle missing originalname (1 ms)
+      ΓêÜ should validate documents category
+      ΓêÜ should validate spreadsheets category
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ override existing { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/order.service.test.js
+  Order Service - Unit Tests
+    createOrder
+      ΓêÜ should create order successfully with valid COD data (21 ms)
+      ΓêÜ should throw error when shipping address is missing (5 ms)
+      ΓêÜ should throw error when user ID is invalid (1 ms)
+      ΓêÜ should throw error when system is in maintenance mode (1 ms)
+      ΓêÜ should throw error when COD is disabled
+      ΓêÜ should throw error when order cutoff time has passed (1 ms)
+      ΓêÜ should throw error when cart is empty and no items provided
+      ΓêÜ should throw error when using CREDIT payment and credit system is 
+disabled (1 ms)
+      ΓêÜ should handle idempotency correctly (2 ms)
+    getOrders
+      ΓêÜ should return filtered orders for regular user (2 ms)
+      ΓêÜ should return all orders for admin user
+    getOrderById
+      ΓêÜ should return order by ID (1 ms)
+      ΓêÜ should throw error when order not found (1 ms)
+    updateOrderStatus
+      ΓêÜ should update order status successfully on a valid transition
+      ΓêÜ should throw error when order not found (1 ms)
+      ΓêÜ should throw on an invalid status transition (2 ms)
+    markOrderAsFailed
+      ΓêÜ should mark order as failed and restore inventory (1 ms)
+      ΓêÜ should throw error for invalid order ID (1 ms)
+      ΓêÜ should throw error when order not found (1 ms)
+    downloadInvoice
+      ΓêÜ should generate invoice when existing invoice lacks a fileUrl (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/user.test.js
+  User Module - Unit Tests
+    Placeholder
+      ΓêÜ should pass (2 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ enable debugging { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/product.test.js
+  Product Module - Unit Tests
+    Product Data Validation
+      ΓêÜ should validate required product fields (4 ms)
+      ΓêÜ should generate unique SKU for each product (1 ms)
+      ΓêÜ should handle MOQ (Minimum Order Quantity) validation (1 ms)
+      ΓêÜ should allow order quantity equal to or above MOQ
+    Product Price Calculations
+      ΓêÜ should calculate correct total price for quantity (1 ms)
+      ΓêÜ should handle bulk pricing tiers
+    Product Stock Management
+      ΓêÜ should validate stock availability
+      ΓêÜ should detect insufficient stock
+      ΓêÜ should calculate remaining stock after reservation
+    Product Status
+      ΓêÜ should validate active product status (1 ms)
+      ΓêÜ should handle inactive products
+    Product Category Assignment
+      ΓêÜ should have valid category reference
+    Product Vendor Assignment
+      ΓêÜ should have valid vendor reference (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/role.middleware.test.js
+  Role Middleware - Unit Tests
+    Single Role Authorization
+      ΓêÜ should allow admin role access (3 ms)
+      ΓêÜ should allow super admin role access (1 ms)
+      ΓêÜ should allow manager role access
+      ΓêÜ should allow customer role access (1 ms)
+      ΓêÜ should block customer from admin routes (1 ms)
+      ΓêÜ should block manager from super admin routes (1 ms)
+    Multiple Role Authorization
+      ΓêÜ should allow admin when admin or manager required
+      ΓêÜ should allow manager when admin or manager required (1 ms)
+      ΓêÜ should allow any of three roles
+      ΓêÜ should block role not in allowed list
+    Edge Cases
+      ΓêÜ should handle undefined user role
+      ΓêÜ should handle null user role
+      ΓêÜ should handle invalid role string (1 ms)
+      ΓêÜ should handle empty roles array
+      ΓêÜ should handle case-sensitive role comparison (1 ms)
+    Role Hierarchy
+      ΓêÜ should NOT allow admin automatic super admin access
+      ΓêÜ should require explicit role match
+    Multiple Middleware Calls
+      ΓêÜ should work correctly when called multiple times (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γùê encrypted .env [www.dotenvx.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/auth.middleware.test.js
+  Authentication Middleware - Unit Tests
+    protect() - Valid Authentication
+      ΓêÜ should authenticate valid JWT token and attach user to request (4 ms)
+      ΓêÜ should allow super admin during maintenance mode (1 ms)
+      ΓêÜ should handle inactive super admin users (1 ms)
+    protect() - Missing or Invalid Tokens
+      ΓêÜ should reject request with no authorization header (1 ms)
+      ΓêÜ should reject request with malformed authorization header (1 ms)
+      ΓêÜ should reject request with missing Bearer prefix
+      ΓêÜ should reject request with null token (1 ms)
+      ΓêÜ should reject request with undefined token
+      ΓêÜ should reject request with empty token (1 ms)
+      ΓêÜ should reject request with whitespace token (1 ms)
+    protect() - Token Verification Errors
+      ΓêÜ should reject expired JWT token
+      ΓêÜ should reject JWT with invalid signature (1 ms)
+      ΓêÜ should handle generic token verification errors (1 ms)
+      ΓêÜ should reject token with corrupted payload
+      ΓêÜ should reject token with null payload (1 ms)
+    protect() - User Validation
+      ΓêÜ should reject when user no longer exists (1 ms)
+      ΓêÜ should reject inactive user account
+      ΓêÜ should reject pending user account (1 ms)
+      ΓêÜ should block non-admin users during maintenance mode (1 ms)
+      ΓêÜ should block non-admin users during legacy maintenance mode
+    protect() - Configuration Errors
+      ΓêÜ should handle missing JWT_SECRET (2 ms)
+    protect() - Exception Handling
+      ΓêÜ should handle unexpected errors gracefully
+    authenticate() - Alias
+      ΓêÜ should be an alias for protect()
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ suppress logs { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/cart.service.test.js
+  Cart Service - Unit Tests
+    addToCart
+      ΓêÜ should add product to cart successfully (2 ms)
+      ΓêÜ should throw error for invalid product ID (6 ms)
+      ΓêÜ should throw error when quantity is less than 1 (1 ms)
+      ΓêÜ should throw error when product not found (1 ms)
+      ΓêÜ should throw error when product is not active (1 ms)
+      ΓêÜ should throw error when quantity is less than MOQ
+      ΓêÜ should throw error when quantity exceeds stock (1 ms)
+      ΓêÜ should add to existing cart item quantity (1 ms)
+      ΓêÜ should create new cart item when product not in cart (1 ms)
+      ΓêÜ should handle products without MOQ
+      ΓêÜ should adjust quantity to MOQ if below minimum after addition (1 ms)
+    getCart
+      ΓêÜ should return user cart (1 ms)
+      ΓêÜ should return null when cart does not exist
+    removeFromCart
+      ΓêÜ should remove product from cart successfully (1 ms)
+      ΓêÜ should throw error for invalid product ID (1 ms)
+      ΓêÜ should throw error when cart not found (1 ms)
+      ΓêÜ should handle removing non-existent product from cart
+      ΓêÜ should handle empty cart after removal (1 ms)
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîÿ override existing { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/pricing.service.test.js
+  Pricing Service - Unit Tests
+    getPrice
+      ΓêÜ should calculate price successfully for valid inputs (2 ms)
+      ΓêÜ should throw error for invalid price (zero) (4 ms)
+      ΓêÜ should throw error for invalid price (negative)
+      ΓêÜ should throw error for invalid price (null) (1 ms)
+      ΓêÜ should throw error for invalid quantity (zero) (1 ms)
+      ΓêÜ should throw error for invalid quantity (negative) (1 ms)
+      ΓêÜ should throw error for invalid quantity (null) (1 ms)
+      ΓêÜ should fetch pricing rules before calculation
+      ΓêÜ should handle bulk quantity discount (100+ units)
+      ΓêÜ should handle medium quantity discount (50-99 units) (1 ms)
+      ΓêÜ should return base price for small quantities (<50 units)
+      ΓêÜ should calculate discount correctly
+      ΓêÜ should handle zero discount scenario
+      ΓêÜ should handle decimal prices (1 ms)
+    calculatePrice (engine)
+      ΓêÜ should return base price when dynamic pricing is disabled (1 ms)
+      ΓêÜ should apply 20% discount for quantity >= 100
+      ΓêÜ should apply 10% discount for quantity >= 50 and < 100
+      ΓêÜ should return base price for quantity < 50
+      ΓêÜ should handle exact boundary quantity of 50 (1 ms)
+      ΓêÜ should handle exact boundary quantity of 100
+      ΓêÜ should handle large quantities
+      ΓêÜ should handle single unit quantity
+      ΓêÜ should handle dynamic pricing flag not set
+      ΓêÜ should handle decimal base prices correctly
+
+  console.log
+    Γùç injected env (0) from .env.test // tip: Γîü auth for agents [www.vestauth.com]
+
+      at _log (node_modules/dotenv/lib/main.js:131:11)
+
+  console.log
+    ≡ƒº¬ Test environment initialized: { NODE_ENV: 'test', ENABLE_QUEUE: 'false' }
+
+      at tests/setup.js:30:9
+
+PASS tests/unit/permission.middleware.test.js
+  Permission Middleware - Unit Tests
+    requirePermission()
+      ΓêÜ should allow access when user has required permission (5 ms)
+      ΓêÜ should allow super admin without permission check (1 ms)
+      ΓêÜ should block access when user lacks permission (1 ms)
+      ΓêÜ should reject unauthenticated request (1 ms)
+      ΓêÜ should handle undefined user (1 ms)
+    requireAnyPermission()
+      ΓêÜ should allow access when user has one of multiple permissions (2 ms)
+      ΓêÜ should allow super admin without permission check (1 ms)
+      ΓêÜ should block access when user lacks all permissions (1 ms)
+      ΓêÜ should reject unauthenticated request (1 ms)
+      ΓêÜ should handle single permission
+      ΓêÜ should handle three or more permissions (1 ms)
+    requireAllPermissions()
+      ΓêÜ should allow access when user has all required permissions
+      ΓêÜ should allow super admin without permission check
+      ΓêÜ should block access when user lacks some permissions (1 ms)
+      ΓêÜ should reject unauthenticated request (1 ms)
+      ΓêÜ should handle single permission (1 ms)
+    requireOwnershipOr()
+      ΓêÜ should allow access when user owns the resource (1 ms)
+      ΓêÜ should allow access when user has fallback permission
+      ΓêÜ should allow super admin without checks (1 ms)
+      ΓêÜ should block access when user is not owner and lacks permission
+      ΓêÜ should reject unauthenticated request (1 ms)
+      ΓêÜ should handle missing resource
+      ΓêÜ should handle ownership with ObjectId objects (1 ms)
+      ΓêÜ should work without fallback permission
+    Edge Cases
+      ΓêÜ should handle user with undefined role (1 ms)
+      ΓêÜ should handle null permission
+      ΓêÜ should handle empty permission array (1 ms)
+
+PASS tests/unit/auth.test.js
+  Authentication Service - Unit Tests
+    ΓêÜ placeholder - auth service requires integration testing (1 ms)
+
+Test Suites: 15 passed, 15 total
+Tests:       297 passed, 297 total
+Snapshots:   0 total
+Time:        23.567 s, estimated 26 s
+Ran all test suites matching tests/unit.

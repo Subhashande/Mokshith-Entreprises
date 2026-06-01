@@ -8,6 +8,7 @@ import Product from '../../src/modules/product/product.model.js';
 import Payment from '../../src/modules/payment/payment.model.js';
 import { clearDatabase } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 /**
  * 🔒 CRITICAL: Timeout Scenario Tests
@@ -29,7 +30,7 @@ describe('Timeout Scenario Tests', () => {
       name: 'Timeout Test User',
       email: 'timeout@test.com',
       password: 'Test@1234',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });

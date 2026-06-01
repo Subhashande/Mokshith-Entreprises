@@ -6,8 +6,9 @@ import Payment from '../../src/modules/payment/payment.model.js';
 import User from '../../src/modules/user/user.model.js';
 import Product from '../../src/modules/product/product.model.js';
 import Inventory from '../../src/modules/inventory/inventory.model.js';
-import { clearDatabase } from '../helpers/testUtils.js';
+import { clearDatabase, cleanupQueuesAndWorkers } from '../helpers/testUtils.js';
 import { redisClient } from '../../src/config/redis.js';
+import { ROLES } from '../../src/constants/roles.js';
 
 /**
  * 🔒 CRITICAL: Worker Job Processing & Crash Recovery Tests
@@ -42,7 +43,7 @@ describe('Worker Job Processing Tests', () => {
       name: 'Worker Test User',
       email: 'worker@test.com',
       password: 'Test@1234',
-      role: 'USER',
+      role: ROLES.B2B_CUSTOMER,
       mobile: '9876543210',
       status: 'ACTIVE',
     });
@@ -90,12 +91,23 @@ describe('Worker Job Processing Tests', () => {
   });
 
   afterEach(async () => {
-    // Cleanup queues
-    await postPaymentQueue.obliterate({ force: true });
-    await postOrderQueue.obliterate({ force: true });
-    await postPaymentQueue.close();
-    await postOrderQueue.close();
-    await redisClient.flushdb();
+    // Use safe cleanup utility with timeout protection
+    await cleanupQueuesAndWorkers({
+      queues: [postPaymentQueue, postOrderQueue].filter(Boolean),
+      workers: [], // No workers created in beforeEach
+      obliterate: true,
+      timeout: 5000
+    });
+    
+    // Flush Redis data if client is available
+    try {
+      if (redisClient && typeof redisClient.flushdb === 'function') {
+        await redisClient.flushdb();
+      }
+    } catch (error) {
+      console.error('Failed to flush Redis in afterEach:', error.message);
+      // Non-fatal - continue cleanup
+    }
   });
 
   describe('Post-Payment Worker', () => {
