@@ -1,6 +1,7 @@
 import * as repo from './credit.repository.js';
 import AppError from '../../errors/AppError.js';
 import { fetchSetting } from '../settings/settings.service.js';
+import { logger } from '../../config/logger.js';
 
 // 🆕 Create Credit Account
 export const createCreditAccount = async (userId, limit) => {
@@ -113,7 +114,7 @@ export const getCredit = async (userId) => {
   
   // 🔥 Auto-create credit account if not exists (demo purposes)
   if (!credit) {
-    console.log(`Auto-creating credit account for user: ${userId}`);
+    logger.info(`Auto-creating credit account for user: ${userId}`);
     credit = await repo.createCredit({
       userId,
       creditLimit: 50000,

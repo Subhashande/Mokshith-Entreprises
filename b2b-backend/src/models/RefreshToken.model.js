@@ -16,8 +16,7 @@ const refreshTokenSchema = new mongoose.Schema(
     token: {
       type: String,
       required: true,
-      unique: true,
-      index: true
+      unique: true, // unique already creates an index
     },
 
     // Token family for rotation detection

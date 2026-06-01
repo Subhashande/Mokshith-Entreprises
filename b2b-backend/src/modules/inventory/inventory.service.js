@@ -238,7 +238,7 @@ export const restoreStock = async (productId, quantity, options = {}) => {
   const items = await repo.findByProduct(productId);
 
   if (items.length === 0) {
-    console.warn(`No inventory found for product ${productId} to restore stock`);
+    logger.warn(`No inventory found for product ${productId} to restore stock`);
     return false;
   }
 
@@ -255,7 +255,7 @@ export const restoreStock = async (productId, quantity, options = {}) => {
     throw new AppError('Failed to restore stock', 500);
   }
 
-  console.log(`Restored ${quantity} units of product ${productId}`);
+  logger.info(`Restored ${quantity} units of product ${productId}`);
   return true;
 };
 

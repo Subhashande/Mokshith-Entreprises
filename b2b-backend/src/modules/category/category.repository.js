@@ -10,3 +10,8 @@ export const findAllCategories = async () =>
 
 export const findById = async (id) =>
   Category.findById(id).populate('parentId');
+
+export const updateCategory = async (id, data) =>
+  Category.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+
+export const deleteCategory = async (id) => Category.findByIdAndDelete(id);

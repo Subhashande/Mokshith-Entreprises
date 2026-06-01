@@ -17,9 +17,26 @@ router.post(
   clearCacheMiddleware(['cache:*categories*', 'cache:*products*'])
 );
 
-router.get('/', protect, cacheMiddleware(300), controller.getCategories); // Cache for 5 minutes
+// Public catalog browsing (consistent with product GET routes)
+router.get('/', cacheMiddleware(300), controller.getCategories); // Cache for 5 minutes
 
 // 🔥 NEW
-router.get('/:id', protect, cacheMiddleware(600), controller.getCategoryById); // Cache for 10 minutes
+router.get('/:id', cacheMiddleware(600), controller.getCategoryById); // Cache for 10 minutes
+
+router.put(
+  '/:id',
+  protect,
+  authorize('ADMIN', 'SUPER_ADMIN'),
+  controller.updateCategory,
+  clearCacheMiddleware(['cache:*categories*', 'cache:*products*'])
+);
+
+router.delete(
+  '/:id',
+  protect,
+  authorize('ADMIN', 'SUPER_ADMIN'),
+  controller.deleteCategory,
+  clearCacheMiddleware(['cache:*categories*', 'cache:*products*'])
+);
 
 export default router;

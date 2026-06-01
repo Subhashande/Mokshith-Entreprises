@@ -12,6 +12,21 @@ export const getCart = asyncHandler(async (req, res) => {
   successResponse(res, cart);
 });
 
+export const updateCartItem = asyncHandler(async (req, res) => {
+  const cart = await cartService.updateCartItem(
+    req.user.id,
+    req.params.productId,
+    req.body.quantity
+  );
+
+  successResponse(res, cart, 'Cart item updated');
+});
+
+export const clearCart = asyncHandler(async (req, res) => {
+  const cart = await cartService.clearCart(req.user.id);
+  successResponse(res, cart, 'Cart cleared');
+});
+
 export const removeFromCart = asyncHandler(async (req, res) => {
   const cart = await cartService.removeFromCart(
     req.user.id,

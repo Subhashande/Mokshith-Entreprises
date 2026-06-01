@@ -98,8 +98,7 @@ const orderSchema = new mongoose.Schema(
     idempotencyKey: {
       type: String,
       unique: true,
-      sparse: true,
-      index: true,
+      sparse: true, // unique already creates an index
     },
 
     metadata: {

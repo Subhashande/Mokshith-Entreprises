@@ -81,7 +81,16 @@ export const register = async (data, req = {}) => {
 
   logger.info('User registered', { userId: user._id, email, role: user.role });
 
-  return user;
+  // Issue tokens so the client is authenticated immediately after registration.
+  // (Account status checks still gate protected routes for non-active users.)
+  const accessToken = generateAccessToken(user);
+  const refreshToken = await createRefreshToken(user, req);
+
+  return {
+    user: sanitizeUser(user),
+    accessToken,
+    refreshToken,
+  };
 };
 
 // PASSWORD LOGIN

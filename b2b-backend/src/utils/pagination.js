@@ -14,8 +14,8 @@ const MIN_LIMIT = 1;
  * Parse and validate pagination parameters
  */
 export const parsePaginationParams = (query) => {
-  const page = Math.max(parseInt(query.page) || DEFAULT_PAGE, 1);
-  let limit = parseInt(query.limit) || DEFAULT_LIMIT;
+  const page = Math.max(parseInt(query.page, 10) || DEFAULT_PAGE, 1);
+  let limit = parseInt(query.limit, 10) || DEFAULT_LIMIT;
 
   // Enforce limits
   limit = Math.min(Math.max(limit, MIN_LIMIT), MAX_LIMIT);
@@ -106,7 +106,7 @@ export const formatPaginatedResponse = (data, total, page, limit) => {
  * Cursor-based pagination helper (for real-time feeds)
  */
 export const parseCursorParams = (query) => {
-  const limit = Math.min(parseInt(query.limit) || DEFAULT_LIMIT, MAX_LIMIT);
+  const limit = Math.min(parseInt(query.limit, 10) || DEFAULT_LIMIT, MAX_LIMIT);
   const cursor = query.cursor || null;
 
   return { limit, cursor };

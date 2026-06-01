@@ -43,7 +43,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   }
 
   const product = await service.createProduct(data);
-  successResponse(res, product, 'Product created');
+  successResponse(res, product, 'Product created', 201);
 });
 
 export const getProducts = asyncHandler(async (req, res) => {

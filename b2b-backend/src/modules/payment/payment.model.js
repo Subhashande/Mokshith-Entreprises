@@ -41,8 +41,7 @@ const paymentSchema = new mongoose.Schema(
     razorpayPaymentId: {
       type: String,
       unique: true,
-      sparse: true,
-      index: true,
+      sparse: true, // unique already creates an index
     },
     
     metadata: {
