@@ -5,6 +5,8 @@ import { ROLES } from '../constants/roles.js';
 import { findUserById } from '../modules/auth/auth.repository.js';
 import { USER_STATUS } from '../constants/userStatus.js';
 import { logger } from '../config/logger.js';
+import { ERROR_MESSAGES } from '../constants/errorMessages.js';
+import { requiresSingleSession, validateSession } from '../utils/sessionHelpers.js';
 
 export const protect = async (req, res, next) => {
   try {
@@ -50,6 +52,34 @@ export const protect = async (req, res, next) => {
     const user = await findUserById(decoded.id);
     if (!user) {
       return next(new AppError('User no longer exists', 401));
+    }
+
+    // 🔥 Single Active Session Validation (for Vendor and Delivery Partner)
+    if (requiresSingleSession(user.role)) {
+      const sessionId = decoded.sessionId;
+
+      if (!sessionId) {
+        logger.warn('Token missing sessionId for single-session role', {
+          userId: user._id,
+          role: user.role
+        });
+        return next(new AppError(ERROR_MESSAGES.SESSION_REVOKED, 401));
+      }
+
+      // Validate session is active and matches
+      const sessionValidation = await validateSession(user._id, sessionId);
+
+      if (!sessionValidation.valid) {
+        logger.warn('Session validation failed', {
+          userId: user._id,
+          sessionId,
+          reason: sessionValidation.reason
+        });
+        return next(new AppError(ERROR_MESSAGES.SESSION_REVOKED, 401));
+      }
+
+      // Attach session info to request for potential use
+      req.session = sessionValidation.session;
     }
 
     // 🔥 Check Maintenance Mode (allow super admin)

@@ -18,6 +18,7 @@ describe('authSlice - Advanced Quality Tests', () => {
       user: null,
       token: null,
       csrfToken: null,
+      sessionId: null,
       isAuthenticated: false,
       loading: false,
       error: null,

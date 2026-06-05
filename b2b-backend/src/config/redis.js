@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import RedisMock from 'ioredis-mock';
 import { env } from './env.js';
 import { logger } from './logger.js';
 
@@ -129,7 +130,8 @@ if (env.REDIS_CLUSTER === 'true') {
   logger.info('Redis Cluster mode requested');
 }
 
-const redis = new Redis(redisConfig);
+const RedisImpl = env.NODE_ENV === 'test' ? RedisMock : Redis;
+const redis = new RedisImpl(redisConfig);
 
 redis.on('connect', () => {
   logger.info('✅ Redis connected', {

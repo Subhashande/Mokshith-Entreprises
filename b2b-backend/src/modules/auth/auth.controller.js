@@ -10,6 +10,7 @@ import {
   logSecurityEvent
 } from '../../middlewares/securityAudit.middleware.js';
 import { getCsrfToken } from '../../middlewares/csrf.middleware.js';
+import { logger } from '../../config/logger.js';
 
 export const register = asyncHandler(async (req, res) => {
   const result = await authService.register(req.body, req);
@@ -250,7 +251,10 @@ export const logout = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   try {
-    await authService.logout(refreshToken);
+    // Extract sessionId from request (attached by auth middleware)
+    const sessionId = req.session?.sessionId || null;
+
+    await authService.logout(refreshToken, sessionId);
 
     if (req.user) {
       logSecurityEvent(SECURITY_EVENTS.LOGOUT, {

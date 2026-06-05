@@ -20,6 +20,7 @@ describe('authSlice', () => {
       user: null,
       token: null,
       csrfToken: null,
+      sessionId: null,
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -82,6 +83,7 @@ describe('authSlice', () => {
         user: { id: '1', name: 'Test User', email: 'test@example.com' },
         token: 'jwt-token-123',
         csrfToken: 'csrf-token-123',
+        sessionId: 'session-123',
       };
 
       const state = authReducer(initialState, loginSuccess(payload));
@@ -89,6 +91,7 @@ describe('authSlice', () => {
       expect(state.user).toEqual(payload.user);
       expect(state.token).toBe(payload.token);
       expect(state.csrfToken).toBe(payload.csrfToken);
+      expect(state.sessionId).toBe(payload.sessionId);
       expect(state.isAuthenticated).toBe(true);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(null);
