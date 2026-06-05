@@ -1,6 +1,7 @@
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { logger } from './logger.js';
+import { env } from './env.js';
 
 /**
  * Configure Socket.IO Redis adapter for horizontal scaling
@@ -14,12 +15,12 @@ export const configureSocketAdapter = async (io) => {
   }
 
   try {
-    const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`;
+    const redisUrl = env.REDIS_URL || `redis://${env.REDIS_HOST || 'localhost'}:${env.REDIS_PORT || 6379}`;
     
     // Create two Redis clients for Socket.IO adapter (pub/sub pattern)
     const pubClient = createClient({ 
       url: redisUrl,
-      password: process.env.REDIS_PASSWORD,
+      password: env.REDIS_PASSWORD,
       socket: {
         reconnectStrategy: (retries) => {
           if (retries > 10) {

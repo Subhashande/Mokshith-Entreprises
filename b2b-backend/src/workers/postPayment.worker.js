@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq';
 import { logger } from '../config/logger.js';
+import { env } from '../config/env.js';
 
 /**
  * 🔒 PHASE 4: Post-payment worker
@@ -7,10 +8,10 @@ import { logger } from '../config/logger.js';
  * Survives server crashes and has automatic retry logic
  */
 
-const connection = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD,
+const connection = env.REDIS_URL ? env.REDIS_URL : {
+  host: env.REDIS_HOST || 'localhost',
+  port: parseInt(env.REDIS_PORT) || 6379,
+  password: env.REDIS_PASSWORD,
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 };

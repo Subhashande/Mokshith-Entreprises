@@ -9,8 +9,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   /\.vercel\.app$/,
+  /mokshith-entreprises.*\.vercel\.app$/, // 🔥 Broadest match for your project on Vercel
   'https://mokshith-entreprises.vercel.app',
-  'https://mokshith-entreprises-aqhjasnx9-subhashande72071-9652s-projects.vercel.app', // Specific origin from error
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
