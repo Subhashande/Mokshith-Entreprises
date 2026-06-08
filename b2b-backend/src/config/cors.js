@@ -5,13 +5,14 @@ const allowedOrigins = [
   'http://127.0.0.1:5175',
   'http://localhost:5174',
   'http://127.0.0.1:5174',
-  'http://localhost:5173', // Common Vite default
+  'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'http://localhost:3000', // Standard React default
-  /\.vercel\.app$/, // Allow all Vercel deployments
-  'https://mokshith-entreprises.vercel.app', // Add your specific production URL here
-  'https://mokshith-entreprises-subhashandes-projects.vercel.app' // Additional Vercel preview URL if needed
-];
+  'http://localhost:3000',
+  /\.vercel\.app$/,
+  /mokshith-entreprises.*\.vercel\.app$/, // 🔥 Broadest match for your project on Vercel
+  'https://mokshith-entreprises.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 export const corsConfig = cors({
   origin: function (origin, callback) {
@@ -25,10 +26,16 @@ export const corsConfig = cors({
       return allowed === origin;
     });
 
-    if (!isAllowed) {
-      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+    if (isAllowed) {
+      return callback(null, true);
+    } else {
+      console.warn(`⚠️ CORS blocked for origin: ${origin}`);
+      // In production, we might want to be more strict, but for debugging let's allow it if it's a vercel preview
+      if (origin.includes('vercel.app')) {
+        return callback(null, true);
+      }
+      return callback(null, false); // Reject without error to allow middleware to handle it
     }
-    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

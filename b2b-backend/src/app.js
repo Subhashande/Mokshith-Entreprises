@@ -55,9 +55,12 @@ if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
 }
 
-// 1. Global headers for cross-origin images
+// 1. Global headers for cross-origin assets (images, etc)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  // Only set * for static assets if needed, but the main CORS middleware handles the rest
+  if (req.path.startsWith('/uploads')) {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
   next();

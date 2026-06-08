@@ -61,82 +61,77 @@ const circuitBreaker = {
   }
 };
 
-// 🔒 PHASE 4: Redis High-Availability configuration
-// Supports standalone, sentinel, and cluster modes
-const redisConfig = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD,
-  maxRetriesPerRequest: 3,
-  enableReadyCheck: true,
-  lazyConnect: true,
-  showFriendlyErrorStack: env.NODE_ENV === 'development',
-  
-  // 🔒 Enhanced reconnection strategy for HA
-  retryStrategy(times) {
-    if (times > 10) {
-      logger.error('Redis connection failed after 10 retries - circuit breaker will activate');
-      return null;
-    }
-    // Exponential backoff: 1s, 2s, 4s, 8s... up to 30s
-    const delay = Math.min(times * 1000, 30000);
-    logger.info(`Redis retry attempt ${times}, delay: ${delay}ms`);
-    return delay;
-  },
-  
-  reconnectOnError(err) {
-    // Reconnect on specific errors
-    const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND'];
-    if (targetErrors.some(e => err.message.includes(e))) {
-      logger.warn('Redis reconnecting on error', { error: err.message });
-      return true;
-    }
-    return false;
-  },
-  
-  // 🔒 Connection timeout and keep-alive
-  connectTimeout: 10000, // 10s
-  keepAlive: 30000, // 30s
-  
-  // 🔒 Command timeout to prevent hanging
-  commandTimeout: 5000, // 5s for commands
-};
+// 🔒 Distributed Redis connection configuration
+// Prioritizes REDIS_URL for production (Upstash/Managed Redis)
+const getRedisConfig = () => {
+  const baseConfig = {
+    maxRetriesPerRequest: 3,
+    enableReadyCheck: true,
+    lazyConnect: true,
+    showFriendlyErrorStack: env.NODE_ENV === 'development',
+    
+    // 🔒 Enhanced reconnection strategy
+    retryStrategy(times) {
+      if (times > 10) {
+        logger.error('Redis connection failed after 10 retries - circuit breaker will activate');
+        return null;
+      }
+      return Math.min(times * 1000, 30000);
+    },
+    
+    reconnectOnError(err) {
+      const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND'];
+      return targetErrors.some(e => err.message.includes(e));
+    },
+    
+    connectTimeout: 15000, // 15s
+    keepAlive: 30000, // 30s
+    commandTimeout: 10000, // 10s
+  };
 
-// 🔒 PHASE 4: Support for Redis Sentinel (high availability)
-// If REDIS_SENTINELS is provided, use sentinel mode
-if (env.REDIS_SENTINELS) {
-  try {
-    const sentinels = JSON.parse(env.REDIS_SENTINELS);
-    redisConfig.sentinels = sentinels;
-    redisConfig.name = env.REDIS_SENTINEL_NAME || 'mymaster';
-    delete redisConfig.host;
-    delete redisConfig.port;
-    logger.info('Redis Sentinel mode enabled', {
-      sentinelCount: sentinels.length,
-      masterName: redisConfig.name,
-    });
-  } catch (err) {
-    logger.error('Failed to parse REDIS_SENTINELS, falling back to standalone', {
-      error: err.message,
-    });
+  // 1. Prioritize REDIS_URL (Upstash / Managed Redis)
+  if (env.REDIS_URL) {
+    logger.info('Using Redis connection from REDIS_URL');
+    return {
+      ...baseConfig,
+      // URL includes host, port, password, and TLS/SSL settings
+      path: env.REDIS_URL,
+    };
   }
-}
 
-// 🔒 PHASE 4: Support for Redis Cluster
-// If REDIS_CLUSTER is true, use cluster mode
-if (env.REDIS_CLUSTER === 'true') {
-  // Cluster mode requires different initialization
-  // Will be handled in createRedisClient function
-  logger.info('Redis Cluster mode requested');
-}
+  // 2. Support for Redis Sentinel (high availability)
+  if (env.REDIS_SENTINELS) {
+    try {
+      const sentinels = JSON.parse(env.REDIS_SENTINELS);
+      logger.info('Using Redis Sentinel configuration');
+      return {
+        ...baseConfig,
+        sentinels,
+        name: env.REDIS_SENTINEL_NAME || 'mymaster',
+        password: env.REDIS_PASSWORD,
+      };
+    } catch (err) {
+      logger.error('Failed to parse REDIS_SENTINELS, falling back to standalone');
+    }
+  }
+
+  // 3. Fallback to Standalone (Localhost / Traditional Hosting)
+  logger.info(`Using standalone Redis: ${env.REDIS_HOST}:${env.REDIS_PORT}`);
+  return {
+    ...baseConfig,
+    host: env.REDIS_HOST,
+    port: parseInt(env.REDIS_PORT),
+    password: env.REDIS_PASSWORD,
+  };
+};
 
 const RedisImpl = env.NODE_ENV === 'test' ? RedisMock : Redis;
 const redis = new RedisImpl(redisConfig);
 
 redis.on('connect', () => {
-  logger.info('✅ Redis connected', {
-    mode: redisConfig.sentinels ? 'sentinel' : 'standalone',
-    host: redisConfig.host || 'sentinel',
+  logger.info('✅ Redis connection established', {
+    mode: env.REDIS_URL ? 'URL' : (redisConfig.sentinels ? 'sentinel' : 'standalone'),
+    destination: env.REDIS_URL ? 'External URL' : `${env.REDIS_HOST}:${env.REDIS_PORT}`
   });
 });
 redis.on('ready', () => {
