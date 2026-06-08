@@ -1,9 +1,9 @@
 import { Worker } from 'bullmq';
 import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
-import { getRedisConnection } from '../config/redisConnection.js';
+import { getBullMQConnection } from '../config/redis.js';
 
-const connection = getRedisConnection();
+const connection = getBullMQConnection();
 
 const postOrderWorker = new Worker(
   'post-order',
