@@ -1,28 +1,23 @@
 import { Queue } from 'bullmq';
 import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
+import { getBullMQConnection } from '../config/redis.js';
 
 /**
  * 🔒 Centralized Redis connection config for BullMQ
  */
-const connection = env.REDIS_URL ? env.REDIS_URL : {
-  host: env.REDIS_HOST || 'localhost',
-  port: parseInt(env.REDIS_PORT) || 6379,
-  password: env.REDIS_PASSWORD,
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-};
+const connection = getBullMQConnection();
 
 // Initialize queues
 const postPaymentQueue = new Queue('post-payment', { connection });
 const postOrderQueue = new Queue('post-order', { connection });
 
 // Log initialization
-if (env.REDIS_URL) {
-  logger.info('BullMQ initialized using REDIS_URL');
-} else {
-  logger.info(`BullMQ initialized using standalone: ${env.REDIS_HOST}:${env.REDIS_PORT}`);
-}
+logger.info('BullMQ Queues initialized with centralized BullMQ connection factory', {
+  usingRedisUrl: !!env.REDIS_URL,
+  redisHost: env.REDIS_HOST,
+  redisPort: env.REDIS_PORT
+});
 
 /**
  * Queue post-payment processing jobs (invoice, delivery, notifications)

@@ -1,34 +1,20 @@
 import { Worker } from 'bullmq';
 import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
+import { getBullMQConnection } from '../config/redis.js';
 
 /**
  * BullMQ Worker Manager for background job processing
- * 
- * 🔥 PHASE 2.5 FIX: Lazy initialization to prevent worker storms during tests
- * Workers are now only created when explicitly started via startWorkers()
  */
 
 let workers = [];
 let workersInitialized = false;
 
-// Redis connection config for BullMQ
-const getRedisConnection = () => {
-  if (env.REDIS_URL) {
-    return env.REDIS_URL;
-  }
-  return {
-    host: env.REDIS_HOST || 'localhost',
-    port: parseInt(env.REDIS_PORT) || 6379,
-    password: env.REDIS_PASSWORD,
-    maxRetriesPerRequest: null, // Required for BullMQ
-    enableReadyCheck: false
-  };
-};
+// Shared Redis connection for all workers
+const connection = getBullMQConnection();
 
 /**
  * Create all worker instances
- * 🔥 CRITICAL: Only called when workers are explicitly started
  */
 const createWorkers = () => {
   if (workersInitialized) {
@@ -36,24 +22,20 @@ const createWorkers = () => {
     return workers;
   }
 
-  const connection = getRedisConnection();
-  
-  // Log initialization details for production debugging
-  if (env.REDIS_URL) {
-    logger.info('Workers initializing using REDIS_URL');
-  } else {
-    logger.info(`Workers initializing using standalone: ${env.REDIS_HOST}:${env.REDIS_PORT}`);
-  }
+  logger.info('Workers initializing with centralized BullMQ connection factory', {
+    usingRedisUrl: !!env.REDIS_URL,
+    redisHost: env.REDIS_HOST,
+    redisPort: env.REDIS_PORT
+  });
 
   const newWorkers = [];
 
   const workerErrorHandler = (workerName, error) => {
-    logger.error(`Worker ${workerName} encountered error:`,
-      {
-        message: error.message,
-        stack: error.stack,
-        connection: env.REDIS_URL ? 'External URL' : `${env.REDIS_HOST}:${env.REDIS_PORT}`
-      });
+    logger.error(`Worker ${workerName} encountered error:`, {
+      message: error.message,
+      stack: error.stack,
+      redisUrlExists: !!env.REDIS_URL
+    });
   };
 
 /**
@@ -88,6 +70,7 @@ const createWorkers = () => {
     }
   );
   emailWorker.on('error', (err) => workerErrorHandler('email', err));
+  logger.info('Worker email using centralized Redis connection');
 
 /**
  * Notification worker
@@ -122,6 +105,9 @@ const createWorkers = () => {
     }
   );
   notificationWorker.on('error', (err) => workerErrorHandler('notification', err));
+  logger.info('Worker notification using centralized Redis connection');
+
+  // ... inventory, payment, webhook, audit, image-processing, data-archival ...
 
 /**
  * Inventory worker
@@ -211,6 +197,9 @@ const createWorkers = () => {
     imageWorker, 
     archivalWorker
   );
+
+  logger.info(`✅ Created ${newWorkers.length} BullMQ workers using centralized connection`);
+  newWorkers.forEach(w => logger.info(`Worker ${w.name} initialized`));
 
   // 🔒 Production-grade error handlers for all workers
   newWorkers.forEach((worker) => {

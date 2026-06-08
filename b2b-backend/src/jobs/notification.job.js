@@ -3,7 +3,7 @@ import { sendEmail } from '../services/email.service.js';
 import { sendSMS } from '../services/sms.service.js';
 import { logger } from '../config/logger.js';
 import { QUEUE_NAMES } from '../constants/queueNames.js';
-import redis from '../config/redis.js';
+import { getRedisConnection } from '../config/redisConnection.js';
 
 const notificationWorker = new Worker(
   QUEUE_NAMES.NOTIFICATION,
@@ -32,7 +32,7 @@ const notificationWorker = new Worker(
       throw error;
     }
   },
-  { connection: redis }
+  { connection: getRedisConnection() }
 );
 
 notificationWorker.on('completed', (job) => {

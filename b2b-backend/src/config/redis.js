@@ -127,6 +127,24 @@ const getRedisConfig = () => {
 const redisConfig = getRedisConfig();
 const redis = new Redis(env.REDIS_URL || redisConfig);
 
+// 🔥 Centralized connection factory for BullMQ to avoid localhost issues in workers
+export const getBullMQConnection = () => {
+  if (env.REDIS_URL) {
+    return {
+      connectionString: env.REDIS_URL,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false
+    };
+  }
+  return {
+    host: env.REDIS_HOST,
+    port: parseInt(env.REDIS_PORT),
+    password: env.REDIS_PASSWORD,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false
+  };
+};
+
 redis.on('connect', () => {
   logger.info('✅ Redis connection established', {
     mode: env.REDIS_URL ? 'URL' : (redisConfig.sentinels ? 'sentinel' : 'standalone'),
