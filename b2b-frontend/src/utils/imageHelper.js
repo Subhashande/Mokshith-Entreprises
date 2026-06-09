@@ -8,13 +8,14 @@ import { API_BASE_URL } from '../services/apiClient.js';
  * @returns {string} The full image URL or a placeholder
  */
 export const getProductImage = (productOrPath) => {
-  if (!productOrPath) return "https://placehold.co/500x500/f8fafc/64748b?text=No+Preview";
+  const placeholder = "/images/product-placeholder.svg";
+  if (!productOrPath) return placeholder;
 
   const imgPath = typeof productOrPath === 'string' 
     ? productOrPath 
     : (productOrPath.image || productOrPath.imageUrl || (productOrPath.images && productOrPath.images[0]));
 
-  if (!imgPath) return "https://placehold.co/500x500/f8fafc/64748b?text=No+Preview";
+  if (!imgPath) return placeholder;
 
   // If it's already a full URL (http:// or https://), return it
   if (imgPath.startsWith('http')) return imgPath;

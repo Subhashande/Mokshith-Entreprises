@@ -162,3 +162,12 @@ button {
 .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

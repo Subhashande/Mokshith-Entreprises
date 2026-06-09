@@ -12,7 +12,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 import Product from '../modules/product/product.model.js';
 import Category from '../modules/category/category.model.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mokshith-b2b';
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mokshith-b2b';
 
 const categories = [
   { name: "Rice & Grains", slug: "rice-grains" },
@@ -135,9 +135,21 @@ const seedDB = async () => {
     console.log('Seeding products...');
     const productsToInsert = products.map(p => {
       const { categoryName, ...productData } = p;
+      const brand = p.name.split(' ')[0].toLowerCase();
+      const availableBrands = ['fortune', 'dhara', 'tata', 'mdh', 'everest', 'india', 'daawat', 'organic', 'catch', '24'];
+      
+      let localImg = '/uploads/products/wholesale.svg';
+      if (brand === 'india') localImg = '/uploads/products/india-gate.svg';
+      else if (brand === 'tata') localImg = '/uploads/products/tata-sampann.svg';
+      else if (brand === 'organic') localImg = '/uploads/products/organic-tattva.svg';
+      else if (brand === '24') localImg = '/uploads/products/24-mantra.svg';
+      else if (availableBrands.includes(brand)) localImg = `/uploads/products/${brand}.svg`;
+
       return {
         ...productData,
-        categoryId: categoryMap[categoryName]
+        categoryId: categoryMap[categoryName],
+        image: localImg,
+        imageUrl: localImg
       };
     });
 

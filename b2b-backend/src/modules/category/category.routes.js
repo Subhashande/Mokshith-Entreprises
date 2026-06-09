@@ -17,9 +17,9 @@ router.post(
   clearCacheMiddleware(['cache:*categories*', 'cache:*products*'])
 );
 
-router.get('/', protect, cacheMiddleware(300), controller.getCategories); // Cache for 5 minutes
+router.get('/', cacheMiddleware(300), controller.getCategories); // Cache for 5 minutes
 
 // 🔥 NEW
-router.get('/:id', protect, cacheMiddleware(600), controller.getCategoryById); // Cache for 10 minutes
+router.get('/:id', cacheMiddleware(600), controller.getCategoryById); // Cache for 10 minutes
 
 export default router;

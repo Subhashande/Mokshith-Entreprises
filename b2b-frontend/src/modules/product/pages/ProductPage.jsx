@@ -1,142 +1,251 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
 import { useProduct } from "../hooks/useProduct";
 import { useOrder } from "../../order/hooks/useOrder";
 import { useAuth } from "../../auth/hooks/useAuth";
-import { routes } from "../../../routes/routeConfig";
 import ProductCard from "../components/ProductCard";
 import Toast from "../../../components/feedback/Toast";
-import { Search, Filter, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import Skeleton from "../../../components/feedback/Skeleton";
+import apiClient from "../../../services/apiClient";
+import { 
+  Search, 
+  ShoppingCart, 
+  ArrowUpDown, 
+  MapPin,
+  Flame,
+  Droplets,
+  Wheat,
+  Package,
+  Coffee,
+  Grape,
+  Box,
+  Wind,
+  Sparkles,
+  LayoutGrid
+} from 'lucide-react';
+
+const CATEGORY_ICONS = {
+  'spices': Flame,
+  'edible-oils': Droplets,
+  'rice-pulses': Wheat,
+  'atta-flour': Package,
+  'beverages': Coffee,
+  'dry-fruits': Grape,
+  'packaging': Box,
+  'cleaning': Wind,
+  'staples': ShoppingCart,
+  'snacks': Sparkles,
+  'general': LayoutGrid
+};
 
 const ProductPage = () => {
-  const { products, loading, error } = useProduct();
+  const { products, loading } = useProduct();
   const { addToCart } = useOrder();
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("default");
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('default');
   const [toast, setToast] = useState(null);
-  const navigate = useNavigate();
+  const [backendCategories, setBackendCategories] = useState([]);
+
+  // Fetch Categories from Backend API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiClient.get('/categories');
+        const data = response.data || response;
+        if (Array.isArray(data)) {
+          setBackendCategories(data.filter(c => c.isActive !== false));
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Filter Categories to show only those with products
+  const categories = useMemo(() => {
+    if (!products || !Array.isArray(products)) return [];
+    
+    const productsPerCat = products.reduce((acc, p) => {
+      // Check category name, category slug, and category ID
+      const catName = (p.category || p.categoryId?.name || 'general').toLowerCase();
+      const catId = (p.categoryId?._id || p.categoryId || '').toString();
+      
+      acc[catName] = (acc[catName] || 0) + 1;
+      if (catId) acc[catId] = (acc[catId] || 0) + 1;
+      
+      return acc;
+    }, {});
+
+    return backendCategories
+      .map(cat => {
+        const id = (cat._id || cat.id || '').toString();
+        const name = (cat.name || '').toLowerCase();
+        const slug = (cat.slug || '').toLowerCase();
+        
+        const count = productsPerCat[id] || productsPerCat[name] || productsPerCat[slug] || 0;
+        
+        return {
+          id: cat._id || cat.id,
+          name: cat.name,
+          slug: cat.slug || cat.name.toLowerCase().replace(/ /g, '-'),
+          count: count,
+          icon: CATEGORY_ICONS[cat.slug?.toLowerCase()] || CATEGORY_ICONS[cat.name.toLowerCase()] || CATEGORY_ICONS['general']
+        };
+      })
+      .filter(cat => cat.count > 0);
+  }, [products, backendCategories]);
+
+  const filteredProducts = useMemo(() => {
+    return (products || [])
+      .filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+        const selectedCatLower = selectedCategory.toLowerCase();
+        const productCatLower = (p.category || p.categoryId?.name || '').toLowerCase();
+        const productCatSlug = (p.category || p.categoryId?.name || '').toLowerCase().replace(/ /g, '-');
+        const productCatId = (p.categoryId?._id || p.categoryId || '').toString();
+
+        const matchesCategory = selectedCategory === 'all' || 
+          productCatLower === selectedCatLower ||
+          productCatSlug === selectedCatLower ||
+          productCatId === selectedCategory;
+
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'price-low') return a.price - b.price;
+        if (sortBy === 'price-high') return b.price - a.price;
+        return 0;
+      });
+  }, [products, search, selectedCategory, sortBy]);
 
   const handleAddToCart = (product) => {
     addToCart(product);
     setToast({ message: `${product.name} added to cart`, type: 'success' });
   };
 
-  const handleBuyNow = (product) => {
-    addToCart(product);
-    navigate(routes.CHECKOUT);
-  };
-
   if (loading) return (
-    <div className="loading-screen">
-      <div className="loader"></div>
-      <p>Loading premium catalog...</p>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {Array(10).fill(0).map((_, i) => <Skeleton key={i} className="h-[380px] rounded-2xl" />)}
+        </div>
+      </div>
     </div>
   );
-  
-  if (error) return (
-    <div className="error-screen">
-      <p>{error}</p>
-      <button onClick={() => window.location.reload()} className="premium-button premium-button-primary">Retry</button>
-    </div>
-  );
-
-  const categories = ["All", ...new Set(products.map(p => p.category || p.categoryId?.name || "General"))];
-
-  const filteredProducts = products
-    .filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           (p.category || p.categoryId?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === "All" || (p.category || p.categoryId?.name || "General") === selectedCategory;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortBy === "priceLowHigh") return a.price - b.price;
-      if (sortBy === "priceHighLow") return b.price - a.price;
-      if (sortBy === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
-      if (sortBy === "nameAZ") return a.name.localeCompare(b.name);
-      return 0; // default
-    });
 
   return (
-    <div className="page-container">
-      <main className="main-content">
-        <header className="catalog-header">
-          <div className="header-info">
-            <h1>Product Catalog</h1>
-            <p>Premium selection for your business needs</p>
-          </div>
-          
-          <div className="header-controls">
-            <div className="search-wrapper">
-              <Search size={18} className="search-icon" />
+    <div className="min-h-screen bg-white pb-20">
+      {/* SEARCH BAR ROW - Static and pushes content down */}
+      <div className="bg-white border-b border-slate-100 py-6">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
-                type="text" 
-                placeholder="Search products, categories..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="premium-input search-input"
+                type="text"
+                placeholder="Search for products, brands, categories..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] font-bold focus:outline-none focus:border-sky-600 focus:bg-white transition-all shadow-sm"
               />
             </div>
-            
-            <div className="filter-wrapper">
-              <div className="category-select-wrapper" title="Filter by Category">
-                <select 
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="category-select"
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="select-arrow" />
-              </div>
-
-              <div className="category-select-wrapper" title="Sort Products">
-                <select 
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="category-select"
-                  style={{ minWidth: '180px' }}
-                >
-                  <option value="default">Sort by: Default</option>
-                  <option value="priceLowHigh">Price: Low to High</option>
-                  <option value="priceHighLow">Price: High to Low</option>
-                  <option value="newest">Newest Arrivals</option>
-                  <option value="nameAZ">Name: A to Z</option>
-                </select>
-                <SlidersHorizontal size={16} className="select-arrow" />
-              </div>
+            <div className="relative shrink-0 w-full sm:w-auto">
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full sm:w-auto pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] font-bold focus:outline-none appearance-none cursor-pointer min-w-[160px] shadow-sm"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+              <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
             </div>
           </div>
-        </header>
+        </div>
+      </div>
 
-        <section className="product-grid-section">
-          {filteredProducts.length > 0 ? (
-            <div className="product-grid">
-              {filteredProducts.map((product, index) => (
-                <ProductCard 
-                  key={product._id || product.id || index} 
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  user={user}
-                />
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* DYNAMIC SIDEBAR - Blinkit Style */}
+          <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-[115px] lg:max-h-[calc(100vh-140px)] overflow-y-auto no-scrollbar bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className="p-6 border-b border-slate-50">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Categories</h2>
+            </div>
+            
+            <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar p-2 lg:p-0">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`flex-shrink-0 lg:w-full flex items-center justify-between px-5 py-3 lg:py-4 transition-all group border-b-2 lg:border-b-0 lg:border-r-4 rounded-xl lg:rounded-none ${
+                  selectedCategory === 'all' 
+                    ? 'bg-sky-50 border-sky-600 text-sky-600' 
+                    : 'border-transparent text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg transition-colors ${selectedCategory === 'all' ? 'bg-sky-100' : 'bg-slate-50 group-hover:bg-slate-100'}`}>
+                    <LayoutGrid size={18} className={selectedCategory === 'all' ? 'text-sky-600' : 'text-slate-400'} />
+                  </div>
+                  <span className={`text-[13px] font-bold whitespace-nowrap ${selectedCategory === 'all' ? 'text-sky-600' : 'text-slate-600'}`}>All Items</span>
+                </div>
+                <span className={`hidden lg:flex text-[10px] font-black px-2 py-0.5 rounded-full ${selectedCategory === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                  {products?.length || 0}
+                </span>
+              </button>
+
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.slug || cat.name)}
+                  className={`flex-shrink-0 lg:w-full flex items-center justify-between px-5 py-3 lg:py-4 transition-all group border-b-2 lg:border-b-0 lg:border-r-4 rounded-xl lg:rounded-none ${
+                    (selectedCategory === cat.slug || selectedCategory === cat.name)
+                      ? 'bg-sky-50 border-sky-600 text-sky-600' 
+                      : 'border-transparent text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg transition-colors ${(selectedCategory === cat.slug || selectedCategory === cat.name) ? 'bg-sky-100' : 'bg-slate-50 group-hover:bg-slate-100'}`}>
+                      <cat.icon size={18} className={(selectedCategory === cat.slug || selectedCategory === cat.name) ? 'text-sky-600' : 'text-slate-400'} />
+                    </div>
+                    <span className={`text-[13px] font-bold whitespace-nowrap ${(selectedCategory === cat.slug || selectedCategory === cat.name) ? 'text-sky-600' : 'text-slate-600'}`}>{cat.name}</span>
+                  </div>
+                  <span className={`hidden lg:flex text-[10px] font-black px-2 py-0.5 rounded-full ${(selectedCategory === cat.slug || selectedCategory === cat.name) ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    {cat.count}
+                  </span>
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="empty-state">
-              <h3>No products found</h3>
-              <p>Try adjusting your search or filters</p>
-              <button onClick={() => { setSearchTerm(""); setSelectedCategory("All"); }} className="premium-button premium-button-secondary">
-                Clear all filters
-              </button>
-            </div>
-          )}
-        </section>
-      </main>
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 min-w-0">
+            {/* Product Grid */}
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                {filteredProducts.map(product => (
+                  <ProductCard 
+                    key={product._id || product.id} 
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                    user={user}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-24 text-center border border-slate-100 shadow-sm">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search size={32} className="text-slate-200" />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">No products found</h3>
+                <p className="text-slate-500 font-bold mt-2 uppercase tracking-widest text-xs">Try adjusting your search or filters</p>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
 
       {toast && (
         <Toast 
@@ -145,186 +254,6 @@ const ProductPage = () => {
           onClose={() => setToast(null)} 
         />
       )}
-
-      <style>{`
-        .page-container {
-          background-color: var(--background);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .main-content {
-          padding: 3rem 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-          width: 100%;
-          flex: 1;
-        }
-
-        .catalog-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 3rem;
-          gap: 2rem;
-          flex-wrap: wrap;
-        }
-
-        .header-info h1 {
-          font-size: 2.25rem;
-          font-weight: 800;
-          color: var(--text-main);
-          margin-bottom: 0.5rem;
-          letter-spacing: -0.02em;
-        }
-
-        .header-info p {
-          color: var(--text-muted);
-          font-size: 1.125rem;
-        }
-
-        .header-controls {
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-          flex-wrap: wrap; /* Allow items to wrap on smaller screens */
-          width: 100%; /* Ensure controls take full width on small screens */
-          justify-content: flex-end; /* Align controls to the right */
-        }
-
-        .search-wrapper {
-          position: relative;
-          width: 100%; /* Take full width on small screens */
-          max-width: 350px; /* Max width on larger screens */
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text-muted);
-        }
-
-        .search-input {
-          padding-left: 3rem !important;
-        }
-
-        .filter-wrapper {
-          display: flex;
-          gap: 0.75rem;
-        }
-
-        .category-select-wrapper {
-          position: relative;
-        }
-
-        .category-select {
-          appearance: none;
-          background: var(--surface);
-          border: 1.5px solid var(--border);
-          padding: 0.75rem 2.5rem 0.75rem 1rem;
-          border-radius: var(--radius-md);
-          font-weight: 600;
-          color: var(--text-main);
-          cursor: pointer;
-          min-width: 150px;
-          transition: var(--transition-fast);
-        }
-
-        .category-select:focus {
-          border-color: var(--primary);
-          outline: none;
-        }
-
-        .select-arrow {
-          position: absolute;
-          right: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text-muted);
-          pointer-events: none;
-        }
-
-        .filter-button {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.25rem;
-          background: var(--surface);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          font-weight: 600;
-          color: var(--text-main);
-          cursor: pointer;
-          transition: var(--transition-fast);
-        }
-
-        .filter-button:hover {
-          background: var(--background);
-          border-color: var(--secondary);
-        }
-
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 2rem;
-        }
-
-        .loading-screen, .error-screen, .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 5rem 2rem;
-          text-align: center;
-        }
-
-        .loader {
-          width: 40px;
-          height: 40px;
-          border: 3px solid var(--primary-light);
-          border-top: 3px solid var(--primary);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .empty-state h3 {
-          font-size: 1.5rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-          color: var(--text-muted);
-          margin-bottom: 2rem;
-        }
-
-        @media (max-width: 768px) {
-          .catalog-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          .search-wrapper {
-            width: 100%;
-          }
-          .filter-wrapper {
-            width: 100%;
-          }
-          .category-select-wrapper {
-            flex: 1;
-          }
-          .category-select {
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

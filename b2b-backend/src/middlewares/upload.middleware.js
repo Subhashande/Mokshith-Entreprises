@@ -164,7 +164,7 @@ export const uploadToCloud = (fieldName, options = {}) => {
         next();
       } catch (error) {
         logger.error('File upload/validation error:', error);
-        return next(new AppError(error.message || 'Failed to upload files', 500));
+        return next(new AppError(error.message || 'Failed to upload files', error.statusCode || 500));
       }
     });
   };

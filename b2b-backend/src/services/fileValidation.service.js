@@ -203,12 +203,22 @@ export const sanitizeFilename = (filename) => {
 export const basicMalwareCheck = (buffer) => {
   if (!buffer) return true;
 
-  // Check for suspicious patterns
+  // 1. Check for executable headers at the START of the file
+  // These are only dangerous if they define the file type
+  const executableHeaders = [
+    { pattern: Buffer.from('MZ'), name: 'DOS/Windows Executable' },
+    { pattern: Buffer.from('PK'), name: 'ZIP/Office Archive' }
+  ];
+
+  for (const { pattern, name } of executableHeaders) {
+    if (buffer.slice(0, pattern.length).equals(pattern)) {
+      logger.error(`Executable header detected at start of file: ${name}`);
+      throw new AppError('File failed security validation: Executable or Archive not allowed', 400);
+    }
+  }
+
+  // 2. Check for suspicious scripts ANYWHERE in the file
   const suspiciousPatterns = [
-    // Executable headers
-    Buffer.from('MZ'),  // DOS/Windows executable
-    Buffer.from('PK'),  // ZIP archive (could contain executable)
-    
     // Script tags and dangerous code patterns
     Buffer.from('<script'),
     Buffer.from('javascript:'),
@@ -229,7 +239,7 @@ export const basicMalwareCheck = (buffer) => {
   for (const pattern of suspiciousPatterns) {
     if (buffer.includes(pattern)) {
       logger.error('Suspicious content detected in file upload');
-      throw new AppError('File failed security validation', 400);
+      throw new AppError('File failed security validation: Suspicious content detected', 400);
     }
   }
 

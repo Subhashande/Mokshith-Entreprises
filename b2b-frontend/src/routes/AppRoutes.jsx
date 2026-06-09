@@ -18,6 +18,7 @@ import DeliveryLayout from "../components/layout/DeliveryLayout.jsx";
 import LandingPage from "../modules/product/pages/LandingPage.jsx";
 import LoginPage from "../modules/auth/pages/LoginPage.jsx";
 import ProductPage from "../modules/product/pages/ProductPage.jsx";
+import Home from "../modules/product/pages/Home.jsx";
 
 // Lazy load less frequently accessed pages
 const RegisterPage = lazy(() => import("../modules/auth/pages/Register.jsx"));
@@ -73,7 +74,7 @@ const AppRoutes = () => {
         <Route path={routes.HOME} element={
           <ProtectedRoute>
             <RoleGuard allowedRoles={["B2C_CUSTOMER", "B2B_CUSTOMER"]}>
-              <MainLayout><ProductPage /></MainLayout>
+              <MainLayout><Home /></MainLayout>
             </RoleGuard>
           </ProtectedRoute>
         } />

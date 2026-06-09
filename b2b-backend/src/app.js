@@ -67,14 +67,14 @@ app.use((req, res, next) => {
 });
 
 // 2. Serve static files with absolute control to fix ERR_ABORTED
-app.get('/uploads/:filename', (req, res) => {
-  const filename = req.params.filename;
+app.use('/uploads', (req, res, next) => {
+  const relativePath = req.path;
   let foundPath = null;
 
   // Check all potential paths for the file
   for (const p of potentialPaths) {
-    const fullPath = path.join(p, filename);
-    if (fs.existsSync(fullPath)) {
+    const fullPath = path.join(p, relativePath);
+    if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
       foundPath = fullPath;
       break;
     }
@@ -87,14 +87,16 @@ app.get('/uploads/:filename', (req, res) => {
     res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
     res.header('Cache-Control', 'public, max-age=3600');
     
-    // Explicitly set MIME type for webp images
-    if (filename.endsWith('.webp')) {
-      res.type('image/webp');
-    }
+    // Explicitly set MIME type based on extension
+    const ext = path.extname(foundPath).toLowerCase();
+    if (ext === '.webp') res.type('image/webp');
+    else if (ext === '.jpg' || ext === '.jpeg') res.type('image/jpeg');
+    else if (ext === '.png') res.type('image/png');
+    else if (ext === '.svg') res.type('image/svg+xml');
     
     return res.sendFile(foundPath);
   } else {
-    return res.status(404).send(`Image not found: ${filename}`);
+    next();
   }
 });
 
