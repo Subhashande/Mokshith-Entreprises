@@ -90,11 +90,17 @@ const getRedisConfig = () => {
 
   // 1. Prioritize REDIS_URL (Upstash / Managed Redis)
   if (env.REDIS_URL) {
-    logger.info('Using Redis connection from REDIS_URL');
+    logger.info('Using Redis connection from REDIS_URL', {
+      host: new URL(env.REDIS_URL).hostname,
+      tls: env.REDIS_URL.startsWith('rediss://')
+    });
+    
     return {
       ...baseConfig,
-      // URL includes host, port, password, and TLS/SSL settings
-      path: env.REDIS_URL,
+      // ioredis constructor handles the URL string directly if passed as first arg
+      // but here we are building a config object.
+      // For Upstash TLS support (rediss://)
+      ...(env.REDIS_URL.startsWith('rediss://') ? { tls: { rejectUnauthorized: false } } : {})
     };
   }
 
@@ -125,15 +131,22 @@ const getRedisConfig = () => {
 };
 
 const redisConfig = getRedisConfig();
-const redis = new Redis(env.REDIS_URL || redisConfig);
+
+// 🔥 FIXED: If REDIS_URL exists, pass it as the first argument to the Redis constructor
+// This ensures ioredis parses the URL correctly including host, port, password, and db.
+const redis = env.REDIS_URL ? new Redis(env.REDIS_URL, redisConfig) : new Redis(redisConfig);
 
 // 🔥 Centralized connection factory for BullMQ to avoid localhost issues in workers
 export const getBullMQConnection = () => {
   if (env.REDIS_URL) {
+    const url = new URL(env.REDIS_URL);
     return {
-      connectionString: env.REDIS_URL,
+      // BullMQ uses ioredis under the hood. For BullMQ, use 'url' key.
+      url: env.REDIS_URL,
       maxRetriesPerRequest: null,
-      enableReadyCheck: false
+      enableReadyCheck: false,
+      // Support for TLS/Upstash
+      ...(env.REDIS_URL.startsWith('rediss://') ? { tls: { rejectUnauthorized: false } } : {})
     };
   }
   return {
@@ -146,9 +159,22 @@ export const getBullMQConnection = () => {
 };
 
 redis.on('connect', () => {
+  const isUrlMode = !!env.REDIS_URL;
+  let connectionHost = `${env.REDIS_HOST}:${env.REDIS_PORT}`;
+  
+  if (isUrlMode) {
+    try {
+      connectionHost = new URL(env.REDIS_URL).hostname;
+    } catch (e) {
+      connectionHost = 'External URL';
+    }
+  }
+
   logger.info('✅ Redis connection established', {
-    mode: env.REDIS_URL ? 'URL' : (redisConfig.sentinels ? 'sentinel' : 'standalone'),
-    destination: env.REDIS_URL ? 'External URL' : `${env.REDIS_HOST}:${env.REDIS_PORT}`
+    mode: isUrlMode ? 'URL (Upstash)' : (redisConfig.sentinels ? 'sentinel' : 'standalone'),
+    host: connectionHost,
+    tls: isUrlMode && env.REDIS_URL.startsWith('rediss://'),
+    bullMQ: isUrlMode ? 'URL' : 'Host/Port'
   });
 });
 redis.on('ready', () => {

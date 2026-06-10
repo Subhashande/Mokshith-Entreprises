@@ -23,9 +23,9 @@ const createWorkers = () => {
   }
 
   logger.info('Workers initializing with centralized BullMQ connection factory', {
-    usingRedisUrl: !!env.REDIS_URL,
-    redisHost: env.REDIS_HOST,
-    redisPort: env.REDIS_PORT
+    mode: env.REDIS_URL ? 'URL (Upstash)' : 'Host/Port',
+    host: env.REDIS_URL ? new URL(env.REDIS_URL).hostname : env.REDIS_HOST,
+    redisUrlExists: !!env.REDIS_URL
   });
 
   const newWorkers = [];

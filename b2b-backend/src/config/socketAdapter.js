@@ -15,13 +15,15 @@ export const configureSocketAdapter = async (io) => {
   }
 
   try {
+    const isUrlMode = !!env.REDIS_URL;
     const redisUrl = env.REDIS_URL || `redis://${env.REDIS_HOST || 'localhost'}:${env.REDIS_PORT || 6379}`;
     
     // Create two Redis clients for Socket.IO adapter (pub/sub pattern)
     const pubClient = createClient({ 
       url: redisUrl,
-      password: env.REDIS_PASSWORD,
+      // Support for TLS/Upstash (rediss://)
       socket: {
+        ...(redisUrl.startsWith('rediss://') ? { tls: true, rejectUnauthorized: false } : {}),
         reconnectStrategy: (retries) => {
           if (retries > 10) {
             logger.error('Socket.IO Redis adapter: Max reconnection attempts reached');
