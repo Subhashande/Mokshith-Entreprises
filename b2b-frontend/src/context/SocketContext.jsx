@@ -1,6 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout as logoutAction } from '../modules/auth/authSlice.js';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../routes/routeConfig.js';
+import { showGlobalToast } from './NotificationContext.jsx';
 
 const SocketContext = createContext(undefined);
 
@@ -20,9 +24,40 @@ export const useSocket = () => {
 };
 
 export const SocketProvider = ({ children }) => {
-  const { user, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, token, sessionId } = useSelector((state) => state.auth);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const sessionRegisteredRef = useRef(false);
+  const isDev = import.meta.env.DEV;
+
+  const logDebug = useCallback((...args) => {
+    if (isDev) {
+      console.log(...args);
+    }
+  }, [isDev]);
+
+  const logError = useCallback((...args) => {
+    if (isDev) {
+      console.error(...args);
+    }
+  }, [isDev]);
+
+  // Handle force logout
+  const handleForceLogout = useCallback((data) => {
+    const message = 'Your account was logged in from another device.';
+    
+    // Clear auth state
+    dispatch(logoutAction());
+    
+    showGlobalToast(message, 'error', 5000);
+    
+    // Redirect to login
+    if (window.location.pathname !== routes.LOGIN) {
+      navigate(routes.LOGIN, { replace: true });
+    }
+  }, [dispatch, navigate]);
 
   useEffect(() => {
     let socketInstance = null;
@@ -33,6 +68,7 @@ export const SocketProvider = ({ children }) => {
         setSocket(null);
         setIsConnected(false);
       }
+      sessionRegisteredRef.current = false;
       return;
     }
 
@@ -57,14 +93,34 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on('connect', () => {
-      console.log('✅ Socket connected');
+      logDebug('Socket connected');
       setIsConnected(true);
       socketInstance.emit('join', user._id || user.id);
+      
+      // Register session with backend once per connection.
+      if (token && !sessionRegisteredRef.current) {
+        socketInstance.emit('register_session', { token, sessionId });
+        sessionRegisteredRef.current = true;
+      }
     });
 
+    socketInstance.on('session_registered', ({ success }) => {
+      if (success) {
+        logDebug('Session registered with socket');
+      }
+    });
+
+    socketInstance.on('session_error', ({ message }) => {
+      logError('Session registration error:', message);
+    });
+
+    // Handle force logout
+    socketInstance.on('force_logout', handleForceLogout);
+
     socketInstance.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected:', reason);
+      logDebug('Socket disconnected:', reason);
       setIsConnected(false);
+      sessionRegisteredRef.current = false;
       if (reason === 'io server disconnect') {
         // the disconnection was initiated by the server, you need to reconnect manually
         socketInstance.connect();
@@ -76,11 +132,11 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on('reconnect_failed', () => {
-      console.error('❌ Socket reconnection failed');
+      logError('Socket reconnection failed');
     });
 
     socketInstance.on('connect_error', (err) => {
-      console.error('❌ Socket connection error:', err.message);
+      logError('Socket connection error:', err.message);
     });
 
     setSocket(socketInstance);
@@ -93,10 +149,13 @@ export const SocketProvider = ({ children }) => {
         socketInstance.off('reconnect_attempt');
         socketInstance.off('reconnect_failed');
         socketInstance.off('connect_error');
+        socketInstance.off('session_registered');
+        socketInstance.off('session_error');
+        socketInstance.off('force_logout');
         socketInstance.disconnect();
       }
     };
-  }, [user?._id, user?.id, token]);
+  }, [user?._id, user?.id, token, sessionId, handleForceLogout, logDebug, logError]);
 
   const emit = useCallback((event, data) => {
     if (socket) {

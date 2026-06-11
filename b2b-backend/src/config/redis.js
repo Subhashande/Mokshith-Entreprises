@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import RedisMock from 'ioredis-mock';
 import { env } from './env.js';
 import { logger } from './logger.js';
 
@@ -124,8 +125,8 @@ const getRedisConfig = () => {
   };
 };
 
-const redisConfig = getRedisConfig();
-const redis = new Redis(env.REDIS_URL || redisConfig);
+const RedisImpl = env.NODE_ENV === 'test' ? RedisMock : Redis;
+const redis = new RedisImpl(redisConfig);
 
 redis.on('connect', () => {
   logger.info('✅ Redis connection established', {

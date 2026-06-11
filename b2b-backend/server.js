@@ -134,10 +134,14 @@ const startServer = async () => {
     global.io = io;
     app.set('io', io);
 
+    // 🔥 Initialize session management handlers
+    const { initializeSessionHandlers } = await import('./src/services/socketSessionHandlers.js');
+    initializeSessionHandlers(io);
+
     io.on('connection', (socket) => {
       logger.info(`🔌 New socket connection: ${socket.id}`);
 
-      // 🔥 Join personal room for targeted events
+      // 🔥 Join personal room for targeted events (backward compatibility)
       socket.on('join', (userId) => {
         if (userId) {
           socket.join(userId);

@@ -21,6 +21,7 @@ describe('authService', () => {
           accessToken: 'test-access-token',
           refreshToken: 'test-refresh-token',
           csrfToken: 'test-csrf-token',
+          sessionId: 'test-session-id',
           user: { id: '1', name: 'John Doe', email: 'john@example.com' },
         },
       };
@@ -34,6 +35,7 @@ describe('authService', () => {
       expect(localStorage.getItem('token')).toBe('test-access-token');
       expect(localStorage.getItem('refreshToken')).toBe('test-refresh-token');
       expect(localStorage.getItem('csrfToken')).toBe('test-csrf-token');
+      expect(localStorage.getItem('sessionId')).toBe('test-session-id');
       expect(JSON.parse(localStorage.getItem('user'))).toEqual(mockResponse.data.user);
       expect(result).toEqual(mockResponse.data);
     });
@@ -41,6 +43,7 @@ describe('authService', () => {
     it('should handle direct response format', async () => {
       const mockResponse = {
         accessToken: 'token',
+        sessionId: 'session-id',
         user: { id: '1', name: 'John' },
       };
 
@@ -49,6 +52,7 @@ describe('authService', () => {
       const result = await authService.login({ email: 'test@test.com', password: 'pass' });
 
       expect(localStorage.getItem('token')).toBe('token');
+      expect(localStorage.getItem('sessionId')).toBe('session-id');
       expect(result).toEqual(mockResponse);
     });
 
@@ -134,21 +138,24 @@ describe('authService', () => {
       localStorage.setItem('token', 'test-token');
       localStorage.setItem('refreshToken', 'test-refresh');
       localStorage.setItem('user', JSON.stringify({ id: '1' }));
+      localStorage.setItem('sessionId', 'test-session');
 
       apiClient.post.mockResolvedValue({});
 
       await authService.logout();
 
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/logout');
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/logout', { refreshToken: 'test-refresh' });
       expect(localStorage.getItem('token')).toBeNull();
       expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(localStorage.getItem('user')).toBeNull();
+      expect(localStorage.getItem('sessionId')).toBeNull();
     });
 
     it('should clear storage even if API call fails', async () => {
       localStorage.setItem('token', 'test-token');
       localStorage.setItem('refreshToken', 'test-refresh');
       localStorage.setItem('user', JSON.stringify({ id: '1' }));
+      localStorage.setItem('sessionId', 'test-session');
 
       apiClient.post.mockRejectedValue(new Error('API error'));
 
@@ -156,6 +163,8 @@ describe('authService', () => {
 
       expect(localStorage.getItem('token')).toBeNull();
       expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(localStorage.getItem('user')).toBeNull();
+      expect(localStorage.getItem('sessionId')).toBeNull();
       expect(localStorage.getItem('user')).toBeNull();
     });
 
@@ -179,7 +188,7 @@ describe('authService', () => {
 
       const result = await authService.refreshToken('old-refresh-token');
 
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/refresh-token', { token: 'old-refresh-token' });
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/refresh-token', { refreshToken: 'old-refresh-token' });
       expect(localStorage.getItem('token')).toBe('new-access-token');
       expect(localStorage.getItem('refreshToken')).toBe('new-refresh-token');
       expect(result).toEqual(mockResponse.data);

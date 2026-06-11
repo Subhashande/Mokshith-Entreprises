@@ -12,10 +12,12 @@ import {
 } from "../authSlice.js";
 import { fetchConfigSuccess } from "../../superAdmin/superAdminSlice.js";
 import { routes } from "../../../routes/routeConfig.js";
+import { useNotification } from "../../../context/NotificationContext.jsx";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { showToast } = useNotification();
   const { user: reduxUser, loading, error, isAuthenticated, csrfToken } = useSelector((state) => state.auth);
 
   // Auto-fetch CSRF token if authenticated but missing token
@@ -89,8 +91,16 @@ export const useAuth = () => {
       dispatch(loginSuccess({ 
         user, 
         token: accessToken,
-        csrfToken: responseData.csrfToken 
+        csrfToken: responseData.csrfToken,
+        sessionId: responseData.sessionId // Pass sessionId to Redux
       }));
+      
+      // Show notification if previous session was invalidated
+      if (responseData.previousSessionInvalidated) {
+        setTimeout(() => {
+          showToast('Your previous session on another device has been logged out', 'info', 5000);
+        }, 500);
+      }
       
       // 3. Immediate redirect to minimize perceived delay
       const redirectPath = (() => {

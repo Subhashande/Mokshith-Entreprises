@@ -1,6 +1,7 @@
 import axios from "axios";
 import { store } from "../app/store.js";
 import { updateToken, logout } from "../modules/auth/authSlice.js";
+import { showGlobalToast } from "../context/NotificationContext.jsx";
 
 const getBaseURL = () => {
   // Try environment variable first
@@ -42,6 +43,7 @@ export { API_BASE_URL };
 // Track if a refresh is already in progress to avoid multiple refresh calls
 let isRefreshing = false;
 let failedQueue = [];
+const SESSION_REVOKED_MESSAGE = 'Your account was logged in from another device.';
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
@@ -52,6 +54,18 @@ const processQueue = (error, token = null) => {
     }
   });
   failedQueue = [];
+};
+
+const resetAuthAndRedirect = (message = null) => {
+  store.dispatch(logout());
+
+  if (message) {
+    showGlobalToast(message, 'error', 5000);
+  }
+
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.href = '/login';
+  }
 };
 
 // Add a request interceptor to add the auth token to every request
@@ -98,10 +112,17 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
+      const errorMessage = error.response?.data?.message || '';
+
+      // Check if it's a session-related error (SESSION_REVOKED)
+      if (errorMessage.toLowerCase().includes('session') || errorMessage.toLowerCase().includes('revoked')) {
+        resetAuthAndRedirect(SESSION_REVOKED_MESSAGE);
+        return Promise.reject(error);
+      }
+
       // If the request was to refresh token itself, don't retry!
       if (originalRequest.url.includes('/auth/refresh-token')) {
-        store.dispatch(logout());
-        window.location.href = "/login";
+        resetAuthAndRedirect();
         return Promise.reject(error);
       }
 
@@ -126,14 +147,13 @@ apiClient.interceptors.response.use(
 
       if (!refreshToken) {
         // No refresh token, clear auth and redirect
-        store.dispatch(logout());
-        window.location.href = "/login";
+        resetAuthAndRedirect();
         return Promise.reject(error);
       }
 
       // Try to refresh the token
       return apiClient
-        .post("/auth/refresh-token", { token: refreshToken })
+        .post("/auth/refresh-token", { refreshToken })
         .then((response) => {
           const newAccessToken = response.data?.accessToken || response.accessToken;
 
@@ -148,8 +168,7 @@ apiClient.interceptors.response.use(
         })
         .catch((err) => {
           processQueue(err, null);
-          store.dispatch(logout());
-          window.location.href = "/login";
+          resetAuthAndRedirect();
           return Promise.reject(err);
         })
         .finally(() => {

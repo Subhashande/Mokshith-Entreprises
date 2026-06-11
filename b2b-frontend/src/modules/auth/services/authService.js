@@ -22,6 +22,9 @@ export const authService = {
       if (responseData?.csrfToken) {
         localStorage.setItem("csrfToken", responseData.csrfToken);
       }
+      if (responseData?.sessionId) {
+        localStorage.setItem("sessionId", responseData.sessionId);
+      }
       if (responseData?.user) {
         localStorage.setItem("user", JSON.stringify(responseData.user));
       }
@@ -53,12 +56,13 @@ export const authService = {
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
+      localStorage.removeItem("sessionId");
     }
   },
 
   async refreshToken(refreshToken) {
     try {
-      const res = await apiClient.post("/auth/refresh-token", { token: refreshToken });
+      const res = await apiClient.post("/auth/refresh-token", { refreshToken });
       // Store new tokens
       if (res?.data?.accessToken) {
         localStorage.setItem("token", res.data.accessToken);

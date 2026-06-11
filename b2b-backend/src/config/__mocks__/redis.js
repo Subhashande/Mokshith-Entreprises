@@ -34,7 +34,5 @@ if (!mockRedis.rpush) {
 
 export const redisClient = mockRedis;
 
-// Export default for compatibility
-export default {
-  redisClient
-};
+// Export default raw client for modules that import the default Redis instance.
+export default mockRedis;

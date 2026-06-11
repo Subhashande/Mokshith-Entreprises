@@ -24,6 +24,15 @@ import { twoFactorAuth } from '../../services/twoFactorAuth.service.js';
 import RefreshToken from '../../models/RefreshToken.model.js';
 import crypto from 'crypto';
 import { logger } from '../../config/logger.js';
+import {
+  requiresSingleSession,
+  generateSessionId,
+  createActiveSession,
+  invalidatePreviousSession,
+  invalidateSessionOnLogout,
+  invalidateAllUserSessions,
+  validateSession,
+} from '../../utils/sessionHelpers.js';
 
 const checkMaintenanceMode = async (user) => {
   const maintenance = await fetchSetting('maintenanceMode');
@@ -143,23 +152,79 @@ export const loginWithPassword = async ({ mobile, password }, req = {}) => {
     };
   }
 
-  // Generate tokens
-  const accessToken = generateAccessToken(user);
-  const refreshTokenValue = await createRefreshToken(user, req);
+  // 🔥 Single Active Session Management for Vendor and Delivery Partner
+  let sessionId = null;
+  let previousSessionInfo = null;
 
-  logger.info('User logged in', { userId: user._id, ip });
+  if (requiresSingleSession(user.role)) {
+    // Generate new session ID
+    sessionId = generateSessionId();
+
+    // Invalidate previous active session
+    previousSessionInfo = await invalidatePreviousSession(
+      user._id,
+      sessionId,
+      'new_login'
+    );
+
+    // 🔥 Emit force_logout to previous session's socket if connected
+    if (previousSessionInfo.invalidated && previousSessionInfo.socketId) {
+      try {
+        const io = global.io;
+        if (io) {
+          const { emitForceLogout } = await import('../../services/socketSessionHandlers.js');
+          emitForceLogout(io, previousSessionInfo.socketId, 'new_login');
+        }
+      } catch (err) {
+        logger.error('Failed to emit force_logout event', { error: err });
+      }
+    }
+
+    // Create new active session
+    const userAgent = req.get?.('user-agent') || 'unknown';
+    await createActiveSession({
+      userId: user._id,
+      sessionId,
+      userAgent,
+      ipAddress: ip,
+      socketId: null // Will be updated when socket connects
+    });
+  }
+
+  // Generate tokens (with sessionId for single-session roles)
+  const accessToken = generateAccessToken(user, sessionId);
+  const refreshTokenValue = await createRefreshToken(user, req, null, sessionId);
+
+  logger.info('User logged in', { 
+    userId: user._id, 
+    ip, 
+    role: user.role,
+    sessionId,
+    previousSessionInvalidated: previousSessionInfo?.invalidated || false
+  });
 
   return { 
     user: sanitizeUser(user), 
     accessToken, 
-    refreshToken: refreshTokenValue 
+    refreshToken: refreshTokenValue,
+    sessionId, // Include sessionId in response for potential client tracking
+    previousSessionInvalidated: previousSessionInfo?.invalidated || false
   };
 };
 
 // REFRESH TOKEN WITH ROTATION
 export const refreshAuthToken = async (token, req = {}) => {
   const ip = req.ip || 'unknown';
-  
+  let sessionId = null;
+
+  try {
+    const decoded = verifyToken(token);
+    sessionId = decoded.sessionId || null;
+  } catch (err) {
+    logger.warn('Failed to decode refresh token', { ip, error: err.message });
+    throw new AppError('Invalid refresh token', 401);
+  }
+
   // Find active refresh token
   const refreshTokenDoc = await RefreshToken.findActiveToken(token);
 
@@ -182,9 +247,6 @@ export const refreshAuthToken = async (token, req = {}) => {
     throw new AppError('Security violation detected. Please log in again', 401);
   }
 
-  // Mark token as used
-  await refreshTokenDoc.markUsed();
-
   // Get user
   const user = await findUserById(refreshTokenDoc.userId);
 
@@ -197,16 +259,37 @@ export const refreshAuthToken = async (token, req = {}) => {
     throw new AppError('Account is not active', 403);
   }
 
-  // Generate new access token
-  const accessToken = generateAccessToken(user);
+  if (requiresSingleSession(user.role)) {
+    if (!sessionId) {
+      await refreshTokenDoc.revoke('system', 'session_revoked');
+      throw new AppError('Your session has been invalidated. Please log in again.', 401);
+    }
 
-  // Generate new refresh token (rotation)
-  const newRefreshToken = await createRefreshToken(user, req, refreshTokenDoc.family);
+    const sessionValidation = await validateSession(user._id, sessionId);
+    if (!sessionValidation.valid) {
+      await refreshTokenDoc.revoke('system', 'session_revoked');
+      logger.warn('Rejected refresh token for revoked session', {
+        userId: user._id,
+        sessionId,
+        reason: sessionValidation.reason,
+      });
+      throw new AppError('Your session has been invalidated. Please log in again.', 401);
+    }
+  }
+
+  // Mark token as used only after session validation succeeds.
+  await refreshTokenDoc.markUsed();
+
+  // Generate new access token (with sessionId if present)
+  const accessToken = generateAccessToken(user, sessionId);
+
+  // Generate new refresh token (rotation, preserve sessionId)
+  const newRefreshToken = await createRefreshToken(user, req, refreshTokenDoc.family, sessionId);
 
   // Revoke old refresh token
   await refreshTokenDoc.revoke('system', 'rotated');
 
-  logger.info('Tokens rotated successfully', { userId: user._id });
+  logger.info('Tokens rotated successfully', { userId: user._id, sessionId });
 
   return { 
     accessToken, 
@@ -216,13 +299,13 @@ export const refreshAuthToken = async (token, req = {}) => {
 };
 
 /**
- * Create refresh token with device tracking
+ * Create refresh token with device tracking and optional session ID
  */
-const createRefreshToken = async (user, req = {}, existingFamily = null) => {
+const createRefreshToken = async (user, req = {}, existingFamily = null, sessionId = null) => {
   const ip = req.ip || 'unknown';
   const userAgent = req.get?.('user-agent') || 'unknown';
 
-  const tokenValue = generateRefreshToken(user);
+  const tokenValue = generateRefreshToken(user, sessionId);
   const family = existingFamily || crypto.randomBytes(16).toString('hex');
 
   const deviceInfo = parseUserAgent(userAgent);
@@ -272,16 +355,63 @@ export const verify2FALogin = async ({ userId, code }, req = {}) => {
     logger.warn('Backup code used for login', { userId: user._id });
   }
 
-  // Generate tokens
-  const accessToken = generateAccessToken(user);
-  const refreshToken = await createRefreshToken(user, req);
+  // 🔥 Single Active Session Management for Vendor and Delivery Partner
+  let sessionId = null;
+  let previousSessionInfo = null;
+  const ip = req.ip || 'unknown';
 
-  logger.info('2FA login successful', { userId: user._id, method: result.method });
+  if (requiresSingleSession(user.role)) {
+    // Generate new session ID
+    sessionId = generateSessionId();
+
+    // Invalidate previous active session
+    previousSessionInfo = await invalidatePreviousSession(
+      user._id,
+      sessionId,
+      'new_login'
+    );
+
+    // 🔥 Emit force_logout to previous session's socket if connected
+    if (previousSessionInfo.invalidated && previousSessionInfo.socketId) {
+      try {
+        const io = global.io;
+        if (io) {
+          const { emitForceLogout } = await import('../../services/socketSessionHandlers.js');
+          emitForceLogout(io, previousSessionInfo.socketId, 'new_login');
+        }
+      } catch (err) {
+        logger.error('Failed to emit force_logout event', { error: err });
+      }
+    }
+
+    // Create new active session
+    const userAgent = req.get?.('user-agent') || 'unknown';
+    await createActiveSession({
+      userId: user._id,
+      sessionId,
+      userAgent,
+      ipAddress: ip,
+      socketId: null
+    });
+  }
+
+  // Generate tokens (with sessionId for single-session roles)
+  const accessToken = generateAccessToken(user, sessionId);
+  const refreshToken = await createRefreshToken(user, req, null, sessionId);
+
+  logger.info('2FA login successful', { 
+    userId: user._id, 
+    method: result.method,
+    sessionId,
+    previousSessionInvalidated: previousSessionInfo?.invalidated || false
+  });
 
   return {
     user: sanitizeUser(user),
     accessToken,
-    refreshToken
+    refreshToken,
+    sessionId,
+    previousSessionInvalidated: previousSessionInfo?.invalidated || false
   };
 };
 
@@ -447,9 +577,9 @@ export const changePassword = async (userId, oldPassword, newPassword) => {
 };
 
 /**
- * Logout - revoke refresh token
+ * Logout - revoke refresh token and invalidate active session
  */
-export const logout = async (refreshToken) => {
+export const logout = async (refreshToken, sessionId = null) => {
   if (!refreshToken) {
     return { success: true };
   }
@@ -459,6 +589,11 @@ export const logout = async (refreshToken) => {
   if (tokenDoc) {
     await tokenDoc.revoke('user', 'manual_logout');
     logger.info('User logged out', { userId: tokenDoc.userId });
+
+    // 🔥 Invalidate active session if sessionId provided
+    if (sessionId) {
+      await invalidateSessionOnLogout(sessionId);
+    }
   }
 
   return { success: true };
@@ -469,6 +604,10 @@ export const logout = async (refreshToken) => {
  */
 export const logoutAll = async (userId) => {
   await RefreshToken.revokeAllUserTokens(userId, 'logout_all');
+  
+  // 🔥 Invalidate all active sessions
+  await invalidateAllUserSessions(userId, 'logout_all', 'user');
+  
   logger.info('User logged out from all devices', { userId });
   return { success: true };
 };

@@ -20,6 +20,10 @@ vi.mock('../../app/store.js', () => ({
   },
 }));
 
+vi.mock('../../context/NotificationContext.jsx', () => ({
+  showGlobalToast: vi.fn(),
+}));
+
 let apiClient, API_BASE_URL;
 
 describe('apiClient', () => {
@@ -61,7 +65,7 @@ describe('apiClient', () => {
     API_BASE_URL = apiClientModule.API_BASE_URL;
     
     delete window.location;
-    window.location = { href: '' };
+    window.location = { href: '', pathname: '/' };
   });
 
   afterEach(() => {
