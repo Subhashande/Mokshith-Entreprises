@@ -20,7 +20,9 @@ import {
   Box,
   Wind,
   Sparkles,
-  LayoutGrid
+  LayoutGrid,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const CATEGORY_ICONS = {
@@ -38,7 +40,7 @@ const CATEGORY_ICONS = {
 };
 
 const ProductPage = () => {
-  const { products, loading } = useProduct();
+  const { products, allProducts, categories, pagination, loading, fetchProducts } = useProduct();
   const { addToCart } = useOrder();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
@@ -46,8 +48,9 @@ const ProductPage = () => {
   const [sortBy, setSortBy] = useState('default');
   const [toast, setToast] = useState(null);
   const [backendCategories, setBackendCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch Categories from Backend API
+  // Fetch Categories from Backend API (using useProduct's categories now, but keep for compatibility)
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -63,11 +66,11 @@ const ProductPage = () => {
     fetchCategories();
   }, []);
 
-  // Filter Categories to show only those with products
-  const categories = useMemo(() => {
-    if (!products || !Array.isArray(products)) return [];
+  // Filter Categories to show only those with products - using allProducts!
+  const categoriesWithCounts = useMemo(() => {
+    if (!allProducts || !Array.isArray(allProducts)) return [];
     
-    const productsPerCat = products.reduce((acc, p) => {
+    const productsPerCat = allProducts.reduce((acc, p) => {
       // Check category name, category slug, and category ID
       const catName = (p.category || p.categoryId?.name || 'general').toLowerCase();
       const catId = (p.categoryId?._id || p.categoryId || '').toString();
@@ -78,7 +81,9 @@ const ProductPage = () => {
       return acc;
     }, {});
 
-    return backendCategories
+    const catsToUse = backendCategories.length > 0 ? backendCategories : categories;
+    
+    return catsToUse
       .map(cat => {
         const id = (cat._id || cat.id || '').toString();
         const name = (cat.name || '').toLowerCase();
@@ -95,8 +100,14 @@ const ProductPage = () => {
         };
       })
       .filter(cat => cat.count > 0);
-  }, [products, backendCategories]);
+  }, [allProducts, backendCategories, categories]);
 
+  // Calculate pagination info
+  const { totalItems = 0, itemsPerPage = 20, totalPages = 1 } = pagination || {};
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Filter Products - using current page's products, but search/sort should maybe use all?
   const filteredProducts = useMemo(() => {
     return (products || [])
       .filter(p => {
@@ -119,6 +130,14 @@ const ProductPage = () => {
         return 0;
       });
   }, [products, search, selectedCategory, sortBy]);
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    fetchProducts({ page });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -192,11 +211,11 @@ const ProductPage = () => {
                   <span className={`text-[13px] font-bold whitespace-nowrap ${selectedCategory === 'all' ? 'text-sky-600' : 'text-slate-600'}`}>All Items</span>
                 </div>
                 <span className={`hidden lg:flex text-[10px] font-black px-2 py-0.5 rounded-full ${selectedCategory === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                  {products?.length || 0}
+                  {totalItems || allProducts?.length || 0}
                 </span>
               </button>
 
-              {categories.map((cat) => (
+              {categoriesWithCounts.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug || cat.name)}
@@ -222,18 +241,62 @@ const ProductPage = () => {
 
           {/* MAIN CONTENT */}
           <main className="flex-1 min-w-0">
+            {/* Product count display */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-[13px] font-bold text-slate-600">
+                Showing {startItem}-{endItem} of {totalItems} products
+              </div>
+            </div>
+
             {/* Product Grid */}
             {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {filteredProducts.map(product => (
-                  <ProductCard 
-                    key={product._id || product.id} 
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                    user={user}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                  {filteredProducts.map(product => (
+                    <ProductCard 
+                      key={product._id || product.id} 
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      user={user}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-10">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-3 rounded-xl border border-slate-200 hover:border-sky-600 hover:text-sky-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                          page === currentPage 
+                            ? 'bg-sky-600 text-white shadow-md' 
+                            : 'text-slate-700 hover:bg-slate-50 border border-slate-200'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-3 rounded-xl border border-slate-200 hover:border-sky-600 hover:text-sky-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white rounded-2xl p-24 text-center border border-slate-100 shadow-sm">
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
