@@ -42,6 +42,8 @@ export { API_BASE_URL };
 // Track if a refresh is already in progress to avoid multiple refresh calls
 let isRefreshing = false;
 let failedQueue = [];
+let isCsrfRefreshing = false;
+let csrfFailedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
@@ -52,6 +54,28 @@ const processQueue = (error, token = null) => {
     }
   });
   failedQueue = [];
+};
+
+const processCsrfQueue = (error, csrfToken = null) => {
+  csrfFailedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(csrfToken);
+    }
+  });
+  csrfFailedQueue = [];
+};
+
+// Function to fetch new CSRF token
+const fetchCsrfToken = async () => {
+  const response = await apiClient.get("/auth/csrf-token");
+  const csrfToken = response.data?.csrfToken || response.csrfToken;
+  if (csrfToken) {
+    localStorage.setItem("csrfToken", csrfToken);
+    console.log('CSRF token fetched and stored');
+  }
+  return csrfToken;
 };
 
 // Add a request interceptor to add the auth token to every request
@@ -91,9 +115,14 @@ apiClient.interceptors.request.use(
 // Add a response interceptor to handle token refresh and common errors
 apiClient.interceptors.response.use(
   (response) => {
+    // If response contains a csrfToken, store it
+    if (response.data?.csrfToken) {
+      localStorage.setItem("csrfToken", response.data.csrfToken);
+      console.log('CSRF token refreshed from response');
+    }
     return response.data;
   },
-  (error) => {
+  async (error) => {
     const originalRequest = error.config;
 
     // Handle 401 Unauthorized
@@ -157,9 +186,41 @@ apiClient.interceptors.response.use(
         });
     }
 
-    // Handle other errors
-    if (error.response?.status === 403) {
-      console.warn('403 Forbidden - Access Denied', originalRequest.url);
+    // Handle 403 CSRF errors
+    if (error.response?.status === 403 && !originalRequest._csrfRetry) {
+      const isCsrfError = error.response?.data?.message?.includes('CSRF') || 
+                         error.response?.data?.message?.includes('csrf');
+      
+      if (isCsrfError) {
+        console.warn('CSRF error detected, attempting to refresh CSRF token');
+        
+        if (isCsrfRefreshing) {
+          return new Promise((resolve, reject) => {
+            csrfFailedQueue.push({ resolve, reject });
+          }).then((csrfToken) => {
+              originalRequest.headers['x-csrf-token'] = csrfToken;
+              originalRequest._csrfRetry = true;
+              return apiClient(originalRequest);
+            }).catch((err) => Promise.reject(err));
+        }
+        
+        originalRequest._csrfRetry = true;
+        isCsrfRefreshing = true;
+        
+        try {
+          const csrfToken = await fetchCsrfToken();
+          console.log('Request retried after CSRF recovery');
+          processCsrfQueue(null, csrfToken);
+          originalRequest.headers['x-csrf-token'] = csrfToken;
+          return apiClient(originalRequest);
+        } catch (err) {
+          processCsrfQueue(err, null);
+          console.error('Failed to refresh CSRF token:', err);
+          return Promise.reject(err);
+        } finally {
+          isCsrfRefreshing = false;
+        }
+      }
     }
 
     // 🔥 Fix: Reject with the full error object so services can access status/data

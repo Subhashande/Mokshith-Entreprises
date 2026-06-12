@@ -23,14 +23,17 @@ export const generateCsrfToken = () => {
  */
 export const setCsrfToken = (res) => {
   const token = generateCsrfToken();
+  const isProduction = process.env.NODE_ENV === 'production';
   
   res.cookie(CSRF_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax', // Use 'none' for cross-site in production
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: '/'
   });
 
+  logger.info('CSRF token set');
   return token;
 };
 
@@ -109,6 +112,7 @@ export const csrfProtection = (req, res, next) => {
       return next(new AppError('Invalid CSRF token', 403));
     }
 
+    logger.info('CSRF token validation passed', { path: req.path, method: req.method });
     // Token is valid, proceed
     next();
   } catch (error) {
@@ -122,6 +126,7 @@ export const csrfProtection = (req, res, next) => {
  * Add this to login/register responses
  */
 export const getCsrfToken = (req, res) => {
+  logger.info('CSRF token fetched');
   return setCsrfToken(res);
 };
 
@@ -130,6 +135,7 @@ export const getCsrfToken = (req, res) => {
  */
 export const injectCsrfToken = (req, res, next) => {
   if (req.user && !req.cookies?.[CSRF_COOKIE_NAME]) {
+    logger.info('CSRF token injected for authenticated user');
     setCsrfToken(res);
   }
   next();
